@@ -11,7 +11,7 @@
 </head>
 <body class="bg-slate-50">
 
-    <header class="gradient-header text-white p-8 shadow-lg">
+    <header class="gradient-header p-8 shadow-lg">
         <h1 class="text-2xl font-800 tracking-tight mb-1">Agenda</h1>
         <p class="text-[10px] font-black uppercase tracking-widest opacity-80">Paroisse Saint-Louis</p>
     </header>
@@ -20,19 +20,23 @@
         
         <section class="card shadow-xl -mt-12 relative z-10 mb-8">
             <h2 class="text-sm font-800 mb-4 text-slate-800">Rechercher un office</h2>
-            <input type="text" id="searchInput" onkeyup="filterEvents()" 
-                placeholder="Messe, Adoration, Confession..." 
-                class="search-bar focus:ring-2 focus:ring-red-100">
-            
-            <div class="flex gap-2 overflow-x-auto pb-2">
-                <button onclick="quickSearch('Messe')" class="nav-item bg-slate-100 px-3 py-2 rounded-lg text-[9px]">MESSES</button>
-                <button onclick="quickSearch('Confession')" class="nav-item bg-slate-100 px-3 py-2 rounded-lg text-[9px]">CONFESSIONS</button>
-                <button onclick="quickSearch('Adoration')" class="nav-item bg-slate-100 px-3 py-2 rounded-lg text-[9px]">ADORATION</button>
+            <div class="space-y-4">
+                <input type="text" id="searchInput" onkeyup="filterEvents()" 
+                    placeholder="Messe, Adoration, Confession..." 
+                    class="search-bar focus:ring-2 focus:ring-red-100">
+                
+                <div class="flex gap-2 overflow-x-auto pb-2">
+                    <button onclick="quickSearch('Messe')" class="bg-slate-50 px-3 py-2 rounded-lg text-[9px] font-black uppercase text-slate-400">Messes</button>
+                    <button onclick="quickSearch('Confession')" class="bg-slate-50 px-3 py-2 rounded-lg text-[9px] font-black uppercase text-slate-400">Confessions</button>
+                    <button onclick="quickSearch('Adoration')" class="bg-slate-50 px-3 py-2 rounded-lg text-[9px] font-black uppercase text-slate-400">Adoration</button>
+                </div>
             </div>
         </section>
 
         <div id="agenda-container" class="space-y-8">
-            <p class="text-center text-xs text-slate-400 italic">Chargement Google Calendar...</p>
+            <div class="text-center py-10">
+                <p class="text-slate-400 text-xs italic">Synchronisation Google Calendar...</p>
+            </div>
         </div>
 
     </main>
@@ -40,19 +44,19 @@
     <nav class="bottom-nav">
         <a href="index.html" class="nav-item">
             <span class="block text-lg">🏠</span>
-            Accueil
+            <span class="nav-label">Accueil</span>
         </a>
         <a href="agenda.html" class="nav-item active">
             <span class="block text-lg">📅</span>
-            Agenda
+            <span class="nav-label">Agenda</span>
         </a>
         <a href="priere.html" class="nav-item">
             <span class="block text-lg">🕯️</span>
-            Prières
+            <span class="nav-label">Prières</span>
         </a>
         <a href="groupes.html" class="nav-item">
             <span class="block text-lg">💬</span>
-            Groupes
+            <span class="nav-label">Groupes</span>
         </a>
     </nav>
 
@@ -65,7 +69,6 @@
             const now = new Date();
             const timeMax = new Date();
             timeMax.setDate(now.getDate() + 7);
-
             const url = `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(CALENDAR_ID)}/events?key=${API_KEY}&timeMin=${now.toISOString()}&timeMax=${timeMax.toISOString()}&singleEvents=true&orderBy=startTime`;
 
             try {
@@ -74,7 +77,7 @@
                 allEvents = data.items || [];
                 displayAgenda(allEvents);
             } catch (e) {
-                document.getElementById('agenda-container').innerHTML = "<p class='text-center text-xs'>Erreur de connexion.</p>";
+                document.getElementById('agenda-container').innerHTML = "<p class='text-center text-xs text-slate-400'>Erreur de chargement de l'agenda.</p>";
             }
         }
 
@@ -92,21 +95,23 @@
             for (const date in groups) {
                 let dayHtml = `
                     <div class="animate-fade-in">
-                        <div class="flex items-center gap-2 mb-4">
+                        <div class="flex items-center gap-2 mb-6">
+                            <div class="h-[1px] flex-1 bg-slate-200"></div>
                             <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">${date}</span>
                             <div class="h-[1px] flex-1 bg-slate-200"></div>
                         </div>
-                        <div class="space-y-3">
+                        <div class="space-y-4">
                 `;
 
                 groups[date].forEach(event => {
                     const time = event.start.dateTime ? new Date(event.start.dateTime).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : "Journée";
                     dayHtml += `
-                        <div class="card p-4 flex justify-between items-center shadow-sm border border-slate-50">
-                            <div>
-                                <p class="text-sm font-800 text-slate-800">${event.summary}</p>
-                                <p class="text-[10px] font-bold text-red-700 uppercase">${time}</p>
+                        <div class="card border border-slate-50">
+                            <div class="flex justify-between items-start">
+                                <span class="text-[9px] font-black text-red-700 uppercase tracking-widest">${time}</span>
                             </div>
+                            <p class="text-sm font-800 text-slate-800 mt-1">${event.summary}</p>
+                            ${event.location ? `<p class="text-[9px] font-bold text-slate-300 mt-2 uppercase">📍 ${event.location}</p>` : ''}
                         </div>
                     `;
                 });
