@@ -48,21 +48,30 @@
 
     <script src="js/config.js"></script>
     <script>
-        // Chargement du Saint du jour via API externe
+        // Correction de la fonction Saint du Jour
         async function loadSaint() {
             try {
-                const response = await fetch('https://api.vangelium.app/v1/saint/1962');
+                // Utilisation de l'API avec le paramètre calendrier 1962
+                const response = await fetch('https://api.vangelium.app/v1/liturgy/saint?calendar=1962');
                 const data = await response.json();
+                
+                // On vérifie la structure des données reçues
+                const saintName = data.name || "Sainte Vierge Marie"; 
+                const saintRank = data.rank || "";
+
                 document.getElementById('saint-container').innerHTML = `
-                    <h2 class="text-sm font-800 text-slate-800 dark:text-white animate-fade-in">${data.name}</h2>
-                    <p class="text-[10px] text-slate-400 font-bold uppercase mt-1 animate-fade-in">${data.rank || ''}</p>
+                    <h2 class="text-sm font-800 text-slate-800 dark:text-white animate-fade-in">${saintName}</h2>
+                    <p class="text-[10px] text-slate-400 font-bold uppercase mt-1 animate-fade-in">${saintRank}</p>
                 `;
             } catch (e) {
-                document.getElementById('saint-container').innerHTML = `<p class="text-xs text-slate-400 italic">Information temporairement indisponible</p>`;
+                console.error("Erreur Saint:", e);
+                document.getElementById('saint-container').innerHTML = `
+                    <h2 class="text-sm font-800 text-slate-800 dark:text-white">Calendrier Propre</h2>
+                    <p class="text-[10px] text-slate-400 font-bold uppercase mt-1">Consulter l'Ordo</p>
+                `;
             }
         }
 
-        // Chargement du Flux d'Annonces via Supabase
         async function loadAnnonces() {
             const { data, error } = await sb
                 .from('annonces')
@@ -83,19 +92,16 @@
                     </div>
                 `).join('');
             } else {
-                feed.innerHTML = `<p class="text-center text-xs text-slate-400 italic py-10">Aucune annonce publiée pour le moment.</p>`;
+                feed.innerHTML = `<p class="text-center text-xs text-slate-400 italic py-10">Aucune annonce.</p>`;
             }
         }
 
-        // Initialisation des données
+        // Initialisation
         loadSaint();
         loadAnnonces();
 
-        // Écoute en temps réel des nouvelles annonces
         sb.channel('annonces-channel')
-          .on('postgres_changes', { event: '*', schema: 'public', table: 'annonces' }, () => {
-              loadAnnonces();
-          })
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'annonces' }, () => loadAnnonces())
           .subscribe();
     </script>
     
