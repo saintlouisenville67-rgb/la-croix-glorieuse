@@ -1,62 +1,86 @@
 /* ============================================================
-   CHARTE GRAPHIQUE - LA CROIX GLORIEUSE
+   CHARTE GRAPHIQUE GLOBALE - LA CROIX GLORIEUSE
    ============================================================ */
 
-/* Importation d'une police élégante */
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
 
 :root {
     --primary-red: #b91c1c;
     --dark-red: #7f1d1d;
-    --slate-50: #f8fafc;
-    --slate-900: #0f172a;
+    --bg-light: #f8fafc;
+    --text-main: #0f172a;
+    --text-muted: #64748b;
+    --glass-white: rgba(255, 255, 255, 0.1);
+    --card-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+}
+
+/* RESET & BASE */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
 }
 
 body {
     font-family: 'Plus Jakarta Sans', sans-serif;
-    margin: 0;
-    padding: 0;
-    -webkit-font-smoothing: antialiased;
+    background-color: var(--bg-light);
+    color: var(--text-main);
+    line-height: 1.5;
+    padding-bottom: 100px; /* Espace pour la navigation basse */
 }
 
-/* 1. L'EN-TÊTE (HEADER) */
+/* 1. EN-TÊTE (HEADER) */
 .gradient-header {
     background: linear-gradient(135deg, var(--primary-red) 0%, var(--dark-red) 100%);
+    color: white;
+    padding: 2rem;
+    border-bottom-left-radius: 40px;
+    border-bottom-right-radius: 40px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
 }
 
-/* Effet de flou pour le bloc liturgie */
+/* Effet de verre (Glassmorphism) pour les blocs internes du header */
 .backdrop-blur-md {
+    background: var(--glass-white);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 24px;
+    padding: 1.5rem;
 }
 
-/* 2. LES CARTES (CARDS) */
+/* 2. CARTES (CARDS) */
 .card {
     background: white;
     border-radius: 24px;
     padding: 1.5rem;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-    transition: transform 0.2s ease;
+    box-shadow: var(--card-shadow);
+    border: 1px solid rgba(226, 232, 240, 0.5);
+    transition: all 0.3s ease;
 }
 
-.card:active {
-    transform: scale(0.98);
+.card-title {
+    font-weight: 800;
+    font-size: 0.875rem;
+    margin-bottom: 0.5rem;
+    color: var(--text-main);
 }
 
-/* 3. NAVIGATION BASSE */
+/* 3. NAVIGATION BASSE (BOTTOM NAV) */
 .bottom-nav {
     position: fixed;
     bottom: 0;
     left: 0;
     right: 0;
-    background: rgba(255, 255, 255, 0.85);
+    background: rgba(255, 255, 255, 0.8);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    border-top: 1px solid rgba(226, 232, 240, 0.8);
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
     display: flex;
     justify-content: space-around;
-    padding: 0.75rem 0.5rem calc(0.75rem + env(safe-area-inset-bottom));
-    z-index: 100;
+    padding: 1rem 0.5rem;
+    z-index: 1000;
 }
 
 .nav-item {
@@ -65,43 +89,71 @@ body {
     align-items: center;
     text-decoration: none;
     color: #94a3b8;
-    font-size: 9px;
+    font-size: 10px;
     font-weight: 800;
     text-transform: uppercase;
-    letter-spacing: 0.025em;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    letter-spacing: -0.01em;
+    transition: color 0.3s ease;
+}
+
+.nav-item span {
+    font-size: 1.5rem;
+    margin-bottom: 2px;
 }
 
 .nav-item.active {
     color: var(--primary-red);
 }
 
-.nav-item span:first-child {
-    font-size: 1.25rem;
-    margin-bottom: 4px;
+/* 4. TYPOGRAPHIE & UTILITAIRES */
+.font-800 { font-weight: 800; }
+.font-black { font-weight: 900; }
+
+.uppercase-track {
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-size: 9px;
+    font-weight: 900;
 }
 
-/* 4. ÉLÉMENTS DE FORMULAIRE (PRIÈRES) */
+.italic-quote {
+    font-style: italic;
+    font-weight: 500;
+    opacity: 0.9;
+}
+
+/* 5. FORMULAIRES (PRIÈRES) */
 textarea {
-    resize: none;
+    width: 100%;
+    background-color: #f1f5f9;
+    border: none;
+    border-radius: 16px;
+    padding: 1rem;
     font-family: inherit;
+    font-size: 0.875rem;
+    outline: none;
 }
 
-button {
+button.btn-primary {
+    background-color: var(--primary-red);
+    color: white;
+    width: 100%;
+    padding: 1rem;
+    border: none;
+    border-radius: 16px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    box-shadow: 0 10px 15px -3px rgba(185, 28, 28, 0.3);
     cursor: pointer;
-    -webkit-tap-highlight-color: transparent;
 }
 
-/* 5. ANIMATIONS */
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
+/* 6. ANIMATIONS */
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
     to { opacity: 1; transform: translateY(0); }
 }
 
 .animate-fade-in {
-    animation: fadeIn 0.5s ease-out forwards;
+    animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
-
-/* Utilitaires de texte spécifiques */
-.font-800 { font-weight: 800; }
-.font-black { font-weight: 900; }
