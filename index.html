@@ -121,12 +121,13 @@
         }
 
         async function fetchMesseDuJour(dateCible) {
-            const startOfDay = new Date(dateCible);
-            startOfDay.setHours(0, 0, 0, 0);
-            const endOfDay = new Date(dateCible);
-            endOfDay.setHours(23, 59, 59, 999);
+            // On s'assure de prendre toute la journée de 00h00 à 23h59
+            const start = new Date(dateCible);
+            start.setHours(0, 0, 0, 0);
+            const end = new Date(dateCible);
+            end.setHours(23, 59, 59, 999);
 
-            const url = `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(CALENDAR_ID)}/events?key=${CALENDAR_API_KEY}&timeMin=${startOfDay.toISOString()}&timeMax=${endOfDay.toISOString()}&singleEvents=true&orderBy=startTime`;
+            const url = `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(CALENDAR_ID)}/events?key=${CALENDAR_API_KEY}&timeMin=${start.toISOString()}&timeMax=${end.toISOString()}&singleEvents=true&orderBy=startTime`;
 
             try {
                 const response = await fetch(url);
@@ -135,14 +136,17 @@
 
                 const isSamedi = dateCible.getDay() === 6;
 
-                // Filtrage : On garde les "Messe" mais on retire UNIQUEMENT si "anticipée" est écrit le samedi
                 const messes = events.filter(e => {
-                    const titre = e.summary.toLowerCase();
-                    const contientMesse = titre.includes('messe');
-                    const estAnticipee = titre.includes('anticipée') || titre.includes('anticipee');
+                    const titre = e.summary ? e.summary.toLowerCase() : "";
                     
-                    if (!contientMesse) return false;
-                    if (isSamedi && estAnticipee) return false;
+                    // Critère 1 : Il faut le mot "messe"
+                    if (!titre.includes('messe')) return false;
+                    
+                    // Critère 2 : Si c'est un samedi, on dégage seulement si "anticipée" est écrit
+                    if (isSamedi && (titre.includes('anticipée') || titre.includes('anticipee'))) {
+                        return false;
+                    }
+
                     return true;
                 });
 
@@ -155,7 +159,7 @@
                         if (m.start.dateTime) {
                             return new Date(m.start.dateTime).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }).replace(':', 'h');
                         }
-                        return "voir agenda";
+                        return "heure à préciser";
                     });
 
                     if (messes.length === 1) {
@@ -167,7 +171,7 @@
                     blocMesse.classList.add('hidden');
                 }
             } catch (e) {
-                console.error(e);
+                console.error("Erreur calendrier:", e);
                 document.getElementById('bloc-messe').classList.add('hidden');
             }
         }
