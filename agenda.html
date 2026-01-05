@@ -4,7 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Agenda - La Croix Glorieuse</title>
+    
     <link rel="stylesheet" href="CSS/style.css">
+    
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-slate-50">
@@ -21,24 +23,37 @@
             <input type="text" id="searchInput" onkeyup="filterEvents()" 
                 placeholder="Messe, Adoration, Confession..." 
                 class="search-bar focus:ring-2 focus:ring-red-100">
+            
             <div class="flex gap-2 overflow-x-auto pb-2">
-                <button onclick="quickSearch('Messe')" class="text-[9px] font-black uppercase bg-slate-100 px-3 py-2 rounded-lg">Messes</button>
-                <button onclick="quickSearch('Confession')" class="text-[9px] font-black uppercase bg-slate-100 px-3 py-2 rounded-lg">Confessions</button>
-                <button onclick="quickSearch('Adoration')" class="text-[9px] font-black uppercase bg-slate-100 px-3 py-2 rounded-lg">Adoration</button>
+                <button onclick="quickSearch('Messe')" class="nav-item bg-slate-100 px-3 py-2 rounded-lg text-[9px]">MESSES</button>
+                <button onclick="quickSearch('Confession')" class="nav-item bg-slate-100 px-3 py-2 rounded-lg text-[9px]">CONFESSIONS</button>
+                <button onclick="quickSearch('Adoration')" class="nav-item bg-slate-100 px-3 py-2 rounded-lg text-[9px]">ADORATION</button>
             </div>
         </section>
 
         <div id="agenda-container" class="space-y-8">
-            <p class="text-center text-xs text-slate-400 italic">Synchronisation Google Calendar...</p>
+            <p class="text-center text-xs text-slate-400 italic">Chargement Google Calendar...</p>
         </div>
 
     </main>
 
     <nav class="bottom-nav">
-        <a href="index.html" class="nav-item"><span>🏠</span>Accueil</a>
-        <a href="agenda.html" class="nav-item active"><span>📅</span>Agenda</a>
-        <a href="priere.html" class="nav-item"><span>🕯️</span>Prières</a>
-        <a href="groupes.html" class="nav-item"><span>💬</span>Groupes</a>
+        <a href="index.html" class="nav-item">
+            <span class="block text-lg">🏠</span>
+            Accueil
+        </a>
+        <a href="agenda.html" class="nav-item active">
+            <span class="block text-lg">📅</span>
+            Agenda
+        </a>
+        <a href="priere.html" class="nav-item">
+            <span class="block text-lg">🕯️</span>
+            Prières
+        </a>
+        <a href="groupes.html" class="nav-item">
+            <span class="block text-lg">💬</span>
+            Groupes
+        </a>
     </nav>
 
     <script>
@@ -49,7 +64,7 @@
         async function fetchCalendar() {
             const now = new Date();
             const timeMax = new Date();
-            timeMax.setDate(now.getDate() + 7); // On prend la semaine entière
+            timeMax.setDate(now.getDate() + 7);
 
             const url = `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(CALENDAR_ID)}/events?key=${API_KEY}&timeMin=${now.toISOString()}&timeMax=${timeMax.toISOString()}&singleEvents=true&orderBy=startTime`;
 
@@ -67,7 +82,6 @@
             const container = document.getElementById('agenda-container');
             container.innerHTML = "";
 
-            // Groupement par jour
             const groups = events.reduce((acc, event) => {
                 const date = new Date(event.start.dateTime || event.start.date).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
                 if (!acc[date]) acc[date] = [];
@@ -77,11 +91,11 @@
 
             for (const date in groups) {
                 let dayHtml = `
-                    <div class="day-group animate-fade-in">
-                        <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-                            <span>${date}</span>
+                    <div class="animate-fade-in">
+                        <div class="flex items-center gap-2 mb-4">
+                            <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">${date}</span>
                             <div class="h-[1px] flex-1 bg-slate-200"></div>
-                        </h3>
+                        </div>
                         <div class="space-y-3">
                 `;
 
@@ -93,7 +107,6 @@
                                 <p class="text-sm font-800 text-slate-800">${event.summary}</p>
                                 <p class="text-[10px] font-bold text-red-700 uppercase">${time}</p>
                             </div>
-                            <span class="text-lg">🔔</span>
                         </div>
                     `;
                 });
