@@ -3,145 +3,88 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Prières - La Croix Glorieuse</title>
+    <title>Intentions de Prières - La Croix Glorieuse</title>
     
     <link rel="stylesheet" href="CSS/style.css">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-<body class="bg-slate-50">
+<body class="bg-slate-50 pb-24">
 
-    <header class="gradient-header text-white p-8 rounded-b-[40px] shadow-lg">
-        <h1 class="text-2xl font-800 tracking-tight mb-1">Mur de Prière</h1>
-        <p class="text-[10px] font-black uppercase tracking-widest opacity-80">Communion des Saints</p>
+    <header class="gradient-header text-white p-8 rounded-b-[40px] shadow-2xl">
+        <div class="flex justify-between items-center mb-6">
+            <div>
+                <h1 class="text-xl font-800 tracking-tight">Le Mur de Prières</h1>
+                <p class="text-[9px] font-black uppercase tracking-widest opacity-80">Communion des Saints • Strasbourg</p>
+            </div>
+            <div class="px-3 py-1 bg-black/20 rounded-full text-[9px] font-black uppercase italic">Intentions</div>
+        </div>
+        <div class="bg-white/10 backdrop-blur-md p-6 rounded-3xl border border-white/20">
+            <p class="text-sm font-medium leading-relaxed italic">"Demandez, et l'on vous donnera."</p>
+        </div>
     </header>
 
     <main class="p-6 space-y-8">
-        
-        <section class="card shadow-xl -mt-12 relative z-10">
-            <h2 class="text-sm font-800 mb-4 text-slate-800">Confier une intention</h2>
-            <div class="space-y-4">
-                <input type="text" id="prenom" placeholder="Votre prénom (optionnel)" 
-                    class="w-full bg-slate-50 p-3 rounded-xl border-none text-sm font-semibold outline-none focus:ring-2 focus:ring-red-100">
-                
-                <textarea id="intention" placeholder="Votre intention de prière..." 
-                    class="w-full bg-slate-50 p-4 rounded-xl border-none text-sm min-h-[100px] outline-none focus:ring-2 focus:ring-red-100"></textarea>
-                
-                <button onclick="envoyerPriere()" 
-                    class="w-full gradient-header text-white py-4 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] shadow-lg shadow-red-100 active:scale-95 transition-all">
-                    Déposer sur l'autel
-                </button>
-            </div>
+        <section class="card border-l-4 border-red-700">
+            <h2 class="text-[9px] font-black text-red-700 uppercase mb-4 tracking-widest">Confier une intention</h2>
+            <textarea id="intent-txt" class="w-full p-4 bg-slate-50 rounded-2xl border-none text-sm outline-none" placeholder="Votre intention..." rows="3"></textarea>
+            <button onclick="sendIntention()" class="w-full bg-red-700 text-white py-4 rounded-2xl font-800 text-[10px] uppercase tracking-widest mt-4 shadow-lg active:scale-95 transition-all">
+                Envoyer au Mur
+            </button>
         </section>
 
-        <section>
-            <div class="flex items-center gap-2 mb-6">
-                <div class="h-[1px] flex-1 bg-slate-200"></div>
-                <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Intentions de la communauté</span>
-                <div class="h-[1px] flex-1 bg-slate-200"></div>
-            </div>
-            
-            <div id="feed-priere" class="space-y-4">
-                <div class="text-center py-10">
-                    <p class="text-slate-400 text-xs italic">Chargement des intentions...</p>
-                </div>
-            </div>
+        <section class="space-y-4">
+            <h2 class="text-lg font-800 text-slate-900 tracking-tight px-2">Dernières Intentions</h2>
+            <div id="mur-intentions" class="space-y-4"></div>
         </section>
-
     </main>
 
     <nav class="bottom-nav">
         <a href="index.html" class="nav-item">
-            <span class="block text-lg">🏠</span>
+            <span class="text-xl mb-1">🏠</span>
             Accueil
         </a>
         <a href="agenda.html" class="nav-item">
-            <span class="block text-lg">📅</span>
+            <span class="text-xl mb-1">📅</span>
             Agenda
         </a>
         <a href="priere.html" class="nav-item active">
-            <span class="block text-lg">🕯️</span>
+            <span class="text-xl mb-1">🕯️</span>
             Prières
         </a>
         <a href="groupes.html" class="nav-item">
-            <span class="block text-lg">💬</span>
+            <span class="text-xl mb-1">💬</span>
             Groupes
         </a>
     </nav>
 
     <script src="js/config.js"></script>
     <script>
-        async function loadPrières() {
-            const { data, error } = await sb
-                .from('intentions')
-                .select('*')
-                .order('created_at', { ascending: false });
-
+        async function loadIntentions() {
+            const { data } = await sb.from('intentions').select('*').order('created_at', { ascending: false });
             if (data) {
-                const feed = document.getElementById('feed-priere');
-                feed.innerHTML = data.map(p => `
-                    <div class="card animate-fade-in">
-                        <div class="flex justify-between items-start mb-3">
-                            <span class="text-[9px] font-black text-red-700 uppercase tracking-widest">${p.prenom || 'Anonyme'}</span>
-                            <span class="text-[8px] font-bold text-slate-300">${new Date(p.created_at).toLocaleDateString()}</span>
+                document.getElementById('mur-intentions').innerHTML = data.map(i => `
+                    <div class="card border border-slate-50 animate-fade-in">
+                        <p class="text-sm text-slate-700 leading-relaxed font-medium">"${i.texte}"</p>
+                        <div class="flex items-center justify-between mt-4">
+                             <span class="text-[9px] font-black text-slate-300 uppercase tracking-widest">Paroisse Saint-Louis</span>
+                             <span class="text-[9px] font-black text-red-200 uppercase">${new Date(i.created_at).toLocaleDateString()}</span>
                         </div>
-                        <p class="text-sm text-slate-600 italic mb-4 leading-relaxed">"${p.texte}"</p>
-                        
-                        <button onclick="allumerBougie('${p.id}')" 
-                            class="flex items-center gap-2 bg-amber-50 text-amber-700 px-4 py-2 rounded-full border border-amber-100 active:scale-90 transition-transform">
-                            <span class="text-sm">🕯️</span>
-                            <span class="text-[10px] font-black uppercase tracking-tighter">${p.bougies || 0} ont prié</span>
-                        </button>
                     </div>
                 `).join('');
             }
         }
 
-        async function envoyerPriere() {
-            const prenom = document.getElementById('prenom').value;
-            const texte = document.getElementById('intention').value;
-
-            if (!texte) return alert("Veuillez écrire votre intention.");
-
-            const { error } = await sb.from('intentions').insert([
-                { prenom: prenom || 'Anonyme', texte: texte }
-            ]);
-
-            if (!error) {
-                document.getElementById('intention').value = '';
-                loadPrières();
+        async function sendIntention() {
+            const txt = document.getElementById('intent-txt').value;
+            if(!txt) return;
+            const { error } = await sb.from('intentions').insert([{ texte: txt }]);
+            if(!error) {
+                document.getElementById('intent-txt').value = '';
+                loadIntentions();
             }
         }
-
-        async function allumerBougie(id) {
-            // Appel de la fonction SQL RPC que nous avons créée dans Supabase
-            const { error } = await sb.rpc('increment_bougie', { row_id: id });
-            if (!error) {
-                loadPrières(); // On rafraîchit pour voir la bougie s'ajouter
-            }
-        }
-
-        // Charger les prières au démarrage
-        loadPrières();
-
-        // Écouter les changements en temps réel (si quelqu'un d'autre poste)
-        sb.channel('intentions-channel')
-          .on('postgres_changes', { event: '*', schema: 'public', table: 'intentions' }, payload => {
-              loadPrières();
-          })
-          .subscribe();
+        loadIntentions();
     </script>
-
-    <style>
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-fade-in { animation: fadeIn 0.4s ease-out; }
-    </style>
 </body>
 </html>
-
-
-
-
