@@ -64,14 +64,12 @@
 
     <script src="js/config.js"></script>
     <script>
-        // Initialisation de la page
         async function initHome() {
             updateLiturgie();
             loadAnnonces();
             loadVerset();
         }
 
-        // Gestion de la date et du calendrier traditionnel
         async function updateLiturgie() {
             const now = new Date();
             const jourMois = `${String(now.getDate()).padStart(2, '0')}-${String(now.getMonth() + 1).padStart(2, '0')}`;
@@ -94,7 +92,6 @@
             }
         }
 
-        // Chargement du verset aléatoire depuis Supabase
         async function loadVerset() {
             const container = document.getElementById('verset-container');
             const { data } = await sb.from('versets').select('*');
@@ -110,7 +107,6 @@
             }
         }
 
-        // Chargement des 3 dernières annonces
         async function loadAnnonces() {
             const feed = document.getElementById('feed-annonces');
             const { data } = await sb.from('annonces').select('*').order('created_at', { ascending: false }).limit(3);
