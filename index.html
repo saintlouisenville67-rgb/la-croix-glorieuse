@@ -3,111 +3,112 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>La Croix Glorieuse - Accueil</title>
+    <title>La Croix Glorieuse</title>
     
-    <link rel="stylesheet" href="CSS/style.css">
-    
+    <link rel="stylesheet" href="css/style.css">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="bg-slate-50">
 
-    <header id="main-header" class="gradient-header">
+    <header id="main-header" class="gradient-header text-white p-8 rounded-b-[40px] shadow-2xl transition-all duration-500">
         <div class="flex justify-between items-center mb-6">
             <div>
                 <h1 class="text-xl font-800 tracking-tight">La Croix Glorieuse</h1>
-                <p class="uppercase-track opacity-80">Paroisse Personnelle • Strasbourg</p>
+                <p class="text-[9px] font-black uppercase tracking-widest opacity-80">Paroisse Personnelle • Strasbourg</p>
             </div>
-            <div id="liturgie-badge" class="px-3 py-1 bg-black/20 rounded-full uppercase-track italic">Missel 1962</div>
+            <div id="liturgie-badge" class="px-3 py-1 bg-black/20 rounded-full text-[9px] font-black uppercase italic">Missel 1962</div>
         </div>
 
-        <div class="backdrop-blur-md">
+        <div class="bg-white/10 backdrop-blur-md p-6 rounded-3xl border border-white/20">
             <div class="flex justify-between items-start mb-2">
-                <p id="date-du-jour" class="uppercase-track text-white/70">Chargement date...</p>
+                <p id="date-du-jour" class="text-[10px] font-black uppercase text-white/70">Chargement...</p>
                 <div id="indic-couleur" class="w-3 h-3 rounded-full border border-white/40 shadow-inner"></div>
             </div>
-            <h2 id="saint-nom" class="text-xl font-800 mb-1 leading-tight italic-quote">Recherche du saint...</h2>
-            <p id="classe-liturgique" class="uppercase-track opacity-60"></p>
+            <h2 id="saint-nom" class="text-xl font-800 mb-1 leading-tight text-white">Recherche du saint...</h2>
+            <p id="classe-liturgique" class="text-[10px] font-bold opacity-60 uppercase tracking-tighter"></p>
         </div>
     </header>
 
     <main class="p-6 space-y-8">
         
         <section class="card border-l-4 border-red-700">
-            <p class="uppercase-track text-red-700 mb-2">Verset du jour</p>
+            <p class="text-[9px] font-black text-red-700 uppercase mb-2 tracking-widest">Verset du jour</p>
             <p id="verset-txt" class="text-sm italic font-semibold text-slate-700">"Le Seigneur est ma lumière et mon salut."</p>
         </section>
 
         <section>
-            <div class="flex justify-between items-center mb-4 px-2">
+            <div class="flex justify-between items-center mb-4">
                 <h2 class="text-lg font-800 text-slate-900 tracking-tight">Annonces</h2>
-                <span class="uppercase-track text-slate-400">Voir tout</span>
+                <span class="text-[10px] font-black text-slate-400 uppercase">Voir tout</span>
             </div>
             <div id="feed-annonces" class="space-y-4">
-                </div>
+                <p class="text-xs text-slate-400 italic">Aucune annonce pour le moment.</p>
+            </div>
         </section>
 
     </main>
 
     <nav class="bottom-nav">
         <a href="index.html" class="nav-item active">
-            <span>🏠</span>
+            <span class="block text-lg">🏠</span>
             Accueil
         </a>
         <a href="agenda.html" class="nav-item">
-            <span>📅</span>
+            <span class="block text-lg">📅</span>
             Agenda
         </a>
         <a href="priere.html" class="nav-item">
-            <span>🕯️</span>
+            <span class="block text-lg">🕯️</span>
             Prières
         </a>
         <a href="groupes.html" class="nav-item">
-            <span>💬</span>
+            <span class="block text-lg">💬</span>
             Groupes
         </a>
     </nav>
 
     <script src="js/config.js"></script>
-
     <script>
         async function initHome() {
-            // 1. Gérer la date
-            const now = new Date();
-            const jourMois = `${String(now.getDate()).padStart(2, '0')}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-            document.getElementById('date-du-jour').innerText = now.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
-
-            // 2. Charger la Liturgie
-            try {
-                const { data, error } = await sb.from('calendrier_traditionnel').select('*').eq('jour', jourMois).single();
-                if (data) {
-                    document.getElementById('saint-nom').innerText = data.saint_nom;
-                    document.getElementById('classe-liturgique').innerText = data.classe + (data.classe === 1 ? "ère" : "ème") + " classe";
-                    const couleurs = { 'blanc': '#ffffff', 'rouge': '#ef4444', 'vert': '#22c55e', 'violet': '#a855f7', 'noir': '#1e293b' };
-                    document.getElementById('indic-couleur').style.backgroundColor = couleurs[data.couleur.toLowerCase()] || '#ffffff';
-                } else {
-                    document.getElementById('saint-nom').innerText = "Férie du temps";
-                    document.getElementById('classe-liturgique').innerText = "4ème classe";
-                }
-            } catch (e) { console.log("Erreur liturgie"); }
-
-            // 3. Charger les Annonces
-            try {
-                const { data: annonces } = await sb.from('annonces').select('*').order('created_at', { ascending: false }).limit(3);
-                if (annonces && annonces.length > 0) {
-                    document.getElementById('feed-annonces').innerHTML = annonces.map(a => `
-                        <div class="card animate-fade-in">
-                            <h3 class="card-title">${a.titre}</h3>
-                            <p class="text-xs text-slate-500 leading-relaxed">${a.contenu}</p>
-                        </div>
-                    `).join('');
-                } else {
-                    document.getElementById('feed-annonces').innerHTML = '<p class="text-xs text-slate-400 italic text-center">Aucune annonce pour le moment.</p>';
-                }
-            } catch (e) { console.log("Erreur annonces"); }
+            updateLiturgie();
+            loadAnnonces();
         }
 
-        // Lancement
+        async function updateLiturgie() {
+            const now = new Date();
+            const jourMois = `${String(now.getDate()).padStart(2, '0')}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+            
+            document.getElementById('date-du-jour').innerText = now.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+
+            // Chercher le saint dans Supabase
+            const { data, error } = await sb.from('calendrier_traditionnel').select('*').eq('jour', jourMois).single();
+
+            if (data) {
+                document.getElementById('saint-nom').innerText = data.saint_nom;
+                document.getElementById('classe-liturgique').innerText = data.classe + (data.classe === 1 ? "ère" : "ème") + " classe";
+                
+                // Changer la couleur du point indicateur
+                const couleurs = { 'blanc': '#ffffff', 'rouge': '#ef4444', 'vert': '#22c55e', 'violet': '#a855f7', 'noir': '#1e293b' };
+                document.getElementById('indic-couleur').style.backgroundColor = couleurs[data.couleur.toLowerCase()] || '#ffffff';
+            } else {
+                document.getElementById('saint-nom').innerText = "Férie du temps";
+                document.getElementById('classe-liturgique').innerText = "4ème classe";
+            }
+        }
+
+        async function loadAnnonces() {
+            const { data } = await sb.from('annonces').select('*').order('created_at', { ascending: false }).limit(3);
+            if (data && data.length > 0) {
+                document.getElementById('feed-annonces').innerHTML = data.map(a => `
+                    <div class="card">
+                        <h3 class="font-800 text-sm mb-1">${a.titre}</h3>
+                        <p class="text-xs text-slate-500 leading-relaxed">${a.contenu}</p>
+                    </div>
+                `).join('');
+            }
+        }
+
         initHome();
     </script>
 </body>
