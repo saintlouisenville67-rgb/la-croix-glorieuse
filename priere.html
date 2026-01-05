@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Intentions de Prières - La Croix Glorieuse</title>
-    
+    <title>Mur de Prières - La Croix Glorieuse</title>
     <link rel="stylesheet" href="CSS/style.css">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -17,10 +16,10 @@
                 <h1 class="text-xl font-800 tracking-tight">Le Mur de Prières</h1>
                 <p class="text-[9px] font-black uppercase tracking-widest opacity-80">Communion des Saints • Strasbourg</p>
             </div>
-            <div class="px-3 py-1 bg-black/20 rounded-full text-[9px] font-black uppercase italic">Intentions</div>
+            <div class="px-3 py-1 bg-black/20 rounded-full text-[9px] font-black uppercase italic italic">Intentions</div>
         </div>
         <div class="bg-white/10 backdrop-blur-md p-6 rounded-3xl border border-white/20">
-            <p class="text-sm font-medium leading-relaxed italic">"Demandez, et l'on vous donnera."</p>
+            <p class="text-sm font-medium italic italic">"Demandez, et l'on vous donnera."</p>
         </div>
     </header>
 
@@ -40,22 +39,10 @@
     </main>
 
     <nav class="bottom-nav">
-        <a href="index.html" class="nav-item">
-            <span class="text-xl mb-1">🏠</span>
-            Accueil
-        </a>
-        <a href="agenda.html" class="nav-item">
-            <span class="text-xl mb-1">📅</span>
-            Agenda
-        </a>
-        <a href="priere.html" class="nav-item active">
-            <span class="text-xl mb-1">🕯️</span>
-            Prières
-        </a>
-        <a href="groupes.html" class="nav-item">
-            <span class="text-xl mb-1">💬</span>
-            Groupes
-        </a>
+        <a href="index.html" class="nav-item"><span>🏠</span>Accueil</a>
+        <a href="agenda.html" class="nav-item"><span>📅</span>Agenda</a>
+        <a href="priere.html" class="nav-item active"><span>🕯️</span>Prières</a>
+        <a href="groupes.html" class="nav-item"><span>💬</span>Groupes</a>
     </nav>
 
     <script src="js/config.js"></script>
@@ -64,12 +51,9 @@
             const { data } = await sb.from('intentions').select('*').order('created_at', { ascending: false });
             if (data) {
                 document.getElementById('mur-intentions').innerHTML = data.map(i => `
-                    <div class="card border border-slate-50 animate-fade-in">
+                    <div class="card animate-fade-in border border-slate-50">
                         <p class="text-sm text-slate-700 leading-relaxed font-medium">"${i.texte}"</p>
-                        <div class="flex items-center justify-between mt-4">
-                             <span class="text-[9px] font-black text-slate-300 uppercase tracking-widest">Paroisse Saint-Louis</span>
-                             <span class="text-[9px] font-black text-red-200 uppercase">${new Date(i.created_at).toLocaleDateString()}</span>
-                        </div>
+                        <p class="text-[9px] font-black text-slate-300 uppercase tracking-widest mt-4">${new Date(i.created_at).toLocaleDateString()}</p>
                     </div>
                 `).join('');
             }
@@ -79,10 +63,7 @@
             const txt = document.getElementById('intent-txt').value;
             if(!txt) return;
             const { error } = await sb.from('intentions').insert([{ texte: txt }]);
-            if(!error) {
-                document.getElementById('intent-txt').value = '';
-                loadIntentions();
-            }
+            if(!error) { document.getElementById('intent-txt').value = ''; loadIntentions(); }
         }
         loadIntentions();
     </script>
