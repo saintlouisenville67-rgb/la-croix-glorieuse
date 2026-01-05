@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Groupes - La Croix Glorieuse</title>
+    
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="bg-slate-50">
+
+    <header class="gradient-header text-white p-8 rounded-b-[40px] shadow-lg">
+        <h1 class="text-2xl font-800 tracking-tight mb-1">Groupes & Communautés</h1>
+        <p class="text-[10px] font-black uppercase tracking-widest opacity-80">Vie de la Paroisse</p>
+    </header>
+
+    <main class="p-6 space-y-8">
+        
+        <section class="card shadow-xl -mt-12 relative z-10">
+            <h2 class="text-sm font-800 mb-4 text-slate-800">Trouver un groupe</h2>
+            <input type="text" id="groupSearch" onkeyup="filterGroupes()" 
+                placeholder="Rechercher (Scouts, Chorale...)" 
+                class="w-full bg-slate-50 p-3 rounded-xl border-none text-sm font-semibold outline-none focus:ring-2 focus:ring-red-100">
+        </section>
+
+        <section>
+            <div class="flex items-center gap-2 mb-6">
+                <div class="h-[1px] flex-1 bg-slate-200"></div>
+                <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Fraternités & Services</span>
+                <div class="h-[1px] flex-1 bg-slate-200"></div>
+            </div>
+            
+            <div id="grid-groupes" class="grid grid-cols-1 gap-4">
+                <div class="text-center py-10">
+                    <p class="text-slate-400 text-xs italic">Chargement des groupes...</p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <nav class="bottom-nav">
+        <a href="index.html" class="nav-item">
+            <span class="block text-lg">🏠</span>
+            Accueil
+        </a>
+        <a href="agenda.html" class="nav-item">
+            <span class="block text-lg">📅</span>
+            Agenda
+        </a>
+        <a href="priere.html" class="nav-item">
+            <span class="block text-lg">🕯️</span>
+            Prières
+        </a>
+        <a href="groupes.html" class="nav-item active">
+            <span class="block text-lg">💬</span>
+            Groupes
+        </a>
+    </nav>
+
+    <script src="js/config.js"></script>
+    <script>
+        let allGroupes = [];
+
+        async function loadGroupes() {
+            const { data, error } = await sb
+                .from('groupes')
+                .select('*')
+                .order('nom', { ascending: true });
+
+            if (data) {
+                allGroupes = data;
+                displayGroupes(allGroupes);
+            }
+        }
+
+        function displayGroupes(groupes) {
+            const grid = document.getElementById('grid-groupes');
+            grid.innerHTML = groupes.map(g => `
+                <div class="card animate-fade-in flex flex-col justify-between">
+                    <div class="mb-4">
+                        <div class="flex justify-between items-start mb-2">
+                            <h3 class="text-sm font-800 text-slate-800">${g.nom}</h3>
+                            <span class="text-[8px] font-black text-red-700 bg-red-50 px-2 py-1 rounded-full uppercase tracking-tighter">WhatsApp</span>
+                        </div>
+                        <p class="text-[11px] text-slate-500 leading-relaxed">Rejoignez notre communauté pour échanger et rester informé des activités du groupe.</p>
+                    </div>
+                    
+                    <a href="${g.lien_wa || '#'}" target="_blank" 
+                        class="w-full gradient-header text-white py-3 rounded-xl font-black text-[9px] text-center uppercase tracking-widest shadow-md active:scale-95 transition-all">
+                        Rejoindre le groupe
+                    </a>
+                </div>
+            `).join('');
+        }
+
+        function filterGroupes() {
+            const query = document.getElementById('groupSearch').value.toLowerCase();
+            const filtered = allGroupes.filter(g => g.nom.toLowerCase().includes(query));
+            displayGroupes(filtered);
+        }
+
+        // Charger les groupes au démarrage
+        loadGroupes();
+    </script>
+
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in { animation: fadeIn 0.4s ease-out; }
+    </style>
+</body>
+</html>
