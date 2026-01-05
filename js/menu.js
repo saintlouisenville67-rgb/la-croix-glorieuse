@@ -6,10 +6,11 @@ function loadMenu() {
     const nav = document.querySelector('.bottom-nav');
     if (!nav) return;
 
-    // 1. Liste des onglets (Mise à jour avec Annonces)
+    // 1. Liste des onglets (Mise à jour avec Entraide et Annonces)
     const menuItems = [
         { href: 'index.html', icon: '🏠', label: 'Accueil' },
         { href: 'annonces.html', icon: '📢', label: 'Annonces' },
+        { href: 'entraide.html', icon: '🤝', label: 'Entraide' },
         { href: 'agenda.html', icon: '📅', label: 'Agenda' },
         { href: 'priere.html', icon: '🕯️', label: 'Prières' },
         { href: 'contact.html', icon: '✉️', label: 'Contact' }
@@ -28,7 +29,7 @@ function loadMenu() {
         </a>
     `).join('');
 
-    // 3. Injection du bouton "Retour en haut" s'il n'existe pas
+    // 3. Injection du bouton "Retour en haut"
     if (!document.getElementById('scrollTop')) {
         const scrollBtn = document.createElement('button');
         scrollBtn.id = 'scrollTop';
