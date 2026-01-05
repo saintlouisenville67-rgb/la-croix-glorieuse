@@ -96,50 +96,45 @@
 
     <script src="js/config.js"></script>
     <script>
-        // Gestion du PIN via localStorage pour permettre la modification
-        function getStoredPin() {
-            return localStorage.getItem('admin_pin') || "1905";
-        }
+        function getStoredPin() { return localStorage.getItem('admin_pin') || "1905"; }
 
         function checkPin() {
             const pin = document.getElementById('pin-input').value;
             if(pin === getStoredPin()) {
                 document.getElementById('pin-overlay').style.display = 'none';
                 refreshData();
-            } else {
-                alert("Code PIN incorrect");
-            }
+            } else { alert("Code PIN incorrect"); }
         }
 
         function updatePin() {
             const newPin = document.getElementById('new-pin-input').value;
             if(newPin.length >= 4) {
                 localStorage.setItem('admin_pin', newPin);
-                alert("Code PIN mis à jour avec succès !");
+                alert("Code PIN mis à jour !");
                 document.getElementById('new-pin-input').value = '';
-            } else {
-                alert("Le PIN doit faire au moins 4 chiffres.");
-            }
+            } else { alert("Minimum 4 chiffres."); }
         }
 
-        // --- FONCTIONS DE CHARGEMENT ---
+        // --- MESSAGES ---
         async function loadMessages() {
-            const { data } = await sb.from('messages').select('*').order('created_at', { ascending: false });
+            const { data } = await sb.from('messages').select('*').eq('lu', false).order('created_at', { ascending: false });
             const list = document.getElementById('admin-list-messages');
             if (data) {
-                list.innerHTML = data.map(m => `
+                list.innerHTML = data.length === 0 ? '<p class="text-[10px] text-slate-400 italic">Aucun nouveau message.</p>' : data.map(m => `
                     <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
                         <div class="flex justify-between items-start mb-2">
                             <span class="text-[9px] font-black text-slate-400 uppercase">${new Date(m.created_at).toLocaleDateString()}</span>
-                            <button onclick="supprimerMessage('${m.id}')" class="text-red-500 text-[9px] font-black uppercase">Supprimer</button>
+                            <button onclick="marquerMessageLu('${m.id}')" class="text-emerald-600 text-[9px] font-black uppercase">Marquer Lu</button>
                         </div>
-                        <p class="text-xs font-800 text-slate-800 mb-1">${m.expediteur || 'Anonyme'}</p>
-                        <p class="text-xs text-slate-600">${m.contenu}</p>
+                        <p class="text-xs font-800 text-slate-800 mb-1">${m.nom || 'Anonyme'}</p>
+                        <p class="text-xs text-slate-600">${m.message}</p>
                     </div>
                 `).join('');
             }
         }
+        async function marquerMessageLu(id) { await sb.from('messages').update({ lu: true }).eq('id', id); loadMessages(); }
 
+        // --- ANNONCES ---
         async function loadAdminAnnonces() {
             const { data } = await sb.from('annonces').select('*').order('created_at', { ascending: false });
             const list = document.getElementById('admin-list-annonces');
@@ -153,7 +148,6 @@
                 `).join('');
             }
         }
-
         async function publierAnnonce() {
             const titre = document.getElementById('titre-annonce').value;
             const contenu = document.getElementById('texte-annonce').value;
@@ -165,21 +159,40 @@
             document.getElementById('check-important').checked = false;
             loadAdminAnnonces();
         }
-
-        async function supprimerMessage(id) { await sb.from('messages').delete().eq('id', id); loadMessages(); }
         async function supprimerAnnonce(id) { await sb.from('annonces').delete().eq('id', id); loadAdminAnnonces(); }
+
+        // --- ENTRAIDE ---
         async function loadAdminEntraide() {
-            const { data } = await sb.from('entraide').select('*').order('created_at', { ascending: false });
+            const { data } = await sb.from('entraide').select('*').eq('valide', false).order('created_at', { ascending: false });
             const list = document.getElementById('admin-list-entraide');
-            if (data) { list.innerHTML = data.map(e => `<div class="bg-white p-3 rounded-xl flex justify-between items-center border border-slate-100 mb-2"><span class="text-xs text-slate-700">${e.titre}</span><button onclick="supprimerEntraide('${e.id}')" class="text-red-500 text-[10px] font-black">X</button></div>`).join(''); }
+            if (data) {
+                list.innerHTML = data.length === 0 ? '<p class="text-[10px] text-slate-400 italic">Aucune demande en attente.</p>' : data.map(e => `
+                    <div class="bg-white p-3 rounded-xl flex flex-col border border-slate-100 mb-2">
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="text-[10px] font-black uppercase text-emerald-600">${e.type}</span>
+                            <div class="flex gap-3">
+                                <button onclick="validerEntraide('${e.id}')" class="text-emerald-600 text-[10px] font-black">VALIDER</button>
+                                <button onclick="supprimerEntraide('${e.id}')" class="text-red-500 text-[10px] font-black">REFUSER</button>
+                            </div>
+                        </div>
+                        <span class="text-xs text-slate-700 font-bold">${e.titre}</span>
+                        <p class="text-[10px] text-slate-500 mt-1">${e.description}</p>
+                    </div>
+                `).join('');
+            }
         }
+        async function validerEntraide(id) { await sb.from('entraide').update({ valide: true }).eq('id', id); loadAdminEntraide(); }
         async function supprimerEntraide(id) { await sb.from('entraide').delete().eq('id', id); loadAdminEntraide(); }
+
+        // --- INTENTIONS ---
         async function loadAdminPrières() {
             const { data } = await sb.from('intentions').select('*').order('created_at', { ascending: false });
             const list = document.getElementById('admin-list-intentions');
             if (data) { list.innerHTML = data.map(i => `<div class="bg-white p-3 rounded-xl flex justify-between items-center border border-slate-100 mb-2"><span class="text-xs text-slate-700">${i.prenom}: ${i.contenu}</span><button onclick="supprimerPriere('${i.id}')" class="text-red-500 text-[10px] font-black">X</button></div>`).join(''); }
         }
         async function supprimerPriere(id) { await sb.from('intentions').delete().eq('id', id); loadAdminPrières(); }
+
+        // --- GROUPES ---
         async function loadAdminGroupes() {
             const { data } = await sb.from('groupes').select('*').order('nom');
             const list = document.getElementById('admin-list-groupes');
