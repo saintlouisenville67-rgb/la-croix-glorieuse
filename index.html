@@ -51,7 +51,6 @@
     </header>
 
     <main class="p-6">
-        
         <div class="flex items-center gap-2 mb-6 -mt-10 relative z-10">
             <div class="h-[1px] flex-1 bg-slate-200"></div>
             <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Parole de Dieu</span>
@@ -67,7 +66,6 @@
                 <div class="skeleton h-3 w-1/2"></div>
             </div>
         </section>
-
     </main>
 
     <nav class="bottom-nav"></nav>
@@ -85,20 +83,14 @@
             
             sb.channel('custom-insert-channel')
             .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'annonces' }, (payload) => {
-                    const badge = document.getElementById('badge-annonces');
-                    if (badge) {
-                        badge.classList.remove('hidden');
-                        if (typeof hapticFeedback === 'function') hapticFeedback(50);
-                    }
-                }
-            )
-            .subscribe();
+                const badge = document.getElementById('badge-annonces');
+                if (badge) badge.classList.remove('hidden');
+            }).subscribe();
         }
 
         function changeDay(offset) {
             currentDateDisplay.setDate(currentDateDisplay.getDate() + offset);
             updateLiturgie();
-            if (typeof hapticFeedback === 'function') hapticFeedback(10);
         }
 
         function goToday() {
@@ -107,8 +99,7 @@
         }
 
         async function updateLiturgie() {
-            const now = new Date();
-            const isToday = currentDateDisplay.toDateString() === now.toDateString();
+            const isToday = currentDateDisplay.toDateString() === new Date().toDateString();
             document.getElementById('btn-today').classList.toggle('hidden', isToday);
             
             const jourMois = `${String(currentDateDisplay.getDate()).padStart(2, '0')}-${String(currentDateDisplay.getMonth() + 1).padStart(2, '0')}`;
@@ -142,17 +133,16 @@
                 const data = await response.json();
                 const events = data.items || [];
 
-                // Logique de filtrage précise :
                 const isSamedi = dateCible.getDay() === 6;
 
+                // Filtrage : On garde les "Messe" mais on retire UNIQUEMENT si "anticipée" est écrit le samedi
                 const messes = events.filter(e => {
                     const titre = e.summary.toLowerCase();
-                    // On garde si le titre contient "messe"
-                    if (!titre.includes('messe')) return false;
+                    const contientMesse = titre.includes('messe');
+                    const estAnticipee = titre.includes('anticipée') || titre.includes('anticipee');
                     
-                    // Si c'est un samedi, on dégage uniquement si le titre contient explicitement "anticipée"
-                    if (isSamedi && titre.includes('anticipée')) return false;
-                    
+                    if (!contientMesse) return false;
+                    if (isSamedi && estAnticipee) return false;
                     return true;
                 });
 
@@ -161,11 +151,11 @@
 
                 if (messes.length > 0) {
                     blocMesse.classList.remove('hidden');
-                    
                     const horaires = messes.map(m => {
-                        return m.start.dateTime 
-                            ? new Date(m.start.dateTime).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }).replace(':', 'h')
-                            : "Heure non précisée";
+                        if (m.start.dateTime) {
+                            return new Date(m.start.dateTime).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }).replace(':', 'h');
+                        }
+                        return "voir agenda";
                     });
 
                     if (messes.length === 1) {
@@ -177,7 +167,7 @@
                     blocMesse.classList.add('hidden');
                 }
             } catch (e) {
-                console.error("Erreur calendrier:", e);
+                console.error(e);
                 document.getElementById('bloc-messe').classList.add('hidden');
             }
         }
@@ -188,23 +178,17 @@
             const { data } = await sb.from('versets').select('*');
             if (data && data.length > 0) {
                 const v = data[Math.floor(Math.random() * data.length)];
-                container.innerHTML = `
-                    <p class="text-sm italic font-semibold text-slate-700 leading-relaxed animate-fade-in">"${v.texte}"</p>
-                    <p class="text-[9px] font-black text-red-700 mt-2 uppercase text-right tracking-widest">— ${v.reference}</p>
-                `;
+                container.innerHTML = `<p class="text-sm italic font-semibold text-slate-700 leading-relaxed">"${v.texte}"</p><p class="text-[9px] font-black text-red-700 mt-2 uppercase text-right tracking-widest">— ${v.reference}</p>`;
             }
             container.classList.remove('opacity-40');
-            if (typeof hapticFeedback === 'function') hapticFeedback(5);
         }
 
         async function checkNewAnnonces() {
             const lastSeen = localStorage.getItem('last_annonce_date') || "1970-01-01T00:00:00Z";
             const { data } = await sb.from('annonces').select('created_at').order('created_at', { ascending: false }).limit(1).single();
             if (data && data.created_at > lastSeen) {
-                setTimeout(() => {
-                    const badge = document.getElementById('badge-annonces');
-                    if (badge) badge.classList.remove('hidden');
-                }, 1000);
+                const badge = document.getElementById('badge-annonces');
+                if (badge) badge.classList.remove('hidden');
             }
         }
 
