@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Agenda - La Croix Glorieuse</title>
+    <title>Agenda</title>
     
-    <link rel="stylesheet" href="CSS/style.css">
+    <link rel="stylesheet" href="css/style.css">
     
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-slate-50">
+<body>
 
     <header class="gradient-header p-8 shadow-lg">
         <h1 class="text-2xl font-800 tracking-tight mb-1">Agenda</h1>
@@ -23,7 +23,7 @@
             <div class="space-y-4">
                 <input type="text" id="searchInput" onkeyup="filterEvents()" 
                     placeholder="Messe, Adoration, Confession..." 
-                    class="search-bar focus:ring-2 focus:ring-red-100">
+                    class="w-full bg-slate-50 p-3 rounded-xl border-none text-sm font-semibold outline-none focus:ring-2 focus:ring-red-100">
                 
                 <div class="flex gap-2 overflow-x-auto pb-2">
                     <button onclick="quickSearch('Messe')" class="bg-slate-50 px-3 py-2 rounded-lg text-[9px] font-black uppercase text-slate-400">Messes</button>
@@ -44,19 +44,19 @@
     <nav class="bottom-nav">
         <a href="index.html" class="nav-item">
             <span class="block text-lg">🏠</span>
-            <span class="nav-label">Accueil</span>
+            Accueil
         </a>
         <a href="agenda.html" class="nav-item active">
             <span class="block text-lg">📅</span>
-            <span class="nav-label">Agenda</span>
+            Agenda
         </a>
         <a href="priere.html" class="nav-item">
             <span class="block text-lg">🕯️</span>
-            <span class="nav-label">Prières</span>
+            Prières
         </a>
         <a href="groupes.html" class="nav-item">
             <span class="block text-lg">💬</span>
-            <span class="nav-label">Groupes</span>
+            Groupes
         </a>
     </nav>
 
@@ -106,7 +106,7 @@
                 groups[date].forEach(event => {
                     const time = event.start.dateTime ? new Date(event.start.dateTime).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : "Journée";
                     dayHtml += `
-                        <div class="card border border-slate-50">
+                        <div class="card">
                             <div class="flex justify-between items-start">
                                 <span class="text-[9px] font-black text-red-700 uppercase tracking-widest">${time}</span>
                             </div>
