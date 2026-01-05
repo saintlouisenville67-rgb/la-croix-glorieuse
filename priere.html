@@ -29,7 +29,7 @@
                 
                 <button onclick="envoyerPriere()" 
                     class="w-full gradient-header text-white py-4 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] shadow-lg shadow-red-100 active:scale-95 transition-all">
-                    Déposer sur l'autel
+                    Envoyer mon intention
                 </button>
             </div>
         </section>
@@ -50,24 +50,7 @@
 
     </main>
 
-    <nav class="bottom-nav">
-        <a href="index.html" class="nav-item">
-            <span class="block text-lg">🏠</span>
-            Accueil
-        </a>
-        <a href="agenda.html" class="nav-item">
-            <span class="block text-lg">📅</span>
-            Agenda
-        </a>
-        <a href="priere.html" class="nav-item active">
-            <span class="block text-lg">🕯️</span>
-            Prières
-        </a>
-        <a href="groupes.html" class="nav-item">
-            <span class="block text-lg">💬</span>
-            Groupes
-        </a>
-    </nav>
+    <nav class="bottom-nav"></nav>
 
     <script src="js/config.js"></script>
     <script>
@@ -114,23 +97,22 @@
         }
 
         async function allumerBougie(id) {
-            // Appel de la fonction SQL RPC que nous avons créée dans Supabase
             const { error } = await sb.rpc('increment_bougie', { row_id: id });
             if (!error) {
-                loadPrières(); // On rafraîchit pour voir la bougie s'ajouter
+                loadPrières();
             }
         }
 
-        // Charger les prières au démarrage
         loadPrières();
 
-        // Écouter les changements en temps réel (si quelqu'un d'autre poste)
         sb.channel('intentions-channel')
           .on('postgres_changes', { event: '*', schema: 'public', table: 'intentions' }, payload => {
               loadPrières();
           })
           .subscribe();
     </script>
+    
+    <script src="js/menu.js"></script>
 
     <style>
         @keyframes fadeIn {
