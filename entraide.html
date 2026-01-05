@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Entraide - La Croix Glorieuse</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="bg-slate-50">
+
+    <header class="gradient-header text-white p-8 rounded-b-[40px] shadow-lg">
+        <h1 class="text-2xl font-800 tracking-tight mb-1">Entraide</h1>
+        <p class="text-[10px] font-black uppercase tracking-widest opacity-80">La charité en action</p>
+    </header>
+
+    <main class="p-6 mb-24">
+        <div class="flex gap-2 mb-6 -mt-12 relative z-10">
+            <button onclick="loadEntraide('tous')" class="flex-1 py-3 rounded-xl bg-white shadow-md text-[10px] font-black uppercase tracking-wider text-slate-400 focus:text-red-700 focus:ring-2 focus:ring-red-100 transition-all">Tous</button>
+            <button onclick="loadEntraide('demande')" class="flex-1 py-3 rounded-xl bg-white shadow-md text-[10px] font-black uppercase tracking-wider text-slate-400 focus:text-red-700 focus:ring-2 focus:ring-red-100 transition-all">Demandes</button>
+            <button onclick="loadEntraide('offre')" class="flex-1 py-3 rounded-xl bg-white shadow-md text-[10px] font-black uppercase tracking-wider text-slate-400 focus:text-red-700 focus:ring-2 focus:ring-red-100 transition-all">Offres</button>
+        </div>
+
+        <div id="feed-entraide" class="space-y-4">
+            <div class="skeleton h-32 w-full"></div>
+        </div>
+    </main>
+
+    <button onclick="toggleModal(true)" class="fixed bottom-28 right-6 w-14 h-14 gradient-header rounded-full shadow-2xl text-white text-3xl font-light flex items-center justify-center active:scale-90 transition-all z-40">+</button>
+
+    <div id="modal-form" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-end">
+        <div class="bg-white w-full rounded-t-[40px] p-8 animate-slide-up max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-lg font-800 text-slate-800 uppercase italic">Déposer une annonce</h2>
+                <button onclick="toggleModal(false)" class="text-slate-400 text-2xl">&times;</button>
+            </div>
+
+            <div class="space-y-4">
+                <div>
+                    <label class="text-[9px] font-black text-slate-400 uppercase ml-2">Je souhaite...</label>
+                    <select id="type" class="w-full bg-slate-50 p-4 rounded-xl border-none text-sm font-semibold outline-none">
+                        <option value="demande">Demander de l'aide</option>
+                        <option value="offre">Proposer mes services</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="text-[9px] font-black text-slate-400 uppercase ml-2">Titre de l'annonce</label>
+                    <input type="text" id="titre" placeholder="Ex: Recherche covoiturage" class="w-full bg-slate-50 p-4 rounded-xl border-none text-sm font-semibold outline-none">
+                </div>
+                <div>
+                    <label class="text-[9px] font-black text-slate-400 uppercase ml-2">Description</label>
+                    <textarea id="description" class="w-full bg-slate-50 p-4 rounded-xl border-none text-sm min-h-[100px] outline-none"></textarea>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="text-[9px] font-black text-slate-400 uppercase ml-2">Nom</label>
+                        <input type="text" id="contact_nom" class="w-full bg-slate-50 p-4 rounded-xl border-none text-sm font-semibold outline-none">
+                    </div>
+                    <div>
+                        <label class="text-[9px] font-black text-slate-400 uppercase ml-2">WhatsApp / Tel</label>
+                        <input type="tel" id="contact_info" placeholder="06..." class="w-full bg-slate-50 p-4 rounded-xl border-none text-sm font-semibold outline-none">
+                    </div>
+                </div>
+                <button onclick="publierEntraide()" id="btn-publier" class="w-full gradient-header text-white py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg">Publier sur l'appli</button>
+            </div>
+        </div>
+    </div>
+
+    <nav class="bottom-nav"></nav>
+
+    <script src="js/config.js"></script>
+    <script>
+        function toggleModal(show) {
+            const modal = document.getElementById('modal-form');
+            show ? modal.classList.remove('hidden') : modal.classList.add('hidden');
+        }
+
+        async function loadEntraide(filter = 'tous') {
+            const feed = document.getElementById('feed-entraide');
+            let query = sb.from('entraide').select('*').order('created_at', { ascending: false });
+            
+            if (filter !== 'tous') query = query.eq('type', filter);
+            
+            const { data } = await query;
+
+            if (data && data.length > 0) {
+                feed.innerHTML = data.map(a => `
+                    <div class="card animate-fade-in relative overflow-hidden">
+                        <div class="absolute top-0 right-0 px-3 py-1 ${a.type === 'offre' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'} text-[7px] font-black uppercase rounded-bl-lg">
+                            ${a.type}
+                        </div>
+                        <h3 class="font-800 text-sm mb-1 text-slate-800 uppercase italic">${a.titre}</h3>
+                        <p class="text-[10px] text-slate-500 mb-3 leading-relaxed">${a.description}</p>
+                        <div class="flex justify-between items-center pt-3 border-t border-slate-50">
+                            <span class="text-[9px] font-black text-slate-400 uppercase">${a.contact_nom}</span>
+                            <a href="https://wa.me/${a.contact_info.replace(/\s/g, '')}" class="text-[9px] font-black text-green-600 uppercase tracking-widest flex items-center gap-1">
+                                Contacter ➔
+                            </a>
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                feed.innerHTML = "<p class='text-center text-xs text-slate-400 italic py-10'>Aucune annonce trouvée.</p>";
+            }
+        }
+
+        async function publierEntraide() {
+            const btn = document.getElementById('btn-publier');
+            const fields = {
+                type: document.getElementById('type').value,
+                titre: document.getElementById('titre').value,
+                description: document.getElementById('description').value,
+                contact_nom: document.getElementById('contact_nom').value,
+                contact_info: document.getElementById('contact_info').value
+            };
+
+            if (!fields.titre || !fields.description || !fields.contact_info) {
+                alert("Veuillez remplir les champs obligatoires.");
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerText = "PUBLICATION...";
+
+            const { error } = await sb.from('entraide').insert([fields]);
+
+            if (!error) {
+                if (typeof hapticFeedback === 'function') hapticFeedback(50);
+                toggleModal(false);
+                loadEntraide();
+            } else {
+                alert("Erreur: " + error.message);
+                btn.disabled = false;
+            }
+        }
+
+        loadEntraide();
+    </script>
+    <script src="js/menu.js"></script>
+</body>
+</html>
