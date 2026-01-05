@@ -35,9 +35,9 @@
     <main class="p-6">
         
         <div class="flex items-center gap-2 mb-6 -mt-10 relative z-10">
-            <div class="h-[1px] flex-1 bg-slate-200"></div>
+            <div class="h-[1px] flex-1 bg-slate-200 dark:bg-slate-700"></div>
             <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Parole de Dieu</span>
-            <div class="h-[1px] flex-1 bg-slate-200"></div>
+            <div class="h-[1px] flex-1 bg-slate-200 dark:bg-slate-700"></div>
         </div>
 
         <section class="card shadow-xl border-l-4 border-red-700 mb-8">
@@ -48,9 +48,9 @@
         </section>
 
         <div class="flex items-center gap-2 mb-6">
-            <div class="h-[1px] flex-1 bg-slate-200"></div>
+            <div class="h-[1px] flex-1 bg-slate-200 dark:bg-slate-700"></div>
             <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Annonces</span>
-            <div class="h-[1px] flex-1 bg-slate-200"></div>
+            <div class="h-[1px] flex-1 bg-slate-200 dark:bg-slate-700"></div>
         </div>
 
         <div id="feed-annonces" class="space-y-4 mb-24">
@@ -64,14 +64,14 @@
 
     <script src="js/config.js"></script>
     <script>
-        // 1. Initialisation de toutes les fonctionnalités
+        // Initialisation de la page
         async function initHome() {
             updateLiturgie();
             loadAnnonces();
             loadVerset();
         }
 
-        // 2. Gestion de la liturgie
+        // Gestion de la date et du calendrier traditionnel
         async function updateLiturgie() {
             const now = new Date();
             const jourMois = `${String(now.getDate()).padStart(2, '0')}-${String(now.getMonth() + 1).padStart(2, '0')}`;
@@ -94,7 +94,7 @@
             }
         }
 
-        // 3. Chargement du verset aléatoire
+        // Chargement du verset aléatoire depuis Supabase
         async function loadVerset() {
             const container = document.getElementById('verset-container');
             const { data } = await sb.from('versets').select('*');
@@ -102,7 +102,7 @@
             if (data && data.length > 0) {
                 const v = data[Math.floor(Math.random() * data.length)];
                 container.innerHTML = `
-                    <p class="text-sm italic font-semibold text-slate-700 leading-relaxed animate-fade-in">"${v.texte}"</p>
+                    <p class="text-sm italic font-semibold text-slate-700 dark:text-white leading-relaxed animate-fade-in">"${v.texte}"</p>
                     <p class="text-[9px] font-black text-red-700 mt-2 uppercase text-right tracking-widest">— ${v.reference}</p>
                 `;
             } else {
@@ -110,16 +110,16 @@
             }
         }
 
-        // 4. Chargement des annonces
+        // Chargement des 3 dernières annonces
         async function loadAnnonces() {
             const feed = document.getElementById('feed-annonces');
             const { data } = await sb.from('annonces').select('*').order('created_at', { ascending: false }).limit(3);
 
             if (data && data.length > 0) {
                 feed.innerHTML = data.map(a => `
-                    <div class="card animate-fade-in">
+                    <div class="card animate-fade-in shadow-sm">
                         <h3 class="font-800 text-sm mb-2 text-red-700 uppercase tracking-tight">${a.titre}</h3>
-                        <p class="text-xs text-slate-500 leading-relaxed">${a.contenu}</p>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">${a.contenu}</p>
                     </div>
                 `).join('');
             } else {
