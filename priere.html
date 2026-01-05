@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Prières - La Croix Glorieuse</title>
+    
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="bg-slate-50">
+
+    <header class="gradient-header text-white p-8 rounded-b-[40px] shadow-lg">
+        <h1 class="text-2xl font-800 tracking-tight mb-1">Mur de Prière</h1>
+        <p class="text-[10px] font-black uppercase tracking-widest opacity-80">Communion des Saints</p>
+    </header>
+
+    <main class="p-6 space-y-8">
+        
+        <section class="card shadow-xl -mt-12 relative z-10">
+            <h2 class="text-sm font-800 mb-4 text-slate-800">Confier une intention</h2>
+            <div class="space-y-4">
+                <input type="text" id="prenom" placeholder="Votre prénom (optionnel)" 
+                    class="w-full bg-slate-50 p-3 rounded-xl border-none text-sm font-semibold outline-none focus:ring-2 focus:ring-red-100">
+                
+                <textarea id="intention" placeholder="Votre intention de prière..." 
+                    class="w-full bg-slate-50 p-4 rounded-xl border-none text-sm min-h-[100px] outline-none focus:ring-2 focus:ring-red-100"></textarea>
+                
+                <button onclick="envoyerPriere()" 
+                    class="w-full gradient-header text-white py-4 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] shadow-lg shadow-red-100 active:scale-95 transition-all">
+                    Déposer sur l'autel
+                </button>
+            </div>
+        </section>
+
+        <section>
+            <div class="flex items-center gap-2 mb-6">
+                <div class="h-[1px] flex-1 bg-slate-200"></div>
+                <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Intentions de la communauté</span>
+                <div class="h-[1px] flex-1 bg-slate-200"></div>
+            </div>
+            
+            <div id="feed-priere" class="space-y-4">
+                <div class="text-center py-10">
+                    <p class="text-slate-400 text-xs italic">Chargement des intentions...</p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <nav class="bottom-nav">
+        <a href="index.html" class="nav-item">
+            <span class="block text-lg">🏠</span>
+            Accueil
+        </a>
+        <a href="agenda.html" class="nav-item">
+            <span class="block text-lg">📅</span>
+            Agenda
+        </a>
+        <a href="priere.html" class="nav-item active">
+            <span class="block text-lg">🕯️</span>
+            Prières
+        </a>
+        <a href="groupes.html" class="nav-item">
+            <span class="block text-lg">💬</span>
+            Groupes
+        </a>
+    </nav>
+
+    <script src="js/config.js"></script>
+    <script>
+        async function loadPrières() {
+            const { data, error } = await sb
+                .from('intentions')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            if (data) {
+                const feed = document.getElementById('feed-priere');
+                feed.innerHTML = data.map(p => `
+                    <div class="card animate-fade-in">
+                        <div class="flex justify-between items-start mb-3">
+                            <span class="text-[9px] font-black text-red-700 uppercase tracking-widest">${p.prenom || 'Anonyme'}</span>
+                            <span class="text-[8px] font-bold text-slate-300">${new Date(p.created_at).toLocaleDateString()}</span>
+                        </div>
+                        <p class="text-sm text-slate-600 italic mb-4 leading-relaxed">"${p.texte}"</p>
+                        
+                        <button onclick="allumerBougie('${p.id}')" 
+                            class="flex items-center gap-2 bg-amber-50 text-amber-700 px-4 py-2 rounded-full border border-amber-100 active:scale-90 transition-transform">
+                            <span class="text-sm">🕯️</span>
+                            <span class="text-[10px] font-black uppercase tracking-tighter">${p.bougies || 0} ont prié</span>
+                        </button>
+                    </div>
+                `).join('');
+            }
+        }
+
+        async function envoyerPriere() {
+            const prenom = document.getElementById('prenom').value;
+            const texte = document.getElementById('intention').value;
+
+            if (!texte) return alert("Veuillez écrire votre intention.");
+
+            const { error } = await sb.from('intentions').insert([
+                { prenom: prenom || 'Anonyme', texte: texte }
+            ]);
+
+            if (!error) {
+                document.getElementById('intention').value = '';
+                loadPrières();
+            }
+        }
+
+        async function allumerBougie(id) {
+            // Appel de la fonction SQL RPC que nous avons créée dans Supabase
+            const { error } = await sb.rpc('increment_bougie', { row_id: id });
+            if (!error) {
+                loadPrières(); // On rafraîchit pour voir la bougie s'ajouter
+            }
+        }
+
+        // Charger les prières au démarrage
+        loadPrières();
+
+        // Écouter les changements en temps réel (si quelqu'un d'autre poste)
+        sb.channel('intentions-channel')
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'intentions' }, payload => {
+              loadPrières();
+          })
+          .subscribe();
+    </script>
+
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in { animation: fadeIn 0.4s ease-out; }
+    </style>
+</body>
+</html>
