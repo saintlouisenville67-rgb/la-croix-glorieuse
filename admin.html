@@ -31,6 +31,13 @@
     <main id="admin-content" class="p-6 space-y-8 hidden">
         
         <section class="card shadow-xl -mt-12 relative z-10">
+            <h2 class="text-sm font-800 mb-4 text-slate-800 border-b pb-2 text-red-700">Messages Reçus</h2>
+            <div id="admin-messages-list" class="space-y-4">
+                <p class="text-center text-xs text-slate-400 italic">Chargement des messages...</p>
+            </div>
+        </section>
+
+        <section class="card">
             <h2 class="text-sm font-800 mb-4 text-slate-800 border-b pb-2">Liturgie & Annonces</h2>
             
             <div class="space-y-4 mb-8">
@@ -125,6 +132,46 @@
             currentPin = newPin;
             alert("Code PIN mis à jour !");
             document.getElementById('new-pin-input').value = '';
+        }
+
+        // --- GESTION DES MESSAGES (MISE À JOUR 3) ---
+        async function loadMessages() {
+            const { data, error } = await sb.from('contact_messages').select('*').order('created_at', { ascending: false });
+            const container = document.getElementById('admin-messages-list');
+            
+            if (data && data.length > 0) {
+                container.innerHTML = data.map(m => `
+                    <div class="bg-white p-4 rounded-xl border border-slate-100 shadow-sm">
+                        <div class="flex justify-between items-start mb-2">
+                            <div>
+                                <h3 class="font-800 text-sm text-slate-800">${m.prenom} ${m.nom}</h3>
+                                <p class="text-[8px] text-slate-400 uppercase font-bold">${new Date(m.created_at).toLocaleString('fr-FR')}</p>
+                            </div>
+                            <button onclick="deleteMessage('${m.id}')" class="text-red-500 text-[9px] font-black uppercase">Supprimer</button>
+                        </div>
+                        <div class="flex gap-2 mb-3">
+                            <button onclick="copyToClipboard('${m.email}')" class="bg-slate-100 px-2 py-1 rounded text-[9px] font-bold uppercase text-slate-600">📧 Email</button>
+                            ${m.telephone ? `<button onclick="copyToClipboard('${m.telephone}')" class="bg-slate-100 px-2 py-1 rounded text-[9px] font-bold uppercase text-slate-600">📞 Tel</button>` : ''}
+                        </div>
+                        <p class="text-xs text-slate-600 italic bg-slate-50 p-3 rounded-lg leading-relaxed border-l-2 border-slate-200">"${m.message}"</p>
+                    </div>
+                `).join('');
+            } else {
+                container.innerHTML = `<p class="text-center text-xs text-slate-400 italic py-4">Aucun message reçu.</p>`;
+            }
+        }
+
+        async function deleteMessage(id) {
+            if(confirm("Supprimer ce message définitivement ?")) {
+                const { error } = await sb.from('contact_messages').delete().eq('id', id);
+                if (!error) loadMessages();
+                else alert("Erreur de suppression");
+            }
+        }
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text);
+            alert("Copié dans le presse-papier : " + text);
         }
 
         // --- GESTION DES ANNONCES ---
@@ -233,6 +280,7 @@
         }
 
         function refreshData() {
+            loadMessages();
             loadAdminAnnonces();
             loadAdminPrières();
             loadAdminGroupes();
