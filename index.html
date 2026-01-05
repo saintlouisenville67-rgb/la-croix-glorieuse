@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>La Croix Glorieuse</title>
+    <title>La Croix Glorieuse - Accueil</title>
     
     <link rel="stylesheet" href="CSS/style.css">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-<body class="bg-slate-50">
+<body class="bg-slate-50 pb-24">
 
     <header id="main-header" class="gradient-header text-white p-8 rounded-b-[40px] shadow-2xl transition-all duration-500">
         <div class="flex justify-between items-center mb-6">
@@ -40,10 +40,10 @@
         <section>
             <div class="flex justify-between items-center mb-4">
                 <h2 class="text-lg font-800 text-slate-900 tracking-tight">Annonces</h2>
-                <span class="text-[10px] font-black text-slate-400 uppercase">Voir tout</span>
+                <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Paroisse</span>
             </div>
             <div id="feed-annonces" class="space-y-4">
-                <p class="text-xs text-slate-400 italic">Aucune annonce pour le moment.</p>
+                <p class="text-xs text-slate-400 italic text-center py-4">Recherche des dernières annonces...</p>
             </div>
         </section>
 
@@ -51,20 +51,20 @@
 
     <nav class="bottom-nav">
         <a href="index.html" class="nav-item active">
-            <span class="block text-lg">🏠</span>
-            Accueil
+            <span class="block text-xl mb-1">🏠</span>
+            <span class="text-[10px] font-black uppercase tracking-tighter">Accueil</span>
         </a>
         <a href="agenda.html" class="nav-item">
-            <span class="block text-lg">📅</span>
-            Agenda
+            <span class="block text-xl mb-1">📅</span>
+            <span class="text-[10px] font-black uppercase tracking-tighter">Agenda</span>
         </a>
         <a href="priere.html" class="nav-item">
-            <span class="block text-lg">🕯️</span>
-            Prières
+            <span class="block text-xl mb-1">🕯️</span>
+            <span class="text-[10px] font-black uppercase tracking-tighter">Prières</span>
         </a>
         <a href="groupes.html" class="nav-item">
-            <span class="block text-lg">💬</span>
-            Groupes
+            <span class="block text-xl mb-1">💬</span>
+            <span class="text-[10px] font-black uppercase tracking-tighter">Groupes</span>
         </a>
     </nav>
 
@@ -81,14 +81,14 @@
             
             document.getElementById('date-du-jour').innerText = now.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
 
-            // Chercher le saint dans Supabase
+            // Recherche dans Supabase
             const { data, error } = await sb.from('calendrier_traditionnel').select('*').eq('jour', jourMois).single();
 
             if (data) {
                 document.getElementById('saint-nom').innerText = data.saint_nom;
                 document.getElementById('classe-liturgique').innerText = data.classe + (data.classe === 1 ? "ère" : "ème") + " classe";
                 
-                // Changer la couleur du point indicateur
+                // Couleurs liturgiques
                 const couleurs = { 'blanc': '#ffffff', 'rouge': '#ef4444', 'vert': '#22c55e', 'violet': '#a855f7', 'noir': '#1e293b' };
                 document.getElementById('indic-couleur').style.backgroundColor = couleurs[data.couleur.toLowerCase()] || '#ffffff';
             } else {
@@ -101,11 +101,13 @@
             const { data } = await sb.from('annonces').select('*').order('created_at', { ascending: false }).limit(3);
             if (data && data.length > 0) {
                 document.getElementById('feed-annonces').innerHTML = data.map(a => `
-                    <div class="card">
-                        <h3 class="font-800 text-sm mb-1">${a.titre}</h3>
+                    <div class="card bg-white p-5 rounded-3xl shadow-sm border border-slate-100 animate-fade-in">
+                        <h3 class="font-800 text-sm mb-1 text-slate-900">${a.titre}</h3>
                         <p class="text-xs text-slate-500 leading-relaxed">${a.contenu}</p>
                     </div>
                 `).join('');
+            } else {
+                document.getElementById('feed-annonces').innerHTML = '<p class="text-xs text-slate-400 italic text-center">Aucune annonce récente.</p>';
             }
         }
 
@@ -113,4 +115,3 @@
     </script>
 </body>
 </html>
-
