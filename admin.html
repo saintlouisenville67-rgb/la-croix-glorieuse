@@ -36,7 +36,7 @@
         </section>
 
         <section class="card border-l-4 border-blue-500">
-            <h2 class="text-sm font-800 mb-4 text-slate-800 border-b pb-2">🤝 Suivi Entraide</h2>
+            <h2 class="text-sm font-800 mb-4 text-slate-800 border-b pb-2">🤝 Modération Entraide</h2>
             <div id="admin-entraide-list" class="space-y-4">
                 <p class="text-center text-xs text-slate-400 italic">Chargement...</p>
             </div>
@@ -74,17 +74,11 @@
         </section>
 
         <section class="card border border-amber-100 bg-amber-50/30">
-            <h2 class="text-sm font-800 mb-4 text-slate-800 italic">Paramètres de sécurité</h2>
-            <div class="space-y-4">
-                <div>
-                    <p class="text-[9px] font-bold text-slate-500 uppercase mb-2">Code d'accès Entraide (à donner aux paroissiens)</p>
-                    <div class="bg-white p-3 rounded-xl font-black text-center text-red-700 tracking-widest border border-slate-100 shadow-sm">PAROISSE2026</div>
-                </div>
-                <div>
-                    <p class="text-[9px] font-bold text-slate-500 uppercase mb-2">Changer le PIN Admin</p>
-                    <input type="password" id="new-pin-input" placeholder="Nouveau code PIN" class="w-full p-3 rounded-xl border-none text-sm outline-none">
-                    <button onclick="changePin()" class="w-full bg-slate-400 text-white py-2 rounded-xl text-[9px] font-black uppercase mt-2">Mettre à jour</button>
-                </div>
+            <h2 class="text-sm font-800 mb-4 text-slate-800 italic">Paramètres PIN</h2>
+            <div>
+                <p class="text-[9px] font-bold text-slate-500 uppercase mb-2">Changer le PIN Admin</p>
+                <input type="password" id="new-pin-input" placeholder="Nouveau code PIN" class="w-full p-3 rounded-xl border-none text-sm outline-none">
+                <button onclick="changePin()" class="w-full bg-slate-400 text-white py-2 rounded-xl text-[9px] font-black uppercase mt-2">Mettre à jour</button>
             </div>
         </section>
     </main>
@@ -116,7 +110,7 @@
             alert("PIN mis à jour !");
         }
 
-        // --- ENTRAIDE ---
+        // --- ENTRAIDE AVEC CODE PAR ANNONCE ---
         async function loadAdminEntraide() {
             const { data } = await sb.from('entraide').select('*').order('created_at', { ascending: false });
             const container = document.getElementById('admin-entraide-list');
@@ -126,39 +120,55 @@
             }
 
             container.innerHTML = data.map(e => {
+                // ÉTAT 1 : À VALIDER (On demande un code à l'admin)
                 if (!e.valide) {
                     return `<div class="bg-white p-4 rounded-xl border border-amber-200 shadow-sm mb-4">
                         <p class="text-[8px] font-black text-amber-600 uppercase mb-1 italic">À VALIDER</p>
                         <h3 class="font-800 text-sm text-slate-800">${e.titre}</h3>
-                        <p class="text-[10px] text-slate-500 mb-3 italic">"${e.description}"</p>
-                        <div class="flex gap-2">
-                            <button onclick="validerEntraide('${e.id}')" class="flex-1 bg-green-600 text-white py-2 rounded-lg text-[9px] font-black uppercase">Publier</button>
-                            <button onclick="supprimerEntraide('${e.id}')" class="flex-1 bg-slate-100 text-red-500 py-2 rounded-lg text-[9px] font-black uppercase">Refuser</button>
+                        <p class="text-[10px] text-slate-500 mb-3">"${e.description}"</p>
+                        <div class="space-y-2">
+                            <input type="text" id="code-${e.id}" placeholder="Code à donner (ex: 12)" class="w-full p-2 text-xs border rounded-lg outline-none">
+                            <div class="flex gap-2">
+                                <button onclick="validerAvecCode('${e.id}')" class="flex-1 bg-green-600 text-white py-2 rounded-lg text-[9px] font-black uppercase">Publier</button>
+                                <button onclick="supprimerEntraide('${e.id}')" class="flex-1 bg-slate-100 text-red-500 py-2 rounded-lg text-[9px] font-black uppercase">Refuser</button>
+                            </div>
                         </div>
                     </div>`;
                 }
-                if (e.acceptee_par && !e.code_envoye) {
-                    return `<div class="bg-blue-50 p-4 rounded-xl border border-blue-200 shadow-sm mb-4">
-                        <p class="text-[8px] font-black text-blue-600 uppercase mb-1">🤝 MISE EN RELATION</p>
-                        <h3 class="font-800 text-sm text-slate-800">${e.titre}</h3>
-                        <p class="text-xs text-slate-700 font-bold mt-2">Auteur: ${e.contact_nom} (${e.contact_info})</p>
-                        <p class="text-xs text-blue-800 mt-1 italic">Accepté par : ${e.acceptee_par}</p>
-                        <button onclick="marquerCommeEnvoye('${e.id}')" class="w-full mt-3 bg-blue-600 text-white py-2 rounded-lg text-[9px] font-black uppercase">Marquer Code Envoyé ✅</button>
+                // ÉTAT 2 : EN LIGNE (On affiche le code pour l'abbé)
+                if (e.valide && !e.est_terminee) {
+                    return `<div class="bg-slate-50 p-3 rounded-xl border border-slate-100 mb-2">
+                        <div class="flex justify-between items-center">
+                            <p class="text-xs font-800 text-slate-700">${e.titre}</p>
+                            <span class="bg-white px-2 py-1 rounded text-[10px] font-black text-red-700 border border-red-100 shadow-sm">Code : ${e.code_validation}</span>
+                        </div>
+                        <button onclick="supprimerEntraide('${e.id}')" class="text-red-500 text-[9px] font-black uppercase mt-2">Supprimer</button>
                     </div>`;
                 }
-                if (e.valide && !e.acceptee_par) {
-                    return `<div class="bg-slate-50 p-3 rounded-xl flex justify-between items-center border border-slate-100 mb-2">
-                        <p class="text-xs font-800 text-slate-700">${e.titre} <span class="text-[8px] font-normal text-green-600 italic">(En ligne)</span></p>
-                        <button onclick="supprimerEntraide('${e.id}')" class="text-red-500 text-[10px] font-black">Supprimer</button>
+                // ÉTAT 3 : TERMINÉE
+                if (e.est_terminee) {
+                    return `<div class="bg-green-50/50 p-2 rounded-lg border border-green-100 mb-2 opacity-60">
+                        <p class="text-[8px] font-black text-green-700 uppercase">✓ VALIDÉE & TERMINÉE</p>
+                        <p class="text-xs text-slate-600">${e.titre}</p>
                     </div>`;
                 }
                 return '';
             }).join('');
         }
 
-        async function validerEntraide(id) { await sb.from('entraide').update({ valide: true }).eq('id', id); loadAdminEntraide(); }
-        async function marquerCommeEnvoye(id) { await sb.from('entraide').update({ code_envoye: true }).eq('id', id); loadAdminEntraide(); }
-        async function supprimerEntraide(id) { if(confirm("Supprimer ?")) { await sb.from('entraide').delete().eq('id', id); loadAdminEntraide(); } }
+        async function validerAvecCode(id) {
+            const code = document.getElementById(`code-${id}`).value;
+            if (!code) return alert("Veuillez saisir un code.");
+            await sb.from('entraide').update({ valide: true, code_validation: code }).eq('id', id);
+            loadAdminEntraide();
+        }
+
+        async function supprimerEntraide(id) {
+            if(confirm("Supprimer définitivement ?")) {
+                await sb.from('entraide').delete().eq('id', id);
+                loadAdminEntraide();
+            }
+        }
 
         // --- MESSAGES ---
         async function loadMessages() {
@@ -171,7 +181,7 @@
                             <span class="font-800 uppercase">${m.prenom} ${m.nom}</span>
                             <button onclick="deleteMessage('${m.id}')" class="text-red-500 font-black">X</button>
                         </div>
-                        <p class="text-[10px] text-slate-400 mb-2">${m.email} | ${m.telephone || 'Pas de tel'}</p>
+                        <p class="text-[10px] text-slate-400 mb-2">${m.email} | ${m.telephone || 'N/A'}</p>
                         <p class="text-xs text-slate-600 bg-slate-50 p-3 rounded-lg border-l-2 border-slate-200">"${m.message}"</p>
                     </div>`).join('');
             } else { container.innerHTML = "<p class='text-center text-xs italic text-slate-400'>Aucun message.</p>"; }
