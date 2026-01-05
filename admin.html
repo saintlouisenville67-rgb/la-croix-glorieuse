@@ -12,12 +12,23 @@
 </head>
 <body class="bg-slate-50">
 
+    <div id="pin-overlay" class="fixed inset-0 z-[200] bg-slate-900 flex items-center justify-center p-6">
+        <div class="card w-full max-w-sm text-center">
+            <h2 class="text-sm font-800 mb-6 text-slate-800 uppercase tracking-widest">Accès Restreint</h2>
+            <input type="password" id="pin-input" placeholder="Entrez le code PIN" 
+                class="w-full bg-slate-50 p-4 rounded-xl border-none text-center text-2xl font-black tracking-[0.5em] outline-none mb-4">
+            <button onclick="checkPin()" class="w-full gradient-header text-white py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg">
+                Déverrouiller
+            </button>
+        </div>
+    </div>
+
     <header class="gradient-header text-white p-8 shadow-lg">
         <h1 class="text-2xl font-800 tracking-tight mb-1">Console Admin</h1>
         <p class="text-[10px] font-black uppercase tracking-widest opacity-80">Gestion Paroissiale</p>
     </header>
 
-    <main class="p-6 space-y-8">
+    <main id="admin-content" class="p-6 space-y-8 hidden">
         
         <section class="card shadow-xl -mt-12 relative z-10">
             <h2 class="text-sm font-800 mb-4 text-slate-800 border-b pb-2">Liturgie & Annonces</h2>
@@ -48,9 +59,26 @@
         </section>
 
         <section class="card">
-            <h2 class="text-sm font-800 mb-4 text-slate-800 border-b pb-2">Groupes WhatsApp</h2>
+            <h2 class="text-sm font-800 mb-4 text-slate-800 border-b pb-2">Gestion des Groupes</h2>
+            
+            <div class="space-y-3 mb-6 bg-slate-50 p-4 rounded-2xl">
+                <p class="text-[9px] font-black text-slate-400 uppercase">Ajouter un nouveau groupe</p>
+                <input type="text" id="new-group-name" placeholder="Nom du groupe" class="w-full p-2 text-xs rounded-lg border-none">
+                <input type="text" id="new-group-link" placeholder="Lien WhatsApp" class="w-full p-2 text-xs rounded-lg border-none">
+                <button onclick="ajouterGroupe()" class="w-full bg-slate-800 text-white py-2 rounded-xl text-[9px] font-black uppercase">Ajouter</button>
+            </div>
+
             <div id="admin-list-groupes" class="space-y-3">
                 </div>
+        </section>
+
+        <section class="card border border-amber-100 bg-amber-50/30">
+            <h2 class="text-sm font-800 mb-4 text-slate-800">Sécurité</h2>
+            <div class="space-y-3">
+                <p class="text-[9px] font-bold text-slate-500 uppercase">Changer le code PIN</p>
+                <input type="password" id="new-pin-input" placeholder="Nouveau code PIN" class="w-full p-3 rounded-xl border-none text-sm outline-none">
+                <button onclick="changePin()" class="w-full bg-slate-400 text-white py-2 rounded-xl text-[9px] font-black uppercase">Mettre à jour le PIN</button>
+            </div>
         </section>
 
     </main>
@@ -68,7 +96,31 @@
 
     <script src="js/config.js"></script>
     <script>
-        // 1. GESTION DES ANNONCES
+        // --- SYSTÈME DE PIN ---
+        let currentPin = localStorage.getItem('admin_pin') || '5717';
+
+        function checkPin() {
+            const input = document.getElementById('pin-input').value;
+            if (input === currentPin) {
+                document.getElementById('pin-overlay').style.display = 'none';
+                document.getElementById('admin-content').classList.remove('hidden');
+                refreshData();
+            } else {
+                alert("Code PIN incorrect");
+                document.getElementById('pin-input').value = '';
+            }
+        }
+
+        function changePin() {
+            const newPin = document.getElementById('new-pin-input').value;
+            if (newPin.length < 4) return alert("Le code doit faire au moins 4 chiffres.");
+            localStorage.setItem('admin_pin', newPin);
+            currentPin = newPin;
+            alert("Code PIN mis à jour avec succès !");
+            document.getElementById('new-pin-input').value = '';
+        }
+
+        // --- GESTION DES ANNONCES ---
         async function publierAnnonce() {
             const titre = document.getElementById('titre-annonce').value;
             const contenu = document.getElementById('texte-annonce').value;
@@ -77,26 +129,29 @@
 
             const { error } = await sb.from('annonces').insert([{ titre, contenu }]);
 
-            if (!error) {
+            if (error) {
+                console.error(error);
+                alert("Erreur lors de l'ajout. Vérifiez la table 'annonces' dans Supabase.");
+            } else {
                 alert("Annonce publiée !");
                 document.getElementById('titre-annonce').value = '';
                 document.getElementById('texte-annonce').value = '';
             }
         }
 
-        // 2. MODÉRATION DES PRIÈRES
+        // --- MODÉRATION DES PRIÈRES ---
         async function loadAdminPrières() {
             const { data } = await sb.from('intentions').select('*').order('created_at', { ascending: false });
 
             if (data) {
                 const feed = document.getElementById('admin-feed-priere');
                 feed.innerHTML = data.map(p => `
-                    <div class="card p-4 border border-slate-100 flex justify-between items-center">
+                    <div class="card p-4 border border-slate-100 flex justify-between items-center animate-fade-in">
                         <div class="flex-1 pr-4">
                             <p class="text-[9px] font-black text-red-700 uppercase mb-1">${p.prenom}</p>
                             <p class="text-xs text-slate-600 line-clamp-1">${p.texte}</p>
                         </div>
-                        <button onclick="supprimerPriere('${p.id}')" class="bg-red-50 text-red-600 p-2 rounded-lg text-xs font-bold">
+                        <button onclick="supprimerPriere('${p.id}')" class="bg-red-50 text-red-600 px-3 py-2 rounded-lg text-[9px] font-black uppercase">
                             Supprimer
                         </button>
                     </div>
@@ -106,40 +161,66 @@
 
         async function supprimerPriere(id) {
             if(confirm("Supprimer cette intention ?")) {
-                const { error } = await sb.from('intentions').delete().eq('id', id);
-                if (!error) loadAdminPrières();
+                const { error } = await sb.from('intentions').delete().match({ id: id });
+                if (error) {
+                    alert("Erreur de suppression");
+                } else {
+                    loadAdminPrières();
+                }
             }
         }
 
-        // 3. GESTION DES GROUPES
+        // --- GESTION DES GROUPES ---
         async function loadAdminGroupes() {
             const { data } = await sb.from('groupes').select('*').order('nom');
             if (data) {
                 const list = document.getElementById('admin-list-groupes');
                 list.innerHTML = data.map(g => `
-                    <div class="flex justify-between items-center bg-slate-50 p-3 rounded-xl">
-                        <span class="text-xs font-800 text-slate-700">${g.nom}</span>
-                        <input type="text" onchange="updateWA('${g.id}', this.value)" 
+                    <div class="bg-slate-50 p-4 rounded-xl space-y-2 border border-slate-100">
+                        <div class="flex justify-between items-center">
+                            <input type="text" onchange="updateGroupe('${g.id}', 'nom', this.value)" value="${g.nom}" class="font-800 text-xs bg-transparent border-none w-1/2">
+                            <button onclick="supprimerGroupe('${g.id}')" class="text-red-500 text-[10px] font-bold">Supprimer</button>
+                        </div>
+                        <input type="text" onchange="updateGroupe('${g.id}', 'lien_wa', this.value)" 
                             value="${g.lien_wa || ''}" 
                             placeholder="Lien WhatsApp" 
-                            class="text-[9px] p-1 border rounded w-32">
+                            class="text-[9px] p-2 bg-white border border-slate-200 rounded w-full outline-none">
                     </div>
                 `).join('');
             }
         }
 
-        async function updateWA(id, newLink) {
-            const { error } = await sb.from('groupes').update({ lien_wa: newLink }).eq('id', id);
-            if (!error) alert("Lien mis à jour");
+        async function ajouterGroupe() {
+            const nom = document.getElementById('new-group-name').value;
+            const lien = document.getElementById('new-group-link').value;
+            if (!nom) return alert("Le nom est obligatoire.");
+
+            const { error } = await sb.from('groupes').insert([{ nom, lien_wa: lien }]);
+            if (!error) {
+                document.getElementById('new-group-name').value = '';
+                document.getElementById('new-group-link').value = '';
+                loadAdminGroupes();
+            }
+        }
+
+        async function updateGroupe(id, field, value) {
+            const updateData = {};
+            updateData[field] = value;
+            const { error } = await sb.from('groupes').update(updateData).eq('id', id);
+            if (error) alert("Erreur de mise à jour");
+        }
+
+        async function supprimerGroupe(id) {
+            if(confirm("Supprimer ce groupe ?")) {
+                const { error } = await sb.from('groupes').delete().eq('id', id);
+                if (!error) loadAdminGroupes();
+            }
         }
 
         function refreshData() {
             loadAdminPrières();
             loadAdminGroupes();
         }
-
-        // Initialisation
-        refreshData();
     </script>
 </body>
 </html>
