@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Annonces - La Croix Glorieuse</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="bg-slate-50">
+
+    <header class="gradient-header text-white p-8 rounded-b-[40px] shadow-lg">
+        <h1 class="text-2xl font-800 tracking-tight">Annonces</h1>
+        <p class="text-[10px] font-black uppercase tracking-widest opacity-80">Vie de la communauté</p>
+    </header>
+
+    <main class="p-6 mb-24">
+        <div id="feed-annonces-complet" class="space-y-4">
+            <div class="skeleton h-32 w-full"></div>
+            <div class="skeleton h-32 w-full"></div>
+        </div>
+    </main>
+
+    <nav class="bottom-nav"></nav>
+
+    <script src="js/config.js"></script>
+    <script>
+        async function loadAllAnnonces() {
+            const feed = document.getElementById('feed-annonces-complet');
+            const { data, error } = await sb.from('annonces')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            if (data && data.length > 0) {
+                feed.innerHTML = data.map(a => `
+                    <div class="card animate-fade-in shadow-sm border-l-4 border-red-700">
+                        <div class="flex justify-between items-start mb-2">
+                            <h3 class="font-800 text-sm text-red-700 uppercase">${a.titre}</h3>
+                            <span class="text-[8px] font-bold text-slate-400">
+                                ${new Date(a.created_at).toLocaleDateString('fr-FR')}
+                            </span>
+                        </div>
+                        <p class="text-xs text-slate-600 leading-relaxed">${a.contenu}</p>
+                    </div>
+                `).join('');
+                
+                // On marque tout comme lu en enregistrant la date de la plus récente
+                localStorage.setItem('last_annonce_date', data[0].created_at);
+            } else {
+                feed.innerHTML = "<p class='text-center text-xs text-slate-400 italic py-10'>Aucune annonce pour le moment.</p>";
+            }
+        }
+        
+        loadAllAnnonces();
+    </script>
+    <script src="js/menu.js"></script>
+</body>
+</html>
