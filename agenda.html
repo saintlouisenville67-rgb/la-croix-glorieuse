@@ -4,33 +4,114 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Agenda - La Croix Glorieuse</title>
+    
     <link rel="stylesheet" href="CSS/style.css">
+    
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-slate-50 pb-24">
+<body class="bg-slate-50">
 
-    <header class="gradient-header text-white p-8 rounded-b-[40px] shadow-2xl">
-        <h1 class="text-xl font-800 tracking-tight">Agenda Paroissial</h1>
-        <p class="text-[9px] font-black uppercase tracking-widest opacity-80">Événements et Offices</p>
+    <header class="gradient-header">
+        <div class="flex justify-between items-center mb-6">
+            <div>
+                <h1 class="text-xl font-800 tracking-tight">Agenda Paroissial</h1>
+                <p class="uppercase-track opacity-80">En direct de Google Calendar</p>
+            </div>
+            <div class="px-3 py-1 bg-black/20 rounded-full uppercase-track italic">Live</div>
+        </div>
+
+        <div class="backdrop-blur-md">
+            <p class="text-[10px] font-black uppercase text-white/70 mb-1">Aujourd'hui</p>
+            <p id="current-date" class="text-sm font-800 text-white italic-quote">Chargement...</p>
+        </div>
     </header>
 
-    <main class="p-6 space-y-6">
-        <div class="card border-l-4 border-blue-600">
-            <h3 class="font-800 text-sm text-blue-600 uppercase mb-1">Information</h3>
-            <p class="text-sm text-slate-700">Si vous voyez cette page, c'est que la publication GitHub fonctionne !</p>
+    <main class="p-6">
+        
+        <div id="calendar-feed" class="space-y-4">
+            <div class="text-center py-12">
+                <div class="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-red-700 mb-4"></div>
+                <p class="text-slate-400 text-xs italic">Synchronisation avec Google...</p>
+            </div>
         </div>
 
-        <div id="liste-evenements" class="space-y-4">
-            <p class="text-xs text-slate-400 italic text-center">Chargement du calendrier...</p>
-        </div>
     </main>
 
     <nav class="bottom-nav">
-        <a href="index.html" class="nav-item">🏠 Accueil</a>
-        <a href="agenda.html" class="nav-item active">📅 Agenda</a>
-        <a href="priere.html" class="nav-item">🕯️ Prières</a>
-        <a href="groupes.html" class="nav-item">💬 Groupes</a>
+        <a href="index.html" class="nav-item"><span>🏠</span>Accueil</a>
+        <a href="agenda.html" class="nav-item active"><span>📅</span>Agenda</a>
+        <a href="priere.html" class="nav-item"><span>🕯️</span>Prières</a>
+        <a href="groupes.html" class="nav-item"><span>💬</span>Groupes</a>
     </nav>
 
+    <script>
+        const API_KEY = 'AIzaSyAI5N6lamviexKaPR-WoOP4006m5IClDoQ';
+        const CALENDAR_ID = 'saintlouisenville67@gmail.com';
+
+        async function fetchGoogleCalendar() {
+            // Affichage de la date actuelle
+            const now = new Date();
+            document.getElementById('current-date').innerText = now.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+
+            const timeMin = now.toISOString();
+            const url = `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(CALENDAR_ID)}/events?key=${API_KEY}&timeMin=${timeMin}&singleEvents=true&orderBy=startTime&maxResults=15`;
+
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+
+                if (data.error) {
+                    throw new Error(data.error.message);
+                }
+
+                renderEvents(data.items);
+            } catch (error) {
+                console.error("Erreur Agenda:", error);
+                document.getElementById('calendar-feed').innerHTML = `
+                    <div class="card border-l-4 border-amber-500">
+                        <p class="text-xs text-slate-600 font-semibold">Impossible de charger l'agenda.</p>
+                        <p class="text-[9px] text-slate-400 mt-2">Vérifiez que l'agenda est bien en "Public" dans les paramètres Google Calendar.</p>
+                    </div>`;
+            }
+        }
+
+        function renderEvents(events) {
+            const feed = document.getElementById('calendar-feed');
+            
+            if (!events || events.length === 0) {
+                feed.innerHTML = '<p class="text-center text-xs text-slate-400 py-10">Aucun événement prévu prochainement.</p>';
+                return;
+            }
+
+            feed.innerHTML = events.map(event => {
+                const start = new Date(event.start.dateTime || event.start.date);
+                const day = start.toLocaleDateString('fr-FR', { day: 'numeric' });
+                const month = start.toLocaleDateString('fr-FR', { month: 'short' }).replace('.', '');
+                const time = event.start.dateTime 
+                    ? start.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) 
+                    : 'Toute la journée';
+
+                return `
+                    <div class="card animate-fade-in flex gap-4 items-center">
+                        <div class="text-center min-w-[50px] border-r border-slate-100 pr-4">
+                            <p class="text-[10px] font-black text-red-700 uppercase tracking-tighter">${month}</p>
+                            <p class="text-xl font-900 text-slate-900">${day}</p>
+                        </div>
+                        <div class="flex-1">
+                            <div class="flex justify-between items-start">
+                                <h3 class="card-title text-slate-900 mb-0">${event.summary}</h3>
+                            </div>
+                            <div class="flex items-center gap-1 mt-1">
+                                <span class="text-[10px] font-bold text-slate-400 uppercase">${time}</span>
+                                ${event.location ? `<span class="text-[10px] text-slate-300">• ${event.location}</span>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        fetchGoogleCalendar();
+    </script>
 </body>
 </html>
