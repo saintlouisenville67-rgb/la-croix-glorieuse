@@ -95,7 +95,6 @@
             .subscribe();
         }
 
-        // Navigation dans les jours
         function changeDay(offset) {
             currentDateDisplay.setDate(currentDateDisplay.getDate() + offset);
             updateLiturgie();
@@ -110,14 +109,11 @@
         async function updateLiturgie() {
             const now = new Date();
             const isToday = currentDateDisplay.toDateString() === now.toDateString();
-            
-            // Afficher/Cacher le bouton "Aujourd'hui"
             document.getElementById('btn-today').classList.toggle('hidden', isToday);
             
             const jourMois = `${String(currentDateDisplay.getDate()).padStart(2, '0')}-${String(currentDateDisplay.getMonth() + 1).padStart(2, '0')}`;
             document.getElementById('date-du-jour').innerText = currentDateDisplay.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
             
-            // Récupération Liturgie Supabase
             const { data } = await sb.from('calendrier_traditionnel').select('*').eq('jour', jourMois).single();
             if (data) {
                 document.getElementById('saint-nom').innerText = data.saint_nom;
@@ -130,7 +126,6 @@
                 document.getElementById('indic-couleur').style.backgroundColor = "#ffffff";
             }
 
-            // Récupération des horaires de Messe
             fetchMesseDuJour(currentDateDisplay);
         }
 
@@ -147,10 +142,18 @@
                 const data = await response.json();
                 const events = data.items || [];
 
-                // Filtre les messes (ignore les anticipées)
+                // Logique de filtrage précise :
+                const isSamedi = dateCible.getDay() === 6;
+
                 const messes = events.filter(e => {
                     const titre = e.summary.toLowerCase();
-                    return titre.includes('messe') && !titre.includes('anticipée');
+                    // On garde si le titre contient "messe"
+                    if (!titre.includes('messe')) return false;
+                    
+                    // Si c'est un samedi, on dégage uniquement si le titre contient explicitement "anticipée"
+                    if (isSamedi && titre.includes('anticipée')) return false;
+                    
+                    return true;
                 });
 
                 const blocMesse = document.getElementById('bloc-messe');
@@ -182,7 +185,6 @@
         async function loadVerset() {
             const container = document.getElementById('verset-container');
             container.classList.add('opacity-40');
-            
             const { data } = await sb.from('versets').select('*');
             if (data && data.length > 0) {
                 const v = data[Math.floor(Math.random() * data.length)];
