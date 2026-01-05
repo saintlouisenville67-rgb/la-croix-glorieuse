@@ -32,10 +32,6 @@
                     <p id="date-du-jour" class="text-[10px] font-black uppercase text-white/70 min-w-[120px] text-center">Chargement...</p>
                     <button onclick="changeDay(1)" class="opacity-50 hover:opacity-100 text-lg">›</button>
                 </div>
-                <div id="meteo-badge" class="flex items-center gap-2 bg-white/10 px-2 py-1 rounded-lg border border-white/10">
-                    <span id="meteo-icon" class="text-xs">🌡️</span>
-                    <span id="meteo-temp" class="text-[10px] font-black">--°</span>
-                </div>
                 <div id="indic-couleur" class="w-3 h-3 rounded-full border border-white/40 shadow-inner transition-all duration-700"></div>
             </div>
             
@@ -56,6 +52,13 @@
 
     <main class="p-6 space-y-6 pb-24">
         
+        <section id="meteo-container" class="hidden">
+            <div class="bg-white shadow-lg p-4 rounded-2xl border border-slate-100 flex items-center justify-center gap-4">
+                <span id="meteo-icon" class="text-3xl">🌡️</span>
+                <span id="meteo-temp" class="text-xl font-900 text-slate-800">--°C</span>
+            </div>
+        </section>
+
         <section>
             <div class="flex items-center gap-2 mb-4 relative z-10">
                 <div class="h-[1px] flex-1 bg-slate-200"></div>
@@ -114,11 +117,12 @@
                 const text = await response.text();
                 const parts = text.split(' ');
                 if(parts.length >= 2) {
+                    document.getElementById('meteo-container').classList.remove('hidden');
                     document.getElementById('meteo-icon').innerText = parts[0];
                     document.getElementById('meteo-temp').innerText = parts[1].replace('+', '');
                 }
             } catch (e) {
-                document.getElementById('meteo-badge').classList.add('hidden');
+                console.error("Erreur météo");
             }
         }
 
