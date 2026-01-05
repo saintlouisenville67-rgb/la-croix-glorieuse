@@ -12,11 +12,11 @@
 <body class="bg-slate-50">
 
     <header class="gradient-header text-white p-8 rounded-b-[40px] shadow-lg">
-        <h1 class="text-2xl font-800 tracking-tight mb-1">Mur de Prière</h1>
+        <h1 class="text-2xl font-800 tracking-tight mb-1">Prière</h1>
         <p class="text-[10px] font-black uppercase tracking-widest opacity-80">Communion des Saints</p>
     </header>
 
-    <main class="p-6 space-y-8">
+    <main class="p-6 space-y-8 mb-24">
         
         <section class="card shadow-xl -mt-12 relative z-10">
             <h2 class="text-sm font-800 mb-4 text-slate-800 dark:text-white">Confier une intention</h2>
@@ -62,7 +62,12 @@
 
             if (data) {
                 const feed = document.getElementById('feed-priere');
-                feed.innerHTML = data.map(p => `
+                feed.innerHTML = data.map(p => {
+                    // Logique de pluralisation
+                    const count = p.bougies || 0;
+                    const label = count > 1 ? "ont prié" : "a prié";
+                    
+                    return `
                     <div class="card animate-fade-in relative">
                         <div class="flex justify-between items-start mb-3">
                             <span class="text-[9px] font-black text-red-700 uppercase tracking-widest">${p.prenom || 'Anonyme'}</span>
@@ -76,10 +81,10 @@
                         <button onclick="allumerBougie('${p.id}')" 
                             class="flex items-center gap-2 bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 px-4 py-2 rounded-full border border-amber-100 dark:border-amber-800 active:scale-90 transition-transform">
                             <span class="text-sm">🕯️</span>
-                            <span class="text-[10px] font-black uppercase tracking-tighter">${p.bougies || 0} ont prié</span>
+                            <span class="text-[10px] font-black uppercase tracking-tighter">${count} ${label}</span>
                         </button>
                     </div>
-                `).join('');
+                `}).join('');
             }
         }
 
@@ -98,7 +103,7 @@
             ]);
 
             if (!error) {
-                hapticFeedback(50); // Vibration de confirmation
+                if (typeof hapticFeedback === 'function') hapticFeedback(50);
                 document.getElementById('intention').value = '';
                 btn.disabled = false;
                 btn.innerText = "ENVOYER MON INTENTION";
@@ -107,7 +112,7 @@
         }
 
         async function allumerBougie(id) {
-            hapticFeedback(20); // Petite vibration au clic sur la bougie
+            if (typeof hapticFeedback === 'function') hapticFeedback(20);
             const { error } = await sb.rpc('increment_bougie', { row_id: id });
             if (!error) {
                 loadPrières();
