@@ -88,7 +88,7 @@
                 document.getElementById('saint-nom').innerText = data.saint_nom;
                 document.getElementById('classe-liturgique').innerText = data.classe + (data.classe === 1 ? "ère" : "ème") + " classe";
                 
-                // Gestion des couleurs liturgiques
+                // Changer la couleur du point indicateur
                 const couleurs = { 'blanc': '#ffffff', 'rouge': '#ef4444', 'vert': '#22c55e', 'violet': '#a855f7', 'noir': '#1e293b' };
                 document.getElementById('indic-couleur').style.backgroundColor = couleurs[data.couleur.toLowerCase()] || '#ffffff';
             } else {
@@ -98,7 +98,6 @@
         }
 
         async function loadAnnonces() {
-            // Chargement des dernières annonces
             const { data } = await sb.from('annonces').select('*').order('created_at', { ascending: false }).limit(3);
             if (data && data.length > 0) {
                 document.getElementById('feed-annonces').innerHTML = data.map(a => `
@@ -114,3 +113,4 @@
     </script>
 </body>
 </html>
+
