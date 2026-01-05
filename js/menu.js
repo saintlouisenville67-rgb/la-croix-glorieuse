@@ -6,22 +6,25 @@ function loadMenu() {
     const nav = document.querySelector('.bottom-nav');
     if (!nav) return;
 
-    // 1. Liste des onglets
+    // 1. Liste des onglets (Mise à jour avec Annonces)
     const menuItems = [
         { href: 'index.html', icon: '🏠', label: 'Accueil' },
+        { href: 'annonces.html', icon: '📢', label: 'Annonces' },
         { href: 'agenda.html', icon: '📅', label: 'Agenda' },
         { href: 'priere.html', icon: '🕯️', label: 'Prières' },
-        { href: 'groupes.html', icon: '💬', label: 'Groupes' },
         { href: 'contact.html', icon: '✉️', label: 'Contact' }
     ];
 
     const currentPath = window.location.pathname.split('/').pop() || 'index.html';
 
-    // 2. Génération du HTML du menu
+    // 2. Génération du HTML du menu avec support des badges textuels
     nav.innerHTML = menuItems.map(item => `
-        <a href="${item.href}" class="nav-item ${currentPath === item.href ? 'active' : ''}" onclick="hapticFeedback()">
+        <a href="${item.href}" class="nav-item ${currentPath === item.href ? 'active' : ''} relative" onclick="hapticFeedback()">
             <span class="block text-lg">${item.icon}</span>
             ${item.label}
+            <span id="badge-${item.label.toLowerCase()}" class="hidden absolute -top-1 -right-4 bg-red-600 text-white text-[7px] font-black px-1.5 py-0.5 rounded-full animate-bounce uppercase">
+                Nouveau
+            </span>
         </a>
     `).join('');
 
@@ -30,10 +33,9 @@ function loadMenu() {
         const scrollBtn = document.createElement('button');
         scrollBtn.id = 'scrollTop';
         scrollBtn.innerHTML = '⬆️';
-        scrollBtn.className = 'fixed bottom-24 right-6 bg-white dark:bg-slate-800 shadow-xl rounded-full w-12 h-12 flex items-center justify-center z-50 transition-all duration-300 opacity-0 invisible translate-y-4';
+        scrollBtn.className = 'fixed bottom-24 right-6 bg-white dark:bg-slate-800 shadow-xl rounded-full w-12 h-12 flex items-center justify-center border border-slate-100 dark:border-slate-700 z-50 transition-all duration-300 opacity-0 invisible translate-y-4';
         document.body.appendChild(scrollBtn);
 
-        // Logique d'affichage au scroll
         window.addEventListener('scroll', () => {
             if (window.scrollY > 400) {
                 scrollBtn.classList.remove('opacity-0', 'invisible', 'translate-y-4');
@@ -53,7 +55,6 @@ function loadMenu() {
 
 /**
  * Fonction globale pour le retour vibratoire (Haptic Feedback)
- * Utilisable partout : hapticFeedback()
  */
 function hapticFeedback(intensity = 15) {
     if (window.navigator && window.navigator.vibrate) {
@@ -62,23 +63,6 @@ function hapticFeedback(intensity = 15) {
 }
 
 /**
- * Fonction globale pour le partage natif
- * Utilisable partout : shareApp('Titre', 'Texte')
+ * Lancement automatique du menu
  */
-function shareApp(title, text) {
-    hapticFeedback(30);
-    if (navigator.share) {
-        navigator.share({
-            title: title,
-            text: text,
-            url: window.location.href
-        }).catch(() => {});
-    } else {
-        // Fallback WhatsApp si le partage natif n'est pas dispo
-        const url = `https://wa.me/?text=${encodeURIComponent(title + " : " + text + " " + window.location.href)}`;
-        window.open(url, '_blank');
-    }
-}
-
-// Lancement au chargement du document
 document.addEventListener('DOMContentLoaded', loadMenu);
