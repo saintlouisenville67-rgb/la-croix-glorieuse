@@ -25,46 +25,42 @@
                 <p id="date-du-jour" class="text-[10px] font-black uppercase text-white/70">Chargement...</p>
                 <div id="indic-couleur" class="w-3 h-3 rounded-full border border-white/40 shadow-inner"></div>
             </div>
-            <h2 id="saint-nom" class="text-xl font-800 mb-1 leading-tight text-white">Recherche du saint...</h2>
+            <h2 id="saint-nom" class="text-xl font-800 mb-1 leading-tight text-white italic">Chargement...</h2>
             <p id="classe-liturgique" class="text-[10px] font-bold opacity-60 uppercase tracking-tighter"></p>
         </div>
     </header>
 
     <main class="p-6 space-y-8">
-        
         <section class="card border-l-4 border-red-700">
             <p class="text-[9px] font-black text-red-700 uppercase mb-2 tracking-widest">Verset du jour</p>
             <p id="verset-txt" class="text-sm italic font-semibold text-slate-700">"Le Seigneur est ma lumière et mon salut."</p>
         </section>
 
         <section>
-            <div class="flex justify-between items-center mb-4">
+            <div class="flex justify-between items-center mb-4 px-2">
                 <h2 class="text-lg font-800 text-slate-900 tracking-tight">Annonces</h2>
-                <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Paroisse</span>
+                <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Voir tout</span>
             </div>
-            <div id="feed-annonces" class="space-y-4">
-                <p class="text-xs text-slate-400 italic text-center py-4">Recherche des dernières annonces...</p>
-            </div>
+            <div id="feed-annonces" class="space-y-4"></div>
         </section>
-
     </main>
 
     <nav class="bottom-nav">
         <a href="index.html" class="nav-item active">
-            <span class="block text-xl mb-1">🏠</span>
-            <span class="text-[10px] font-black uppercase tracking-tighter">Accueil</span>
+            <span class="text-xl mb-1">🏠</span>
+            Accueil
         </a>
         <a href="agenda.html" class="nav-item">
-            <span class="block text-xl mb-1">📅</span>
-            <span class="text-[10px] font-black uppercase tracking-tighter">Agenda</span>
+            <span class="text-xl mb-1">📅</span>
+            Agenda
         </a>
         <a href="priere.html" class="nav-item">
-            <span class="block text-xl mb-1">🕯️</span>
-            <span class="text-[10px] font-black uppercase tracking-tighter">Prières</span>
+            <span class="text-xl mb-1">🕯️</span>
+            Prières
         </a>
         <a href="groupes.html" class="nav-item">
-            <span class="block text-xl mb-1">💬</span>
-            <span class="text-[10px] font-black uppercase tracking-tighter">Groupes</span>
+            <span class="text-xl mb-1">💬</span>
+            Groupes
         </a>
     </nav>
 
@@ -78,39 +74,29 @@
         async function updateLiturgie() {
             const now = new Date();
             const jourMois = `${String(now.getDate()).padStart(2, '0')}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-            
             document.getElementById('date-du-jour').innerText = now.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
 
-            // Recherche dans Supabase
-            const { data, error } = await sb.from('calendrier_traditionnel').select('*').eq('jour', jourMois).single();
+            const { data } = await sb.from('calendrier_traditionnel').select('*').eq('jour', jourMois).single();
 
             if (data) {
                 document.getElementById('saint-nom').innerText = data.saint_nom;
                 document.getElementById('classe-liturgique').innerText = data.classe + (data.classe === 1 ? "ère" : "ème") + " classe";
-                
-                // Couleurs liturgiques
                 const couleurs = { 'blanc': '#ffffff', 'rouge': '#ef4444', 'vert': '#22c55e', 'violet': '#a855f7', 'noir': '#1e293b' };
                 document.getElementById('indic-couleur').style.backgroundColor = couleurs[data.couleur.toLowerCase()] || '#ffffff';
-            } else {
-                document.getElementById('saint-nom').innerText = "Férie du temps";
-                document.getElementById('classe-liturgique').innerText = "4ème classe";
             }
         }
 
         async function loadAnnonces() {
             const { data } = await sb.from('annonces').select('*').order('created_at', { ascending: false }).limit(3);
-            if (data && data.length > 0) {
+            if (data) {
                 document.getElementById('feed-annonces').innerHTML = data.map(a => `
-                    <div class="card bg-white p-5 rounded-3xl shadow-sm border border-slate-100 animate-fade-in">
+                    <div class="card border border-slate-100 animate-fade-in">
                         <h3 class="font-800 text-sm mb-1 text-slate-900">${a.titre}</h3>
                         <p class="text-xs text-slate-500 leading-relaxed">${a.contenu}</p>
                     </div>
                 `).join('');
-            } else {
-                document.getElementById('feed-annonces').innerHTML = '<p class="text-xs text-slate-400 italic text-center">Aucune annonce récente.</p>';
             }
         }
-
         initHome();
     </script>
 </body>
