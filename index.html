@@ -42,14 +42,10 @@
             </div>
         </div>
 
-        <div class="mt-4 grid grid-cols-2 gap-3">
-            <div class="bg-white/10 backdrop-blur-sm p-3 rounded-2xl border border-white/10 flex flex-col items-center justify-center text-center">
+        <div class="mt-4">
+            <div class="bg-white/10 backdrop-blur-sm p-4 rounded-2xl border border-white/10 flex flex-col items-center justify-center text-center">
                 <p class="text-[8px] font-black uppercase text-white/50 mb-1 tracking-widest">Intention du jour</p>
-                <p id="intention-du-jour" class="text-[10px] font-bold leading-tight italic min-h-[30px] flex items-center">...</p>
-            </div>
-            <div class="bg-white/10 backdrop-blur-sm p-3 rounded-2xl border border-white/10 flex flex-col items-center justify-center text-center">
-                <p class="text-[8px] font-black uppercase text-white/50 mb-1 tracking-widest">Confessions</p>
-                <p id="confession-statut" class="text-[10px] font-bold leading-tight min-h-[30px] flex items-center">...</p>
+                <p id="intention-du-jour" class="text-[11px] font-bold leading-tight italic min-h-[30px] flex items-center">Chargement...</p>
             </div>
         </div>
 
@@ -90,7 +86,7 @@
         async function initHome() {
             updateLiturgie();
             loadVerset();
-            loadIntention(); // AJOUT : Initialisation de l'intention
+            loadIntention();
             checkNewAnnonces();
             
             sb.channel('custom-insert-channel')
@@ -100,7 +96,6 @@
             }).subscribe();
         }
 
-        // --- AJOUT : FONCTION PRIERES_DU_JOUR ---
         async function loadIntention() {
             const { data: prieres } = await sb.from('prieres_du_jour').select('*');
             if (prieres && prieres.length > 0) {
@@ -114,25 +109,16 @@
             }
         }
 
-        // AJOUT : LOGIQUE CONFESSIONS
-        function updateConfessionStatut() {
-            const day = currentDateDisplay.getDay();
-            const el = document.getElementById('confession-statut');
-            if (day === 0) el.innerText = "20 min avant la Messe";
-            else if (day === 6) el.innerText = "17h30 - 18h15";
-            else el.innerText = "Examen de conscience";
-        }
-
         function changeDay(offset) {
             currentDateDisplay.setDate(currentDateDisplay.getDate() + offset);
             updateLiturgie();
-            loadIntention(); // AJOUT : Mise à jour de l'intention
+            loadIntention();
         }
 
         function goToday() {
             currentDateDisplay = new Date();
             updateLiturgie();
-            loadIntention(); // AJOUT : Mise à jour de l'intention
+            loadIntention();
         }
 
         async function updateLiturgie() {
@@ -153,15 +139,13 @@
                 document.getElementById('classe-liturgique').innerText = "";
                 document.getElementById('indic-couleur').style.backgroundColor = "#ffffff";
             }
-            
-            updateConfessionStatut(); // AJOUT
+
             fetchMesseDuJour(currentDateDisplay);
         }
 
         async function fetchMesseDuJour(dateCible) {
             const start = new Date(dateCible.getFullYear(), dateCible.getMonth(), dateCible.getDate(), 0, 0, 0).toISOString();
             const end = new Date(dateCible.getFullYear(), dateCible.getMonth(), dateCible.getDate(), 23, 59, 59).toISOString();
-
             const url = `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(CALENDAR_ID)}/events?key=${CALENDAR_API_KEY}&timeMin=${start}&timeMax=${end}&singleEvents=true&orderBy=startTime`;
 
             const blocMesse = document.getElementById('bloc-messe');
@@ -172,7 +156,6 @@
                 const response = await fetch(url);
                 const data = await response.json();
                 const events = data.items || [];
-
                 const isSamedi = dateCible.getDay() === 6;
 
                 const filteredEvents = events.filter(e => {
@@ -208,7 +191,6 @@
                     blocMesse.classList.add('hidden');
                 }
             } catch (e) {
-                console.error("Erreur calendrier:", e);
                 blocMesse.classList.add('hidden');
             }
         }
