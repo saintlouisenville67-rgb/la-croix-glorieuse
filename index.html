@@ -52,13 +52,6 @@
 
     <main class="p-6 space-y-6 pb-24">
         
-        <section id="meteo-container" class="hidden">
-            <div class="bg-white shadow-lg p-4 rounded-2xl border border-slate-100 flex items-center justify-center gap-4">
-                <span id="meteo-icon" class="text-3xl">🌡️</span>
-                <span id="meteo-temp" class="text-xl font-900 text-slate-800">--°C</span>
-            </div>
-        </section>
-
         <section>
             <div class="flex items-center gap-2 mb-4 relative z-10">
                 <div class="h-[1px] flex-1 bg-slate-200"></div>
@@ -101,7 +94,6 @@
             updateLiturgie();
             loadVerset();
             loadIntention();
-            loadMeteo();
             checkNewAnnonces();
             
             sb.channel('custom-insert-channel')
@@ -109,21 +101,6 @@
                 const badge = document.getElementById('badge-annonces');
                 if (badge) badge.classList.remove('hidden');
             }).subscribe();
-        }
-
-        async function loadMeteo() {
-            try {
-                const response = await fetch('https://wttr.in/Strasbourg?format=%c+%t');
-                const text = await response.text();
-                const parts = text.split(' ');
-                if(parts.length >= 2) {
-                    document.getElementById('meteo-container').classList.remove('hidden');
-                    document.getElementById('meteo-icon').innerText = parts[0];
-                    document.getElementById('meteo-temp').innerText = parts[1].replace('+', '');
-                }
-            } catch (e) {
-                console.error("Erreur météo");
-            }
         }
 
         async function loadIntention() {
