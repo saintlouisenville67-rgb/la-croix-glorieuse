@@ -1,52 +1,107 @@
+/* ============================================================
+   CHARTE GRAPHIQUE - LA CROIX GLORIEUSE
+   ============================================================ */
+
+/* Importation d'une police élégante */
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
 
 :root {
-    --alsace-red: #b91c1c;
-    --alsace-light: #fef2f2;
+    --primary-red: #b91c1c;
+    --dark-red: #7f1d1d;
+    --slate-50: #f8fafc;
+    --slate-900: #0f172a;
 }
 
-body { 
-    font-family: 'Plus Jakarta Sans', sans-serif; 
-    background-color: #fcfcfd; 
-    color: #1e293b;
+body {
+    font-family: 'Plus Jakarta Sans', sans-serif;
     margin: 0;
-    padding-bottom: 80px; /* Espace pour le menu bas */
+    padding: 0;
+    -webkit-font-smoothing: antialiased;
 }
 
+/* 1. L'EN-TÊTE (HEADER) */
 .gradient-header {
-    background: linear-gradient(135deg, #991b1b 0%, #dc2626 100%);
+    background: linear-gradient(135deg, var(--primary-red) 0%, var(--dark-red) 100%);
 }
 
+/* Effet de flou pour le bloc liturgie */
+.backdrop-blur-md {
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+}
+
+/* 2. LES CARTES (CARDS) */
 .card {
     background: white;
     border-radius: 24px;
-    padding: 20px;
-    border: 1px solid #f1f5f9;
-    shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+    padding: 1.5rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    transition: transform 0.2s ease;
 }
 
-/* Menu de navigation en bas */
+.card:active {
+    transform: scale(0.98);
+}
+
+/* 3. NAVIGATION BASSE */
 .bottom-nav {
     position: fixed;
     bottom: 0;
-    width: 100%;
-    background: white;
+    left: 0;
+    right: 0;
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid rgba(226, 232, 240, 0.8);
     display: flex;
     justify-content: space-around;
-    padding: 15px 0;
-    border-top: 1px solid #f1f5f9;
+    padding: 0.75rem 0.5rem calc(0.75rem + env(safe-area-inset-bottom));
     z-index: 100;
 }
 
 .nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     text-decoration: none;
-    font-size: 10px;
-    font-weight: 800;
     color: #94a3b8;
+    font-size: 9px;
+    font-weight: 800;
     text-transform: uppercase;
-    text-align: center;
+    letter-spacing: 0.025em;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .nav-item.active {
-    color: var(--alsace-red);
+    color: var(--primary-red);
 }
+
+.nav-item span:first-child {
+    font-size: 1.25rem;
+    margin-bottom: 4px;
+}
+
+/* 4. ÉLÉMENTS DE FORMULAIRE (PRIÈRES) */
+textarea {
+    resize: none;
+    font-family: inherit;
+}
+
+button {
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* 5. ANIMATIONS */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+    animation: fadeIn 0.5s ease-out forwards;
+}
+
+/* Utilitaires de texte spécifiques */
+.font-800 { font-weight: 800; }
+.font-black { font-weight: 900; }
