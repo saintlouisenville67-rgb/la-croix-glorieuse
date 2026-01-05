@@ -4,9 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Administration - La Croix Glorieuse</title>
-    
     <link rel="stylesheet" href="css/style.css">
-    
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -33,86 +31,67 @@
         <section class="card shadow-xl -mt-12 relative z-10">
             <h2 class="text-sm font-800 mb-4 text-slate-800 border-b pb-2 text-red-700">Messages Reçus</h2>
             <div id="admin-messages-list" class="space-y-4">
-                <p class="text-center text-xs text-slate-400 italic">Chargement des messages...</p>
+                <p class="text-center text-xs text-slate-400 italic">Chargement...</p>
             </div>
         </section>
 
-        <section class="card border-l-4 border-amber-500">
-            <h2 class="text-sm font-800 mb-4 text-slate-800 border-b pb-2">🤝 Modération Entraide</h2>
-            <p class="text-[9px] font-black text-slate-400 uppercase mb-4 italic">Annonces en attente de validation</p>
+        <section class="card border-l-4 border-blue-500">
+            <h2 class="text-sm font-800 mb-4 text-slate-800 border-b pb-2">🤝 Suivi Entraide</h2>
             <div id="admin-entraide-list" class="space-y-4">
-                <p class="text-center text-xs text-slate-400 italic">Chargement des demandes...</p>
+                <p class="text-center text-xs text-slate-400 italic">Chargement...</p>
             </div>
         </section>
 
         <section class="card">
-            <h2 class="text-sm font-800 mb-4 text-slate-800 border-b pb-2">Liturgie & Annonces</h2>
-            <div class="space-y-4 mb-8">
-                <input type="text" id="titre-annonce" placeholder="Titre de l'annonce" 
+            <h2 class="text-sm font-800 mb-4 text-slate-800 border-b pb-2">Annonces & Liturgie</h2>
+            <div class="space-y-4 mb-6">
+                <input type="text" id="titre-annonce" placeholder="Titre (ex: Messe de Rentrée)" 
                     class="w-full bg-slate-50 p-3 rounded-xl border-none text-sm font-semibold outline-none focus:ring-2 focus:ring-red-100">
-                <textarea id="texte-annonce" placeholder="Texte de l'annonce..." 
+                <textarea id="texte-annonce" placeholder="Contenu de l'annonce..." 
                     class="w-full bg-slate-50 p-4 rounded-xl border-none text-sm min-h-[80px] outline-none focus:ring-2 focus:ring-red-100"></textarea>
-                <button onclick="publierAnnonce()" 
-                    class="w-full gradient-header text-white py-3 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] shadow-lg active:scale-95 transition-all">
+                <button onclick="publierAnnonce()" class="w-full gradient-header text-white py-3 rounded-2xl font-black text-[10px] uppercase shadow-lg">
                     Publier l'annonce
                 </button>
             </div>
-            <div class="space-y-3">
-                <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Annonces actives</p>
-                <div id="admin-list-annonces" class="space-y-3"></div>
-            </div>
+            <div id="admin-list-annonces" class="space-y-3"></div>
         </section>
 
-        <section>
-            <div class="flex items-center gap-2 mb-6">
-                <div class="h-[1px] flex-1 bg-slate-200"></div>
-                <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Modération Prières</span>
-                <div class="h-[1px] flex-1 bg-slate-200"></div>
-            </div>
-            <div id="admin-feed-priere" class="space-y-4">
-                <p class="text-center text-xs text-slate-400 italic">Chargement des intentions...</p>
+        <section class="card">
+            <h2 class="text-sm font-800 mb-4 text-slate-800 border-b pb-2">🕯️ Intentions de Prière</h2>
+            <div id="admin-feed-priere" class="space-y-3">
+                <p class="text-center text-xs text-slate-400 italic">Chargement...</p>
             </div>
         </section>
 
         <section class="card">
-            <h2 class="text-sm font-800 mb-4 text-slate-800 border-b pb-2">Gestion des Groupes</h2>
+            <h2 class="text-sm font-800 mb-4 text-slate-800 border-b pb-2">Groupes WhatsApp</h2>
             <div class="space-y-3 mb-6 bg-slate-50 p-4 rounded-2xl">
-                <p class="text-[9px] font-black text-slate-400 uppercase">Ajouter un nouveau groupe</p>
                 <input type="text" id="new-group-name" placeholder="Nom du groupe" class="w-full p-2 text-xs rounded-lg border-none">
                 <input type="text" id="new-group-link" placeholder="Lien WhatsApp" class="w-full p-2 text-xs rounded-lg border-none">
-                <button onclick="ajouterGroupe()" class="w-full bg-slate-800 text-white py-2 rounded-xl text-[9px] font-black uppercase">Ajouter</button>
+                <button onclick="ajouterGroupe()" class="w-full bg-slate-800 text-white py-2 rounded-xl text-[9px] font-black uppercase">Ajouter le groupe</button>
             </div>
             <div id="admin-list-groupes" class="space-y-3"></div>
         </section>
 
         <section class="card border border-amber-100 bg-amber-50/30">
-            <h2 class="text-sm font-800 mb-4 text-slate-800">Sécurité & Codes</h2>
+            <h2 class="text-sm font-800 mb-4 text-slate-800 italic">Paramètres de sécurité</h2>
             <div class="space-y-4">
                 <div>
                     <p class="text-[9px] font-bold text-slate-500 uppercase mb-2">Code d'accès Entraide (à donner aux paroissiens)</p>
-                    <div class="bg-white p-3 rounded-xl font-black text-center text-red-700 tracking-widest border border-slate-100 shadow-sm">
-                        PAROISSE2026
-                    </div>
+                    <div class="bg-white p-3 rounded-xl font-black text-center text-red-700 tracking-widest border border-slate-100 shadow-sm">PAROISSE2026</div>
                 </div>
-                <div class="pt-4 border-t border-slate-100">
-                    <p class="text-[9px] font-bold text-slate-500 uppercase mb-2">Changer le code PIN Admin</p>
+                <div>
+                    <p class="text-[9px] font-bold text-slate-500 uppercase mb-2">Changer le PIN Admin</p>
                     <input type="password" id="new-pin-input" placeholder="Nouveau code PIN" class="w-full p-3 rounded-xl border-none text-sm outline-none">
-                    <button onclick="changePin()" class="w-full bg-slate-400 text-white py-2 rounded-xl text-[9px] font-black uppercase mt-2">Mettre à jour le PIN</button>
+                    <button onclick="changePin()" class="w-full bg-slate-400 text-white py-2 rounded-xl text-[9px] font-black uppercase mt-2">Mettre à jour</button>
                 </div>
             </div>
         </section>
-
     </main>
 
     <nav class="bottom-nav">
-        <a href="index.html" class="nav-item">
-            <span class="block text-lg">🏠</span>
-            <span class="nav-label">Quitter</span>
-        </a>
-        <button onclick="refreshData()" class="nav-item">
-            <span class="block text-lg">🔄</span>
-            <span class="nav-label">Actualiser</span>
-        </button>
+        <a href="index.html" class="nav-item">🏠 <span class="nav-label">Quitter</span></a>
+        <button onclick="refreshData()" class="nav-item">🔄 <span class="nav-label">Actualiser</span></button>
     </nav>
 
     <script src="js/config.js"></script>
@@ -120,205 +99,140 @@
         let currentPin = localStorage.getItem('admin_pin') || '5717';
 
         function checkPin() {
-            const input = document.getElementById('pin-input').value;
-            if (input === currentPin) {
+            if (document.getElementById('pin-input').value === currentPin) {
                 document.getElementById('pin-overlay').style.display = 'none';
                 document.getElementById('admin-content').classList.remove('hidden');
                 refreshData();
             } else {
-                alert("Code PIN incorrect");
-                document.getElementById('pin-input').value = '';
+                alert("PIN incorrect");
             }
         }
 
         function changePin() {
             const newPin = document.getElementById('new-pin-input').value;
-            if (newPin.length < 4) return alert("Le code doit faire au moins 4 chiffres.");
+            if (newPin.length < 4) return alert("Minimum 4 chiffres.");
             localStorage.setItem('admin_pin', newPin);
             currentPin = newPin;
-            alert("Code PIN mis à jour !");
-            document.getElementById('new-pin-input').value = '';
+            alert("PIN mis à jour !");
         }
 
-        // --- GESTION ENTRAIDE ---
+        // --- ENTRAIDE ---
         async function loadAdminEntraide() {
-            const { data } = await sb.from('entraide').select('*').eq('valide', false).order('created_at', { ascending: false });
+            const { data } = await sb.from('entraide').select('*').order('created_at', { ascending: false });
             const container = document.getElementById('admin-entraide-list');
-            if (data && data.length > 0) {
-                container.innerHTML = data.map(e => `
-                    <div class="bg-white p-4 rounded-xl border border-amber-100 shadow-sm">
-                        <div class="flex justify-between items-start mb-2">
-                            <span class="text-[8px] font-black px-2 py-0.5 rounded-full ${e.type === 'offre' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'} uppercase">${e.type}</span>
-                            <span class="text-[8px] font-bold text-slate-300">${new Date(e.created_at).toLocaleDateString()}</span>
-                        </div>
-                        <h3 class="font-800 text-sm text-slate-800 mb-1">${e.titre}</h3>
-                        <p class="text-xs text-slate-500 mb-3 italic">"${e.description}"</p>
-                        <p class="text-[9px] font-bold text-slate-400 uppercase mb-3">Par: ${e.contact_nom} (${e.contact_info})</p>
+            if (!data || data.length === 0) {
+                container.innerHTML = "<p class='text-center text-xs italic text-slate-400'>Aucune activité.</p>";
+                return;
+            }
+
+            container.innerHTML = data.map(e => {
+                if (!e.valide) {
+                    return `<div class="bg-white p-4 rounded-xl border border-amber-200 shadow-sm mb-4">
+                        <p class="text-[8px] font-black text-amber-600 uppercase mb-1 italic">À VALIDER</p>
+                        <h3 class="font-800 text-sm text-slate-800">${e.titre}</h3>
+                        <p class="text-[10px] text-slate-500 mb-3 italic">"${e.description}"</p>
                         <div class="flex gap-2">
-                            <button onclick="validerEntraide('${e.id}')" class="flex-1 bg-green-600 text-white py-2 rounded-lg text-[9px] font-black uppercase">Valider</button>
-                            <button onclick="supprimerEntraide('${e.id}')" class="flex-1 bg-slate-100 text-slate-400 py-2 rounded-lg text-[9px] font-black uppercase">Refuser</button>
+                            <button onclick="validerEntraide('${e.id}')" class="flex-1 bg-green-600 text-white py-2 rounded-lg text-[9px] font-black uppercase">Publier</button>
+                            <button onclick="supprimerEntraide('${e.id}')" class="flex-1 bg-slate-100 text-red-500 py-2 rounded-lg text-[9px] font-black uppercase">Refuser</button>
                         </div>
-                    </div>
-                `).join('');
-            } else {
-                container.innerHTML = `<p class="text-center text-xs text-slate-400 italic py-4">Aucune annonce en attente.</p>`;
-            }
+                    </div>`;
+                }
+                if (e.acceptee_par && !e.code_envoye) {
+                    return `<div class="bg-blue-50 p-4 rounded-xl border border-blue-200 shadow-sm mb-4">
+                        <p class="text-[8px] font-black text-blue-600 uppercase mb-1">🤝 MISE EN RELATION</p>
+                        <h3 class="font-800 text-sm text-slate-800">${e.titre}</h3>
+                        <p class="text-xs text-slate-700 font-bold mt-2">Auteur: ${e.contact_nom} (${e.contact_info})</p>
+                        <p class="text-xs text-blue-800 mt-1 italic">Accepté par : ${e.acceptee_par}</p>
+                        <button onclick="marquerCommeEnvoye('${e.id}')" class="w-full mt-3 bg-blue-600 text-white py-2 rounded-lg text-[9px] font-black uppercase">Marquer Code Envoyé ✅</button>
+                    </div>`;
+                }
+                if (e.valide && !e.acceptee_par) {
+                    return `<div class="bg-slate-50 p-3 rounded-xl flex justify-between items-center border border-slate-100 mb-2">
+                        <p class="text-xs font-800 text-slate-700">${e.titre} <span class="text-[8px] font-normal text-green-600 italic">(En ligne)</span></p>
+                        <button onclick="supprimerEntraide('${e.id}')" class="text-red-500 text-[10px] font-black">Supprimer</button>
+                    </div>`;
+                }
+                return '';
+            }).join('');
         }
 
-        async function validerEntraide(id) {
-            const { error } = await sb.from('entraide').update({ valide: true }).eq('id', id);
-            if (!error) loadAdminEntraide();
-        }
+        async function validerEntraide(id) { await sb.from('entraide').update({ valide: true }).eq('id', id); loadAdminEntraide(); }
+        async function marquerCommeEnvoye(id) { await sb.from('entraide').update({ code_envoye: true }).eq('id', id); loadAdminEntraide(); }
+        async function supprimerEntraide(id) { if(confirm("Supprimer ?")) { await sb.from('entraide').delete().eq('id', id); loadAdminEntraide(); } }
 
-        async function supprimerEntraide(id) {
-            if(confirm("Supprimer cette annonce d'entraide ?")) {
-                const { error } = await sb.from('entraide').delete().eq('id', id);
-                if (!error) loadAdminEntraide();
-            }
-        }
-
-        // --- AUTRES GESTIONS ---
+        // --- MESSAGES ---
         async function loadMessages() {
             const { data } = await sb.from('contact_messages').select('*').order('created_at', { ascending: false });
             const container = document.getElementById('admin-messages-list');
             if (data && data.length > 0) {
                 container.innerHTML = data.map(m => `
                     <div class="bg-white p-4 rounded-xl border border-slate-100 shadow-sm">
-                        <div class="flex justify-between items-start mb-2">
-                            <div>
-                                <h3 class="font-800 text-sm text-slate-800">${m.prenom} ${m.nom}</h3>
-                                <p class="text-[8px] text-slate-400 uppercase font-bold">${new Date(m.created_at).toLocaleString('fr-FR')}</p>
-                            </div>
-                            <button onclick="deleteMessage('${m.id}')" class="text-red-500 text-[9px] font-black uppercase">Supprimer</button>
+                        <div class="flex justify-between items-start mb-2 text-xs">
+                            <span class="font-800 uppercase">${m.prenom} ${m.nom}</span>
+                            <button onclick="deleteMessage('${m.id}')" class="text-red-500 font-black">X</button>
                         </div>
-                        <div class="flex gap-2 mb-3">
-                            <button onclick="copyToClipboard('${m.email}')" class="bg-slate-100 px-2 py-1 rounded text-[9px] font-bold uppercase text-slate-600">📧 Email</button>
-                            ${m.telephone ? `<button onclick="copyToClipboard('${m.telephone}')" class="bg-slate-100 px-2 py-1 rounded text-[9px] font-bold uppercase text-slate-600">📞 Tel</button>` : ''}
-                        </div>
-                        <p class="text-xs text-slate-600 italic bg-slate-50 p-3 rounded-lg leading-relaxed border-l-2 border-slate-200">"${m.message}"</p>
-                    </div>
-                `).join('');
-            } else {
-                container.innerHTML = `<p class="text-center text-xs text-slate-400 italic py-4">Aucun message reçu.</p>`;
-            }
+                        <p class="text-[10px] text-slate-400 mb-2">${m.email} | ${m.telephone || 'Pas de tel'}</p>
+                        <p class="text-xs text-slate-600 bg-slate-50 p-3 rounded-lg border-l-2 border-slate-200">"${m.message}"</p>
+                    </div>`).join('');
+            } else { container.innerHTML = "<p class='text-center text-xs italic text-slate-400'>Aucun message.</p>"; }
         }
+        async function deleteMessage(id) { if(confirm("Supprimer ?")) { await sb.from('contact_messages').delete().eq('id', id); loadMessages(); } }
 
-        async function deleteMessage(id) {
-            if(confirm("Supprimer ce message ?")) {
-                const { error } = await sb.from('contact_messages').delete().eq('id', id);
-                if (!error) loadMessages();
-            }
-        }
-
-        function copyToClipboard(text) {
-            navigator.clipboard.writeText(text);
-            alert("Copié : " + text);
-        }
-
+        // --- ANNONCES ---
         async function loadAdminAnnonces() {
             const { data } = await sb.from('annonces').select('*').order('created_at', { ascending: false });
-            if (data) {
-                const list = document.getElementById('admin-list-annonces');
-                list.innerHTML = data.map(a => `
-                    <div class="bg-slate-50 p-3 rounded-xl flex justify-between items-center border border-slate-100">
-                        <div class="flex-1 pr-4">
-                            <p class="text-xs font-800 text-slate-700">${a.titre}</p>
-                            <p class="text-[10px] text-slate-400 line-clamp-1">${a.contenu}</p>
-                        </div>
-                        <button onclick="supprimerAnnonce('${a.id}')" class="text-red-500 text-[10px] font-black uppercase">Supprimer</button>
-                    </div>
-                `).join('');
-            }
+            const list = document.getElementById('admin-list-annonces');
+            if (data) { list.innerHTML = data.map(a => `<div class="bg-slate-50 p-3 rounded-xl flex justify-between items-center border border-slate-100">
+                <span class="text-xs font-800 text-slate-700">${a.titre}</span>
+                <button onclick="supprimerAnnonce('${a.id}')" class="text-red-500 text-[10px] font-black uppercase">Supprimer</button>
+            </div>`).join(''); }
         }
-
         async function publierAnnonce() {
             const titre = document.getElementById('titre-annonce').value;
             const contenu = document.getElementById('texte-annonce').value;
-            if (!titre || !contenu) return alert("Remplissez tous les champs.");
+            if(!titre || !contenu) return alert("Champs vides.");
             const { error } = await sb.from('annonces').insert([{ titre, contenu }]);
-            if (!error) {
-                document.getElementById('titre-annonce').value = '';
-                document.getElementById('texte-annonce').value = '';
-                loadAdminAnnonces();
-            }
+            if(!error) { document.getElementById('titre-annonce').value = ''; document.getElementById('texte-annonce').value = ''; loadAdminAnnonces(); }
         }
+        async function supprimerAnnonce(id) { await sb.from('annonces').delete().eq('id', id); loadAdminAnnonces(); }
 
-        async function supprimerAnnonce(id) {
-            if(confirm("Supprimer cette annonce ?")) {
-                const { error } = await sb.from('annonces').delete().eq('id', id);
-                if (!error) loadAdminAnnonces();
-            }
-        }
-
+        // --- PRIERES ---
         async function loadAdminPrières() {
             const { data } = await sb.from('intentions').select('*').order('created_at', { ascending: false });
-            if (data) {
-                const feed = document.getElementById('admin-feed-priere');
-                feed.innerHTML = data.map(p => `
-                    <div class="card p-4 border border-slate-100 flex justify-between items-center">
-                        <div class="flex-1 pr-4">
-                            <p class="text-[9px] font-black text-red-700 uppercase mb-1">${p.prenom}</p>
-                            <p class="text-xs text-slate-600 line-clamp-1">${p.texte}</p>
-                        </div>
-                        <button onclick="supprimerPriere('${p.id}')" class="bg-red-50 text-red-600 px-3 py-2 rounded-lg text-[9px] font-black uppercase">Supprimer</button>
-                    </div>
-                `).join('');
-            }
+            const feed = document.getElementById('admin-feed-priere');
+            if (data) { feed.innerHTML = data.map(p => `<div class="bg-white p-3 rounded-xl border border-slate-100 flex justify-between items-center">
+                <p class="text-xs flex-1 pr-4"><strong>${p.prenom}:</strong> ${p.texte}</p>
+                <button onclick="supprimerPriere('${p.id}')" class="text-red-500 text-[10px] font-black">Supprimer</button>
+            </div>`).join(''); }
         }
+        async function supprimerPriere(id) { await sb.from('intentions').delete().eq('id', id); loadAdminPrières(); }
 
-        async function supprimerPriere(id) {
-            if(confirm("Supprimer cette intention ?")) {
-                const { error } = await sb.from('intentions').delete().eq('id', id);
-                if (!error) loadAdminPrières();
-            }
-        }
-
+        // --- GROUPES ---
         async function loadAdminGroupes() {
             const { data } = await sb.from('groupes').select('*').order('nom');
-            if (data) {
-                const list = document.getElementById('admin-list-groupes');
-                list.innerHTML = data.map(g => `
-                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-100 space-y-2">
-                        <div class="flex justify-between items-center">
-                            <input type="text" onchange="updateGroupe('${g.id}', 'nom', this.value)" value="${g.nom}" class="font-800 text-xs bg-transparent border-none">
-                            <button onclick="supprimerGroupe('${g.id}')" class="text-red-500 text-[10px] font-bold">Supprimer</button>
-                        </div>
-                        <input type="text" onchange="updateGroupe('${g.id}', 'lien_wa', this.value)" value="${g.lien_wa || ''}" class="text-[9px] p-2 bg-white border rounded w-full">
-                    </div>
-                `).join('');
-            }
+            const list = document.getElementById('admin-list-groupes');
+            if (data) { list.innerHTML = data.map(g => `<div class="bg-white p-3 rounded-xl flex justify-between items-center border border-slate-100">
+                <span class="text-xs font-800">${g.nom}</span>
+                <button onclick="supprimerGroupe('${g.id}')" class="text-red-500 text-[10px] font-black">X</button>
+            </div>`).join(''); }
         }
-
         async function ajouterGroupe() {
             const nom = document.getElementById('new-group-name').value;
             const lien = document.getElementById('new-group-link').value;
-            if (!nom) return alert("Le nom est obligatoire.");
-            const { error } = await sb.from('groupes').insert([{ nom, lien_wa: lien }]);
-            if (!error) {
-                document.getElementById('new-group-name').value = '';
-                document.getElementById('new-group-link').value = '';
-                loadAdminGroupes();
-            }
+            if(!nom) return;
+            await sb.from('groupes').insert([{ nom, lien_wa: lien }]);
+            document.getElementById('new-group-name').value = '';
+            document.getElementById('new-group-link').value = '';
+            loadAdminGroupes();
         }
-
-        async function updateGroupe(id, field, value) {
-            const upd = {}; upd[field] = value;
-            await sb.from('groupes').update(upd).eq('id', id);
-        }
-
-        async function supprimerGroupe(id) {
-            if(confirm("Supprimer ce groupe ?")) {
-                const { error } = await sb.from('groupes').delete().eq('id', id);
-                if (!error) loadAdminGroupes();
-            }
-        }
+        async function supprimerGroupe(id) { await sb.from('groupes').delete().eq('id', id); loadAdminGroupes(); }
 
         function refreshData() {
             loadMessages();
+            loadAdminEntraide();
             loadAdminAnnonces();
             loadAdminPrières();
             loadAdminGroupes();
-            loadAdminEntraide();
         }
     </script>
 </body>
