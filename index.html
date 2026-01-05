@@ -52,6 +52,16 @@
 
     <main class="p-6 space-y-6 pb-24">
         
+        <section id="bloc-annonce-importante" class="hidden">
+            <div class="bg-red-50 border-2 border-red-200 p-6 rounded-2xl shadow-sm relative overflow-hidden">
+                <div class="absolute top-0 right-0 bg-red-200 px-3 py-1 rounded-bl-xl">
+                    <span class="text-[8px] font-black text-red-700 uppercase tracking-tighter">Important</span>
+                </div>
+                <h3 id="titre-important" class="text-sm font-900 text-red-800 mb-2 uppercase tracking-tight"></h3>
+                <p id="texte-important" class="text-xs text-red-900/80 leading-relaxed italic"></p>
+            </div>
+        </section>
+
         <section>
             <div class="flex items-center gap-2 mb-4 relative z-10">
                 <div class="h-[1px] flex-1 bg-slate-200"></div>
@@ -94,13 +104,35 @@
             updateLiturgie();
             loadVerset();
             loadIntention();
+            loadAnnonceImportante();
             checkNewAnnonces();
             
             sb.channel('custom-insert-channel')
             .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'annonces' }, (payload) => {
                 const badge = document.getElementById('badge-annonces');
                 if (badge) badge.classList.remove('hidden');
+                // Recharger si une nouvelle annonce importante est publiée
+                if (payload.new && payload.new.est_importante) {
+                    loadAnnonceImportante();
+                }
             }).subscribe();
+        }
+
+        async function loadAnnonceImportante() {
+            const { data } = await sb.from('annonces')
+                .select('*')
+                .eq('est_importante', true)
+                .order('created_at', { ascending: false })
+                .limit(1)
+                .single();
+
+            if (data) {
+                document.getElementById('bloc-annonce-importante').classList.remove('hidden');
+                document.getElementById('titre-important').innerText = data.titre;
+                document.getElementById('texte-important').innerText = data.contenu;
+            } else {
+                document.getElementById('bloc-annonce-importante').classList.add('hidden');
+            }
         }
 
         async function loadIntention() {
