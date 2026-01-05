@@ -6,6 +6,7 @@ function loadMenu() {
     const menuItems = [
         { href: 'index.html', icon: '🏠', label: 'Accueil' },
         { href: 'agenda.html', icon: '📅', label: 'Agenda' },
+        { href: 'priere.html', icon: '🕯️', label: 'Prières' },
         { href: 'groupes.html', icon: '💬', label: 'Groupes' },
         { href: 'contact.html', icon: '✉️', label: 'Contact' }
     ];
