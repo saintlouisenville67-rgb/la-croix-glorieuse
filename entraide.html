@@ -16,17 +16,10 @@
     </header>
 
     <main class="p-6 mb-24">
-        <div id="statut-validation" class="mb-6 -mt-12 relative z-10 hidden">
-            <div class="bg-amber-50 border border-amber-200 p-4 rounded-2xl flex items-center gap-3 shadow-sm">
-                <span class="text-lg">🔒</span>
-                <p class="text-[9px] font-bold text-amber-800 leading-tight uppercase">Accès restreint. Contactez l'admin pour obtenir votre code de validation personnel.</p>
-            </div>
-        </div>
-
-        <div class="flex gap-2 mb-6">
-            <button onclick="loadEntraide('tous')" class="flex-1 py-3 rounded-xl bg-white shadow-sm text-[10px] font-black uppercase text-slate-400 focus:text-red-700 transition-all focus:ring-2 focus:ring-red-50">Tous</button>
-            <button onclick="loadEntraide('demande')" class="flex-1 py-3 rounded-xl bg-white shadow-sm text-[10px] font-black uppercase text-slate-400 focus:text-red-700 transition-all focus:ring-2 focus:ring-red-50">Demandes</button>
-            <button onclick="loadEntraide('offre')" class="flex-1 py-3 rounded-xl bg-white shadow-sm text-[10px] font-black uppercase text-slate-400 focus:text-red-700 transition-all focus:ring-2 focus:ring-red-50">Offres</button>
+        <div class="flex gap-2 mb-6 -mt-12 relative z-10">
+            <button onclick="loadEntraide('tous')" class="flex-1 py-3 rounded-xl bg-white shadow-md text-[10px] font-black uppercase text-slate-400 focus:text-red-700 transition-all">Tous</button>
+            <button onclick="loadEntraide('demande')" class="flex-1 py-3 rounded-xl bg-white shadow-md text-[10px] font-black uppercase text-slate-400 focus:text-red-700 transition-all">Demandes</button>
+            <button onclick="loadEntraide('offre')" class="flex-1 py-3 rounded-xl bg-white shadow-md text-[10px] font-black uppercase text-slate-400 focus:text-red-700 transition-all">Offres</button>
         </div>
 
         <div id="feed-entraide" class="space-y-4">
@@ -40,44 +33,28 @@
         <div class="bg-white w-full rounded-t-[40px] p-8 animate-slide-up max-h-[95vh] overflow-y-auto">
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-lg font-800 text-slate-800 uppercase italic">Déposer une annonce</h2>
-                <button onclick="toggleModal(false)" class="text-slate-400 text-3xl p-2">&times;</button>
+                <button onclick="toggleModal(false)" class="text-slate-400 text-3xl">&times;</button>
             </div>
             
             <div class="space-y-4 pb-12">
-                <div>
-                    <label class="text-[9px] font-black text-slate-400 uppercase ml-2">Type d'annonce</label>
-                    <select id="type" class="w-full bg-slate-50 p-4 rounded-xl text-sm font-semibold outline-none focus:ring-2 focus:ring-red-100">
-                        <option value="demande">Je demande de l'aide</option>
-                        <option value="offre">Je propose mon aide</option>
-                    </select>
-                </div>
+                <select id="type" class="w-full bg-slate-50 p-4 rounded-xl text-sm font-semibold outline-none">
+                    <option value="demande">Je demande de l'aide</option>
+                    <option value="offre">Je propose mon aide</option>
+                </select>
                 
-                <div>
-                    <label class="text-[9px] font-black text-slate-400 uppercase ml-2">Titre</label>
-                    <input type="text" id="titre" placeholder="Ex: Covoiturage Messe Dimanche" class="w-full bg-slate-50 p-4 rounded-xl text-sm font-semibold outline-none focus:ring-2 focus:ring-red-100">
-                </div>
-
-                <div>
-                    <label class="text-[9px] font-black text-slate-400 uppercase ml-2">Description</label>
-                    <textarea id="description" placeholder="Détails de votre proposition ou besoin..." class="w-full bg-slate-50 p-4 rounded-xl text-sm min-h-[100px] outline-none focus:ring-2 focus:ring-red-100"></textarea>
-                </div>
+                <input type="text" id="titre" placeholder="Titre de l'annonce" class="w-full bg-slate-50 p-4 rounded-xl text-sm font-semibold outline-none">
+                <textarea id="description" placeholder="Description..." class="w-full bg-slate-50 p-4 rounded-xl text-sm min-h-[100px] outline-none"></textarea>
 
                 <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="text-[9px] font-black text-slate-400 uppercase ml-2">Nom</label>
-                        <input type="text" id="contact_nom" placeholder="Votre Nom" class="w-full bg-slate-50 p-4 rounded-xl text-sm font-semibold outline-none focus:ring-2 focus:ring-red-100">
-                    </div>
-                    <div>
-                        <label class="text-[9px] font-black text-slate-400 uppercase ml-2">Téléphone</label>
-                        <input type="tel" id="contact_info" placeholder="06..." class="w-full bg-slate-50 p-4 rounded-xl text-sm font-semibold outline-none focus:ring-2 focus:ring-red-100">
-                    </div>
+                    <input type="text" id="contact_nom" placeholder="Votre Nom" class="w-full bg-slate-50 p-4 rounded-xl text-sm font-semibold outline-none">
+                    <input type="tel" id="contact_info" placeholder="Téléphone" class="w-full bg-slate-50 p-4 rounded-xl text-sm font-semibold outline-none">
                 </div>
 
                 <div class="p-4 bg-red-50 rounded-2xl">
-                    <p class="text-[8px] text-red-700 font-bold leading-tight uppercase">⚠️ Votre annonce sera vérifiée et validée par le secrétariat avant d'être publiée.</p>
+                    <p class="text-[8px] text-red-700 font-bold uppercase">⚠️ L'annonce sera vérifiée par un abbé avant publication.</p>
                 </div>
 
-                <button onclick="publierEntraide()" id="btn-publier" class="w-full gradient-header text-white py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg active:scale-95 transition-all">
+                <button onclick="publierEntraide()" id="btn-publier" class="w-full gradient-header text-white py-4 rounded-2xl font-black text-[10px] uppercase shadow-lg">
                     Envoyer pour validation
                 </button>
             </div>
@@ -88,67 +65,60 @@
 
     <script src="js/config.js"></script>
     <script>
-        const isUserValidated = () => localStorage.getItem('paroissien_valide') === 'OUI';
-
         function toggleModal(show) {
-            const modal = document.getElementById('modal-form');
-            if(show) {
-                modal.classList.remove('hidden');
-                document.body.style.overflow = 'hidden'; // Empêche le scroll en arrière-plan
-            } else {
-                modal.classList.add('hidden');
-                document.body.style.overflow = '';
-            }
+            document.getElementById('modal-form').classList.toggle('hidden', !show);
         }
 
         async function loadEntraide(filter = 'tous') {
-            if (!isUserValidated()) {
-                document.getElementById('statut-validation').classList.remove('hidden');
-            }
-
             const feed = document.getElementById('feed-entraide');
-            let query = sb.from('entraide').select('*').eq('valide', true).order('created_at', { ascending: false });
+            // On ne sélectionne que les annonces validées et non terminées
+            let query = sb.from('entraide').select('*').eq('valide', true).eq('est_terminee', false).order('created_at', { ascending: false });
             
             if (filter !== 'tous') query = query.eq('type', filter);
             
-            const { data, error } = await query;
+            const { data } = await query;
 
             if (data && data.length > 0) {
                 localStorage.setItem('last_entraide_date', data[0].created_at);
-                
                 feed.innerHTML = data.map(a => `
                     <div class="card animate-fade-in relative border-l-4 ${a.type === 'offre' ? 'border-green-500' : 'border-red-500'}">
                         <div class="flex justify-between items-start mb-2">
-                            <span class="text-[8px] font-black px-2 py-0.5 rounded-full ${a.type === 'offre' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'} uppercase">
-                                ${a.type}
-                            </span>
-                            <span class="text-[8px] font-bold text-slate-300">${new Date(a.created_at).toLocaleDateString('fr-FR')}</span>
+                            <span class="text-[8px] font-black px-2 py-0.5 rounded-full ${a.type === 'offre' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'} uppercase">${a.type}</span>
+                            <span class="text-[8px] font-bold text-slate-300">${new Date(a.created_at).toLocaleDateString()}</span>
                         </div>
-                        <h3 class="font-800 text-sm mb-1 text-slate-800 uppercase italic leading-tight">${a.titre}</h3>
-                        <p class="text-[10px] text-slate-500 mb-4 leading-relaxed">${a.description}</p>
+                        <h3 class="font-800 text-sm mb-1 text-slate-800 uppercase italic">${a.titre}</h3>
+                        <p class="text-[10px] text-slate-500 mb-4">${a.description}</p>
                         
                         <div class="pt-3 border-t border-slate-50 flex justify-between items-center">
                             <span class="text-[9px] font-black text-slate-400 uppercase">${a.contact_nom}</span>
-                            ${isUserValidated() 
-                                ? `<a href="https://wa.me/${a.contact_info.replace(/\s/g, '')}" class="text-[9px] font-black text-green-600 uppercase tracking-widest flex items-center gap-1">Contacter ➔</a>`
-                                : `<button onclick="saisirCode()" class="text-[9px] font-black text-red-700 uppercase italic flex items-center gap-1">🔒 Débloquer</button>`
-                            }
+                            <button onclick="repondreAnnonce('${a.id}')" class="text-[9px] font-black text-blue-600 uppercase tracking-widest flex items-center gap-1">
+                                🤝 Je souhaite répondre ➔
+                            </button>
                         </div>
                     </div>
                 `).join('');
             } else {
-                feed.innerHTML = "<p class='text-center text-xs text-slate-400 italic py-10'>Aucune annonce d'entraide validée pour le moment.</p>";
+                feed.innerHTML = "<p class='text-center text-xs text-slate-400 italic py-10'>Aucune annonce disponible.</p>";
             }
         }
 
-        function saisirCode() {
-            const code = prompt("Veuillez saisir votre code d'accès personnel (envoyé par l'admin) :");
-            if (code === "PAROISSE2026") { 
-                localStorage.setItem('paroissien_valide', 'OUI');
-                hapticFeedback(50);
-                location.reload();
-            } else if (code !== null) {
-                alert("Code invalide. Contactez le secrétariat.");
+        async function repondreAnnonce(id) {
+            const codeSaisi = prompt("Pour accéder aux coordonnées, demandez le code spécifique à un abbé et saisissez-le ici :");
+            if (!codeSaisi) return;
+
+            const { data, error } = await sb.from('entraide')
+                .select('code_validation, contact_info, contact_nom')
+                .eq('id', id)
+                .single();
+
+            if (data && data.code_validation === codeSaisi) {
+                if (typeof hapticFeedback === 'function') hapticFeedback(50);
+                alert(`Code validé !\n\nContact : ${data.contact_nom}\nTel : ${data.contact_info}\n\nL'annonce va maintenant être retirée de la liste.`);
+                
+                await sb.from('entraide').update({ est_terminee: true }).eq('id', id);
+                loadEntraide();
+            } else {
+                alert("Code incorrect pour cette annonce.");
             }
         }
 
@@ -160,31 +130,19 @@
                 description: document.getElementById('description').value,
                 contact_nom: document.getElementById('contact_nom').value,
                 contact_info: document.getElementById('contact_info').value,
-                valide: false
+                valide: false,
+                est_terminee: false
             };
 
-            if (!fields.titre || !fields.description || !fields.contact_info) {
-                hapticFeedback(100);
-                alert("Merci de remplir tous les champs.");
-                return;
-            }
+            if (!fields.titre || !fields.description) return alert("Remplissez les champs.");
 
             btn.disabled = true;
-            btn.innerText = "ENVOI EN COURS...";
-
             const { error } = await sb.from('entraide').insert([fields]);
-            
             if (!error) {
-                hapticFeedback(50);
-                alert("Demande transmise ! L'annonce apparaîtra dès que l'admin l'aura validée.");
+                alert("Annonce envoyée pour validation !");
                 toggleModal(false);
-                // Reset formulaire
-                document.getElementById('titre').value = '';
-                document.getElementById('description').value = '';
             } else {
-                alert("Erreur : " + error.message);
                 btn.disabled = false;
-                btn.innerText = "RÉESSAYER";
             }
         }
 
