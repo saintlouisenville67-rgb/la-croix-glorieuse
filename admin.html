@@ -32,7 +32,8 @@
         
         <section class="card shadow-xl -mt-12 relative z-10">
             <h2 class="text-sm font-800 mb-4 text-slate-800 border-b pb-2">Liturgie & Annonces</h2>
-            <div class="space-y-4">
+            
+            <div class="space-y-4 mb-8">
                 <input type="text" id="titre-annonce" placeholder="Titre de l'annonce" 
                     class="w-full bg-slate-50 p-3 rounded-xl border-none text-sm font-semibold outline-none focus:ring-2 focus:ring-red-100">
                 
@@ -43,6 +44,12 @@
                     class="w-full gradient-header text-white py-3 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] shadow-lg active:scale-95 transition-all">
                     Publier l'annonce
                 </button>
+            </div>
+
+            <div class="space-y-3">
+                <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Annonces actives</p>
+                <div id="admin-list-annonces" class="space-y-3">
+                    </div>
             </div>
         </section>
 
@@ -116,37 +123,55 @@
             if (newPin.length < 4) return alert("Le code doit faire au moins 4 chiffres.");
             localStorage.setItem('admin_pin', newPin);
             currentPin = newPin;
-            alert("Code PIN mis à jour avec succès !");
+            alert("Code PIN mis à jour !");
             document.getElementById('new-pin-input').value = '';
         }
 
         // --- GESTION DES ANNONCES ---
+        async function loadAdminAnnonces() {
+            const { data } = await sb.from('annonces').select('*').order('created_at', { ascending: false });
+            if (data) {
+                const list = document.getElementById('admin-list-annonces');
+                list.innerHTML = data.map(a => `
+                    <div class="bg-slate-50 p-3 rounded-xl flex justify-between items-center border border-slate-100">
+                        <div class="flex-1 pr-4">
+                            <p class="text-xs font-800 text-slate-700">${a.titre}</p>
+                            <p class="text-[10px] text-slate-400 line-clamp-1">${a.contenu}</p>
+                        </div>
+                        <button onclick="supprimerAnnonce('${a.id}')" class="text-red-500 text-[10px] font-black uppercase">Supprimer</button>
+                    </div>
+                `).join('');
+            }
+        }
+
         async function publierAnnonce() {
             const titre = document.getElementById('titre-annonce').value;
             const contenu = document.getElementById('texte-annonce').value;
-
             if (!titre || !contenu) return alert("Remplissez tous les champs.");
 
             const { error } = await sb.from('annonces').insert([{ titre, contenu }]);
-
-            if (error) {
-                console.error(error);
-                alert("Erreur lors de l'ajout. Vérifiez la table 'annonces' dans Supabase.");
-            } else {
-                alert("Annonce publiée !");
+            if (error) alert("Erreur : " + error.message);
+            else {
                 document.getElementById('titre-annonce').value = '';
                 document.getElementById('texte-annonce').value = '';
+                loadAdminAnnonces();
+            }
+        }
+
+        async function supprimerAnnonce(id) {
+            if(confirm("Supprimer cette annonce ?")) {
+                const { error } = await sb.from('annonces').delete().eq('id', id);
+                if (!error) loadAdminAnnonces();
             }
         }
 
         // --- MODÉRATION DES PRIÈRES ---
         async function loadAdminPrières() {
             const { data } = await sb.from('intentions').select('*').order('created_at', { ascending: false });
-
             if (data) {
                 const feed = document.getElementById('admin-feed-priere');
                 feed.innerHTML = data.map(p => `
-                    <div class="card p-4 border border-slate-100 flex justify-between items-center animate-fade-in">
+                    <div class="card p-4 border border-slate-100 flex justify-between items-center">
                         <div class="flex-1 pr-4">
                             <p class="text-[9px] font-black text-red-700 uppercase mb-1">${p.prenom}</p>
                             <p class="text-xs text-slate-600 line-clamp-1">${p.texte}</p>
@@ -161,12 +186,8 @@
 
         async function supprimerPriere(id) {
             if(confirm("Supprimer cette intention ?")) {
-                const { error } = await sb.from('intentions').delete().match({ id: id });
-                if (error) {
-                    alert("Erreur de suppression");
-                } else {
-                    loadAdminPrières();
-                }
+                const { error } = await sb.from('intentions').delete().eq('id', id);
+                if (!error) loadAdminPrières();
             }
         }
 
@@ -176,15 +197,12 @@
             if (data) {
                 const list = document.getElementById('admin-list-groupes');
                 list.innerHTML = data.map(g => `
-                    <div class="bg-slate-50 p-4 rounded-xl space-y-2 border border-slate-100">
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-100 space-y-2">
                         <div class="flex justify-between items-center">
-                            <input type="text" onchange="updateGroupe('${g.id}', 'nom', this.value)" value="${g.nom}" class="font-800 text-xs bg-transparent border-none w-1/2">
+                            <input type="text" onchange="updateGroupe('${g.id}', 'nom', this.value)" value="${g.nom}" class="font-800 text-xs bg-transparent border-none">
                             <button onclick="supprimerGroupe('${g.id}')" class="text-red-500 text-[10px] font-bold">Supprimer</button>
                         </div>
-                        <input type="text" onchange="updateGroupe('${g.id}', 'lien_wa', this.value)" 
-                            value="${g.lien_wa || ''}" 
-                            placeholder="Lien WhatsApp" 
-                            class="text-[9px] p-2 bg-white border border-slate-200 rounded w-full outline-none">
+                        <input type="text" onchange="updateGroupe('${g.id}', 'lien_wa', this.value)" value="${g.lien_wa || ''}" class="text-[9px] p-2 bg-white border rounded w-full">
                     </div>
                 `).join('');
             }
@@ -194,7 +212,6 @@
             const nom = document.getElementById('new-group-name').value;
             const lien = document.getElementById('new-group-link').value;
             if (!nom) return alert("Le nom est obligatoire.");
-
             const { error } = await sb.from('groupes').insert([{ nom, lien_wa: lien }]);
             if (!error) {
                 document.getElementById('new-group-name').value = '';
@@ -204,10 +221,8 @@
         }
 
         async function updateGroupe(id, field, value) {
-            const updateData = {};
-            updateData[field] = value;
-            const { error } = await sb.from('groupes').update(updateData).eq('id', id);
-            if (error) alert("Erreur de mise à jour");
+            const upd = {}; upd[field] = value;
+            await sb.from('groupes').update(upd).eq('id', id);
         }
 
         async function supprimerGroupe(id) {
@@ -218,6 +233,7 @@
         }
 
         function refreshData() {
+            loadAdminAnnonces();
             loadAdminPrières();
             loadAdminGroupes();
         }
