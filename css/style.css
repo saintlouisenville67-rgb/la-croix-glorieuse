@@ -1,0 +1,52 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
+
+:root {
+    --alsace-red: #b91c1c;
+    --alsace-light: #fef2f2;
+}
+
+body { 
+    font-family: 'Plus Jakarta Sans', sans-serif; 
+    background-color: #fcfcfd; 
+    color: #1e293b;
+    margin: 0;
+    padding-bottom: 80px; /* Espace pour le menu bas */
+}
+
+.gradient-header {
+    background: linear-gradient(135deg, #991b1b 0%, #dc2626 100%);
+}
+
+.card {
+    background: white;
+    border-radius: 24px;
+    padding: 20px;
+    border: 1px solid #f1f5f9;
+    shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+}
+
+/* Menu de navigation en bas */
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    background: white;
+    display: flex;
+    justify-content: space-around;
+    padding: 15px 0;
+    border-top: 1px solid #f1f5f9;
+    z-index: 100;
+}
+
+.nav-item {
+    text-decoration: none;
+    font-size: 10px;
+    font-weight: 800;
+    color: #94a3b8;
+    text-transform: uppercase;
+    text-align: center;
+}
+
+.nav-item.active {
+    color: var(--alsace-red);
+}
