@@ -28,7 +28,7 @@
         <p class="text-[10px] font-black uppercase tracking-widest opacity-80">Gestion Paroissiale</p>
     </header>
 
-    <main id="admin-content" class="p-6 space-y-8 hidden">
+    <main id="admin-content" class="p-6 space-y-8 hidden mb-24">
         
         <section class="card shadow-xl -mt-12 relative z-10">
             <h2 class="text-sm font-800 mb-4 text-slate-800 border-b pb-2 text-red-700">Messages Reçus</h2>
@@ -37,26 +37,29 @@
             </div>
         </section>
 
+        <section class="card border-l-4 border-amber-500">
+            <h2 class="text-sm font-800 mb-4 text-slate-800 border-b pb-2">🤝 Modération Entraide</h2>
+            <p class="text-[9px] font-black text-slate-400 uppercase mb-4 italic">Annonces en attente de validation</p>
+            <div id="admin-entraide-list" class="space-y-4">
+                <p class="text-center text-xs text-slate-400 italic">Chargement des demandes...</p>
+            </div>
+        </section>
+
         <section class="card">
             <h2 class="text-sm font-800 mb-4 text-slate-800 border-b pb-2">Liturgie & Annonces</h2>
-            
             <div class="space-y-4 mb-8">
                 <input type="text" id="titre-annonce" placeholder="Titre de l'annonce" 
                     class="w-full bg-slate-50 p-3 rounded-xl border-none text-sm font-semibold outline-none focus:ring-2 focus:ring-red-100">
-                
                 <textarea id="texte-annonce" placeholder="Texte de l'annonce..." 
                     class="w-full bg-slate-50 p-4 rounded-xl border-none text-sm min-h-[80px] outline-none focus:ring-2 focus:ring-red-100"></textarea>
-                
                 <button onclick="publierAnnonce()" 
                     class="w-full gradient-header text-white py-3 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] shadow-lg active:scale-95 transition-all">
                     Publier l'annonce
                 </button>
             </div>
-
             <div class="space-y-3">
                 <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Annonces actives</p>
-                <div id="admin-list-annonces" class="space-y-3">
-                    </div>
+                <div id="admin-list-annonces" class="space-y-3"></div>
             </div>
         </section>
 
@@ -66,7 +69,6 @@
                 <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Modération Prières</span>
                 <div class="h-[1px] flex-1 bg-slate-200"></div>
             </div>
-            
             <div id="admin-feed-priere" class="space-y-4">
                 <p class="text-center text-xs text-slate-400 italic">Chargement des intentions...</p>
             </div>
@@ -74,24 +76,29 @@
 
         <section class="card">
             <h2 class="text-sm font-800 mb-4 text-slate-800 border-b pb-2">Gestion des Groupes</h2>
-            
             <div class="space-y-3 mb-6 bg-slate-50 p-4 rounded-2xl">
                 <p class="text-[9px] font-black text-slate-400 uppercase">Ajouter un nouveau groupe</p>
                 <input type="text" id="new-group-name" placeholder="Nom du groupe" class="w-full p-2 text-xs rounded-lg border-none">
                 <input type="text" id="new-group-link" placeholder="Lien WhatsApp" class="w-full p-2 text-xs rounded-lg border-none">
                 <button onclick="ajouterGroupe()" class="w-full bg-slate-800 text-white py-2 rounded-xl text-[9px] font-black uppercase">Ajouter</button>
             </div>
-
-            <div id="admin-list-groupes" class="space-y-3">
-                </div>
+            <div id="admin-list-groupes" class="space-y-3"></div>
         </section>
 
         <section class="card border border-amber-100 bg-amber-50/30">
-            <h2 class="text-sm font-800 mb-4 text-slate-800">Sécurité</h2>
-            <div class="space-y-3">
-                <p class="text-[9px] font-bold text-slate-500 uppercase">Changer le code PIN</p>
-                <input type="password" id="new-pin-input" placeholder="Nouveau code PIN" class="w-full p-3 rounded-xl border-none text-sm outline-none">
-                <button onclick="changePin()" class="w-full bg-slate-400 text-white py-2 rounded-xl text-[9px] font-black uppercase">Mettre à jour le PIN</button>
+            <h2 class="text-sm font-800 mb-4 text-slate-800">Sécurité & Codes</h2>
+            <div class="space-y-4">
+                <div>
+                    <p class="text-[9px] font-bold text-slate-500 uppercase mb-2">Code d'accès Entraide (à donner aux paroissiens)</p>
+                    <div class="bg-white p-3 rounded-xl font-black text-center text-red-700 tracking-widest border border-slate-100 shadow-sm">
+                        PAROISSE2026
+                    </div>
+                </div>
+                <div class="pt-4 border-t border-slate-100">
+                    <p class="text-[9px] font-bold text-slate-500 uppercase mb-2">Changer le code PIN Admin</p>
+                    <input type="password" id="new-pin-input" placeholder="Nouveau code PIN" class="w-full p-3 rounded-xl border-none text-sm outline-none">
+                    <button onclick="changePin()" class="w-full bg-slate-400 text-white py-2 rounded-xl text-[9px] font-black uppercase mt-2">Mettre à jour le PIN</button>
+                </div>
             </div>
         </section>
 
@@ -110,7 +117,6 @@
 
     <script src="js/config.js"></script>
     <script>
-        // --- SYSTÈME DE PIN ---
         let currentPin = localStorage.getItem('admin_pin') || '5717';
 
         function checkPin() {
@@ -134,11 +140,47 @@
             document.getElementById('new-pin-input').value = '';
         }
 
-        // --- GESTION DES MESSAGES (MISE À JOUR 3) ---
+        // --- GESTION ENTRAIDE ---
+        async function loadAdminEntraide() {
+            const { data } = await sb.from('entraide').select('*').eq('valide', false).order('created_at', { ascending: false });
+            const container = document.getElementById('admin-entraide-list');
+            if (data && data.length > 0) {
+                container.innerHTML = data.map(e => `
+                    <div class="bg-white p-4 rounded-xl border border-amber-100 shadow-sm">
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="text-[8px] font-black px-2 py-0.5 rounded-full ${e.type === 'offre' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'} uppercase">${e.type}</span>
+                            <span class="text-[8px] font-bold text-slate-300">${new Date(e.created_at).toLocaleDateString()}</span>
+                        </div>
+                        <h3 class="font-800 text-sm text-slate-800 mb-1">${e.titre}</h3>
+                        <p class="text-xs text-slate-500 mb-3 italic">"${e.description}"</p>
+                        <p class="text-[9px] font-bold text-slate-400 uppercase mb-3">Par: ${e.contact_nom} (${e.contact_info})</p>
+                        <div class="flex gap-2">
+                            <button onclick="validerEntraide('${e.id}')" class="flex-1 bg-green-600 text-white py-2 rounded-lg text-[9px] font-black uppercase">Valider</button>
+                            <button onclick="supprimerEntraide('${e.id}')" class="flex-1 bg-slate-100 text-slate-400 py-2 rounded-lg text-[9px] font-black uppercase">Refuser</button>
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                container.innerHTML = `<p class="text-center text-xs text-slate-400 italic py-4">Aucune annonce en attente.</p>`;
+            }
+        }
+
+        async function validerEntraide(id) {
+            const { error } = await sb.from('entraide').update({ valide: true }).eq('id', id);
+            if (!error) loadAdminEntraide();
+        }
+
+        async function supprimerEntraide(id) {
+            if(confirm("Supprimer cette annonce d'entraide ?")) {
+                const { error } = await sb.from('entraide').delete().eq('id', id);
+                if (!error) loadAdminEntraide();
+            }
+        }
+
+        // --- AUTRES GESTIONS ---
         async function loadMessages() {
-            const { data, error } = await sb.from('contact_messages').select('*').order('created_at', { ascending: false });
+            const { data } = await sb.from('contact_messages').select('*').order('created_at', { ascending: false });
             const container = document.getElementById('admin-messages-list');
-            
             if (data && data.length > 0) {
                 container.innerHTML = data.map(m => `
                     <div class="bg-white p-4 rounded-xl border border-slate-100 shadow-sm">
@@ -162,19 +204,17 @@
         }
 
         async function deleteMessage(id) {
-            if(confirm("Supprimer ce message définitivement ?")) {
+            if(confirm("Supprimer ce message ?")) {
                 const { error } = await sb.from('contact_messages').delete().eq('id', id);
                 if (!error) loadMessages();
-                else alert("Erreur de suppression");
             }
         }
 
         function copyToClipboard(text) {
             navigator.clipboard.writeText(text);
-            alert("Copié dans le presse-papier : " + text);
+            alert("Copié : " + text);
         }
 
-        // --- GESTION DES ANNONCES ---
         async function loadAdminAnnonces() {
             const { data } = await sb.from('annonces').select('*').order('created_at', { ascending: false });
             if (data) {
@@ -195,10 +235,8 @@
             const titre = document.getElementById('titre-annonce').value;
             const contenu = document.getElementById('texte-annonce').value;
             if (!titre || !contenu) return alert("Remplissez tous les champs.");
-
             const { error } = await sb.from('annonces').insert([{ titre, contenu }]);
-            if (error) alert("Erreur : " + error.message);
-            else {
+            if (!error) {
                 document.getElementById('titre-annonce').value = '';
                 document.getElementById('texte-annonce').value = '';
                 loadAdminAnnonces();
@@ -212,7 +250,6 @@
             }
         }
 
-        // --- MODÉRATION DES PRIÈRES ---
         async function loadAdminPrières() {
             const { data } = await sb.from('intentions').select('*').order('created_at', { ascending: false });
             if (data) {
@@ -223,9 +260,7 @@
                             <p class="text-[9px] font-black text-red-700 uppercase mb-1">${p.prenom}</p>
                             <p class="text-xs text-slate-600 line-clamp-1">${p.texte}</p>
                         </div>
-                        <button onclick="supprimerPriere('${p.id}')" class="bg-red-50 text-red-600 px-3 py-2 rounded-lg text-[9px] font-black uppercase">
-                            Supprimer
-                        </button>
+                        <button onclick="supprimerPriere('${p.id}')" class="bg-red-50 text-red-600 px-3 py-2 rounded-lg text-[9px] font-black uppercase">Supprimer</button>
                     </div>
                 `).join('');
             }
@@ -238,7 +273,6 @@
             }
         }
 
-        // --- GESTION DES GROUPES ---
         async function loadAdminGroupes() {
             const { data } = await sb.from('groupes').select('*').order('nom');
             if (data) {
@@ -284,6 +318,7 @@
             loadAdminAnnonces();
             loadAdminPrières();
             loadAdminGroupes();
+            loadAdminEntraide();
         }
     </script>
 </body>
