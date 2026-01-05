@@ -4,14 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>La Croix Glorieuse - Accueil</title>
-    
     <link rel="stylesheet" href="CSS/style.css">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="bg-slate-50 pb-24">
 
-    <header id="main-header" class="gradient-header text-white p-8 rounded-b-[40px] shadow-2xl transition-all duration-500">
+    <header id="main-header" class="gradient-header text-white p-8 rounded-b-[40px] shadow-2xl">
         <div class="flex justify-between items-center mb-6">
             <div>
                 <h1 class="text-xl font-800 tracking-tight">La Croix Glorieuse</h1>
@@ -25,7 +24,7 @@
                 <p id="date-du-jour" class="text-[10px] font-black uppercase text-white/70">Chargement...</p>
                 <div id="indic-couleur" class="w-3 h-3 rounded-full border border-white/40 shadow-inner"></div>
             </div>
-            <h2 id="saint-nom" class="text-xl font-800 mb-1 leading-tight text-white italic">Chargement...</h2>
+            <h2 id="saint-nom" class="text-xl font-800 mb-1 leading-tight text-white italic italic">Recherche...</h2>
             <p id="classe-liturgique" class="text-[10px] font-bold opacity-60 uppercase tracking-tighter"></p>
         </div>
     </header>
@@ -47,19 +46,19 @@
 
     <nav class="bottom-nav">
         <a href="index.html" class="nav-item active">
-            <span class="text-xl mb-1">🏠</span>
+            <span>🏠</span>
             Accueil
         </a>
         <a href="agenda.html" class="nav-item">
-            <span class="text-xl mb-1">📅</span>
+            <span>📅</span>
             Agenda
         </a>
         <a href="priere.html" class="nav-item">
-            <span class="text-xl mb-1">🕯️</span>
+            <span>🕯️</span>
             Prières
         </a>
         <a href="groupes.html" class="nav-item">
-            <span class="text-xl mb-1">💬</span>
+            <span>💬</span>
             Groupes
         </a>
     </nav>
@@ -67,29 +66,21 @@
     <script src="js/config.js"></script>
     <script>
         async function initHome() {
-            updateLiturgie();
-            loadAnnonces();
-        }
-
-        async function updateLiturgie() {
             const now = new Date();
             const jourMois = `${String(now.getDate()).padStart(2, '0')}-${String(now.getMonth() + 1).padStart(2, '0')}`;
             document.getElementById('date-du-jour').innerText = now.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
 
             const { data } = await sb.from('calendrier_traditionnel').select('*').eq('jour', jourMois).single();
-
             if (data) {
                 document.getElementById('saint-nom').innerText = data.saint_nom;
                 document.getElementById('classe-liturgique').innerText = data.classe + (data.classe === 1 ? "ère" : "ème") + " classe";
                 const couleurs = { 'blanc': '#ffffff', 'rouge': '#ef4444', 'vert': '#22c55e', 'violet': '#a855f7', 'noir': '#1e293b' };
                 document.getElementById('indic-couleur').style.backgroundColor = couleurs[data.couleur.toLowerCase()] || '#ffffff';
             }
-        }
 
-        async function loadAnnonces() {
-            const { data } = await sb.from('annonces').select('*').order('created_at', { ascending: false }).limit(3);
-            if (data) {
-                document.getElementById('feed-annonces').innerHTML = data.map(a => `
+            const { data: annonces } = await sb.from('annonces').select('*').order('created_at', { ascending: false }).limit(3);
+            if (annonces) {
+                document.getElementById('feed-annonces').innerHTML = annonces.map(a => `
                     <div class="card border border-slate-100 animate-fade-in">
                         <h3 class="font-800 text-sm mb-1 text-slate-900">${a.titre}</h3>
                         <p class="text-xs text-slate-500 leading-relaxed">${a.contenu}</p>
