@@ -16,7 +16,7 @@
         <p class="text-[10px] font-black uppercase tracking-widest opacity-80">Secrétariat de la Paroisse</p>
     </header>
 
-    <main class="p-6 space-y-8">
+    <main class="p-6 space-y-8 mb-24">
         <section class="card shadow-xl -mt-12 relative z-10">
             <h2 class="text-sm font-800 mb-6 text-slate-800 dark:text-white border-b dark:border-slate-700 pb-4">Envoyer un message</h2>
             
@@ -80,7 +80,7 @@
             const btn = document.getElementById('btn-submit');
 
             if(!nom || !prenom || !email || !message) {
-                hapticFeedback(100); // Vibration d'erreur (plus longue)
+                hapticFeedback(100); // Vibration d'erreur
                 alert("Veuillez remplir tous les champs obligatoires.");
                 return;
             }
