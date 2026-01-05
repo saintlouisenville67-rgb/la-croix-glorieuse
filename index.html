@@ -44,7 +44,7 @@
 
         <div id="bloc-messe" class="mt-4 px-2 hidden">
             <div class="flex items-center gap-2 text-white">
-                <span class="text-sm">⛪</span>
+                <span id="icone-messe" class="text-sm">⛪</span>
                 <p id="phrase-messe" class="text-[11px] font-black uppercase tracking-wider leading-tight"></p>
             </div>
         </div>
@@ -121,13 +121,14 @@
         }
 
         async function fetchMesseDuJour(dateCible) {
-            // On s'assure de prendre toute la journée de 00h00 à 23h59
-            const start = new Date(dateCible);
-            start.setHours(0, 0, 0, 0);
-            const end = new Date(dateCible);
-            end.setHours(23, 59, 59, 999);
+            const start = new Date(dateCible.getFullYear(), dateCible.getMonth(), dateCible.getDate(), 0, 0, 0).toISOString();
+            const end = new Date(dateCible.getFullYear(), dateCible.getMonth(), dateCible.getDate(), 23, 59, 59).toISOString();
 
-            const url = `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(CALENDAR_ID)}/events?key=${CALENDAR_API_KEY}&timeMin=${start.toISOString()}&timeMax=${end.toISOString()}&singleEvents=true&orderBy=startTime`;
+            const url = `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(CALENDAR_ID)}/events?key=${CALENDAR_API_KEY}&timeMin=${start}&timeMax=${end}&singleEvents=true&orderBy=startTime`;
+
+            const blocMesse = document.getElementById('bloc-messe');
+            const phraseMesse = document.getElementById('phrase-messe');
+            const iconeMesse = document.getElementById('icone-messe');
 
             try {
                 const response = await fetch(url);
@@ -136,43 +137,54 @@
 
                 const isSamedi = dateCible.getDay() === 6;
 
-                const messes = events.filter(e => {
+                // On filtre les événements liés à la messe ou à l'annulation de messe
+                const filteredEvents = events.filter(e => {
                     const titre = e.summary ? e.summary.toLowerCase() : "";
                     
-                    // Critère 1 : Il faut le mot "messe"
+                    // On garde si ça contient "messe" OU "pas de messe"
                     if (!titre.includes('messe')) return false;
                     
-                    // Critère 2 : Si c'est un samedi, on dégage seulement si "anticipée" est écrit
-                    if (isSamedi && (titre.includes('anticipée') || titre.includes('anticipee'))) {
-                        return false;
-                    }
-
+                    // On exclut "anticipée" le samedi
+                    if (isSamedi && (titre.includes('anticipée') || titre.includes('anticipee'))) return false;
+                    
                     return true;
                 });
 
-                const blocMesse = document.getElementById('bloc-messe');
-                const phraseMesse = document.getElementById('phrase-messe');
-
-                if (messes.length > 0) {
+                if (filteredEvents.length > 0) {
                     blocMesse.classList.remove('hidden');
-                    const horaires = messes.map(m => {
-                        if (m.start.dateTime) {
-                            return new Date(m.start.dateTime).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }).replace(':', 'h');
+                    
+                    const resultats = filteredEvents.map(e => {
+                        const titre = e.summary.toLowerCase();
+                        const h = e.start.dateTime ? new Date(e.start.dateTime).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }).replace(':', 'h') : "";
+                        
+                        // Si l'événement est explicitement "Pas de Messe"
+                        if (titre.includes('pas de messe')) {
+                            return { type: 'annulation', horaire: h };
                         }
-                        return "heure à préciser";
+                        return { type: 'messe', horaire: h };
                     });
 
-                    if (messes.length === 1) {
-                        phraseMesse.innerText = `Aujourd'hui la Messe est à ${horaires[0]}`;
+                    // Construction de la phrase finale
+                    const annulations = resultats.filter(r => r.type === 'annulation');
+                    const messes = resultats.filter(r => r.type === 'messe');
+
+                    if (annulations.length > 0) {
+                        iconeMesse.innerText = "🗓️";
+                        // On affiche l'horaire du premier événement d'annulation trouvé
+                        phraseMesse.innerText = `Pas de Messe aujourd'hui à ${annulations[0].horaire}`;
+                    } else if (messes.length === 1) {
+                        iconeMesse.innerText = "⛪";
+                        phraseMesse.innerText = `Aujourd'hui la Messe est à ${messes[0].horaire}`;
                     } else {
-                        phraseMesse.innerText = `Aujourd'hui les Messes sont à ${horaires.join(', ')}`;
+                        iconeMesse.innerText = "⛪";
+                        phraseMesse.innerText = `Aujourd'hui les Messes sont à ${messes.map(m => m.horaire).join(', ')}`;
                     }
                 } else {
                     blocMesse.classList.add('hidden');
                 }
             } catch (e) {
                 console.error("Erreur calendrier:", e);
-                document.getElementById('bloc-messe').classList.add('hidden');
+                blocMesse.classList.add('hidden');
             }
         }
 
