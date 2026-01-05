@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Contact - La Croix Glorieuse</title>
+    
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+</head>
+<body class="bg-slate-50">
+
+    <header class="gradient-header text-white p-8 rounded-b-[40px] shadow-lg">
+        <h1 class="text-2xl font-800 tracking-tight mb-1">Contact</h1>
+        <p class="text-[10px] font-black uppercase tracking-widest opacity-80">Secrétariat de la Paroisse</p>
+    </header>
+
+    <main class="p-6 space-y-8">
+        <section class="card shadow-xl -mt-12 relative z-10">
+            <h2 class="text-sm font-800 mb-6 text-slate-800 border-b pb-4">Envoyer un message</h2>
+            
+            <div id="contact-form" class="space-y-4">
+                <div>
+                    <label class="text-[9px] font-black text-slate-400 uppercase ml-2">Votre Nom</label>
+                    <input type="text" id="contact-name" required
+                        class="w-full bg-slate-50 p-4 rounded-xl border-none text-sm font-semibold outline-none focus:ring-2 focus:ring-red-100">
+                </div>
+                
+                <div>
+                    <label class="text-[9px] font-black text-slate-400 uppercase ml-2">Votre Email</label>
+                    <input type="email" id="contact-email" required
+                        class="w-full bg-slate-50 p-4 rounded-xl border-none text-sm font-semibold outline-none focus:ring-2 focus:ring-red-100">
+                </div>
+
+                <div>
+                    <label class="text-[9px] font-black text-slate-400 uppercase ml-2">Message</label>
+                    <textarea id="contact-message" required
+                        class="w-full bg-slate-50 p-4 rounded-xl border-none text-sm min-h-[150px] outline-none focus:ring-2 focus:ring-red-100"></textarea>
+                </div>
+
+                <button onclick="envoyerMessage()" id="btn-submit"
+                    class="w-full gradient-header text-white py-4 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] shadow-lg active:scale-95 transition-all">
+                    Envoyer au secrétariat
+                </button>
+            </div>
+
+            <div id="success-msg" class="hidden text-center py-8 space-y-3">
+                <span class="text-4xl">✅</span>
+                <p class="text-sm font-800 text-slate-800">Message envoyé !</p>
+                <p class="text-[11px] text-slate-500">Le secrétariat vous répondra prochainement.</p>
+                <button onclick="window.location.reload()" class="text-[10px] font-black text-red-600 uppercase pt-4">Envoyer un autre message</button>
+            </div>
+        </section>
+    </main>
+
+    <nav class="bottom-nav">
+        <a href="index.html" class="nav-item"><span class="block text-lg">🏠</span>Accueil</a>
+        <a href="agenda.html" class="nav-item"><span class="block text-lg">📅</span>Agenda</a>
+        <a href="groupes.html" class="nav-item"><span class="block text-lg">💬</span>Groupes</a>
+        <a href="contact.html" class="nav-item active"><span class="block text-lg">✉️</span>Contact</a>
+    </nav>
+
+    <script>
+        // Configuration Firebase (à récupérer sur votre console Firebase)
+        const firebaseConfig = {
+            apiKey: "VOTRE_API_KEY",
+            authDomain: "VOTRE_PROJET.firebaseapp.com",
+            projectId: "VOTRE_PROJET",
+            storageBucket: "VOTRE_PROJET.appspot.com",
+            messagingSenderId: "ID",
+            appId: "APP_ID"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        async function envoyerMessage() {
+            const name = document.getElementById('contact-name').value;
+            const email = document.getElementById('contact-email').value;
+            const message = document.getElementById('contact-message').value;
+            const btn = document.getElementById('btn-submit');
+
+            if(!name || !email || !message) return alert("Veuillez remplir tous les champs.");
+
+            btn.disabled = true;
+            btn.innerText = "ENVOI EN COURS...";
+
+            try {
+                // On enregistre le message dans une collection "mail"
+                // Si vous utilisez l'extension "Trigger Email", Firebase enverra le mail automatiquement
+                await db.collection('mail').add({
+                    to: 'secretariat@croix-glorieuse.org',
+                    message: {
+                        subject: `Nouveau message de ${name}`,
+                        text: message,
+                        html: `<p><b>De:</b> ${name} (${email})</p><p><b>Message:</b><br>${message}</p>`,
+                    },
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                document.getElementById('contact-form').classList.add('hidden');
+                document.getElementById('success-msg').classList.remove('hidden');
+            } catch (error) {
+                alert("Erreur lors de l'envoi : " + error.message);
+                btn.disabled = false;
+                btn.innerText = "RÉESSAYER";
+            }
+        }
+    </script>
+</body>
+</html>
