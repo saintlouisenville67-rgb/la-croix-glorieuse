@@ -3,55 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>La Croix Glorieuse - Strasbourg</title>
+    <title>La Croix Glorieuse</title>
     
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="CSS/style.css">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    
-    <link rel="manifest" href="manifest.json">
 </head>
 <body class="bg-slate-50">
 
-    <header class="gradient-header text-white p-10 rounded-b-[40px] shadow-lg text-center">
-        <h1 class="text-xl font-800 tracking-tight leading-tight">
-            Paroisse personnelle <br> La Croix glorieuse à Strasbourg
-        </h1>
-    </header>
-
-    <main class="p-6 space-y-6">
-        
-        <div class="grid grid-cols-1 gap-4 -mt-12 relative z-10">
-            
-            <section class="card shadow-xl border-l-4 border-red-700">
-                <p class="text-[8px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">Parole de Dieu</p>
-                <div id="verset-container">
-                    <div class="skeleton h-4 w-full mb-2"></div>
-                    <div class="skeleton h-3 w-1/2"></div>
-                </div>
-            </section>
-
-            <section id="saint-card" class="card shadow-xl transition-all duration-500">
-                <p class="text-[8px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">Calendrier Liturgique 1962</p>
-                <div id="saint-container">
-                    <div class="skeleton h-5 w-3/4 mb-2"></div>
-                    <div class="skeleton h-3 w-1/3"></div>
-                </div>
-            </section>
+    <header class="gradient-header text-white p-8 rounded-b-[40px] shadow-lg">
+        <div class="flex justify-between items-center mb-4">
+            <div>
+                <h1 class="text-2xl font-800 tracking-tight mb-1">La Croix Glorieuse</h1>
+                <p class="text-[10px] font-black uppercase tracking-widest opacity-80">Paroisse Personnelle • Strasbourg</p>
+            </div>
+            <div id="indic-couleur" class="w-4 h-4 rounded-full border-2 border-white/40 shadow-inner"></div>
         </div>
 
-        <section>
-            <div class="flex items-center gap-2 mb-6">
-                <div class="h-[1px] flex-1 bg-slate-200 dark:bg-slate-700"></div>
-                <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Annonces & Vie Paroissiale</span>
-                <div class="h-[1px] flex-1 bg-slate-200 dark:bg-slate-700"></div>
-            </div>
+        <div class="bg-white/10 backdrop-blur-md p-5 rounded-3xl border border-white/20 mt-4">
+            <p id="date-du-jour" class="text-[9px] font-black uppercase text-white/70 mb-1">Chargement...</p>
+            <h2 id="saint-nom" class="text-lg font-800 leading-tight">Recherche du saint...</h2>
+            <p id="classe-liturgique" class="text-[9px] font-bold opacity-60 uppercase mt-1">Missel 1962</p>
+        </div>
+    </header>
 
-            <div id="annonces-feed" class="space-y-4">
-                <div class="skeleton h-32 w-full"></div>
-                <div class="skeleton h-32 w-full"></div>
+    <main class="p-6">
+        
+        <div class="flex items-center gap-2 mb-6 -mt-10 relative z-10">
+            <div class="h-[1px] flex-1 bg-slate-200"></div>
+            <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Verset du jour</span>
+            <div class="h-[1px] flex-1 bg-slate-200"></div>
+        </div>
+
+        <section class="card shadow-xl mb-8">
+            <div id="verset-container">
+                <div class="skeleton h-4 w-full mb-2"></div>
+                <div class="skeleton h-3 w-1/2"></div>
             </div>
         </section>
+
+        <div class="flex items-center gap-2 mb-6">
+            <div class="h-[1px] flex-1 bg-slate-200"></div>
+            <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Annonces</span>
+            <div class="h-[1px] flex-1 bg-slate-200"></div>
+        </div>
+
+        <div id="feed-annonces" class="space-y-4 mb-20">
+            <div class="skeleton h-24 w-full"></div>
+            <div class="skeleton h-24 w-full"></div>
+        </div>
 
     </main>
 
@@ -59,95 +59,62 @@
 
     <script src="js/config.js"></script>
     <script>
-        // Initialisation globale
         async function initHome() {
-            loadVerset();
-            loadSaintTrad();
+            updateLiturgie();
             loadAnnonces();
+            loadVerset();
         }
 
-        // 1. Verset Biblique (Table: versets)
-        async function loadVerset() {
-            const today = new Date().toISOString().slice(5, 10); // Format MM-DD
-            const { data, error } = await sb
-                .from('versets')
-                .select('*')
-                .eq('jour', today)
-                .single();
-
-            if (data) {
-                document.getElementById('verset-container').innerHTML = `
-                    <p id="verset-txt" class="text-sm italic font-semibold text-slate-700 leading-relaxed">"${data.texte}"</p>
-                    <p class="text-[9px] font-black text-red-700 mt-2 uppercase text-right">— ${data.reference}</p>
-                `;
-            }
-        }
-
-        // 2. Saint du Jour (Table: calendrier_traditionnel)
-        async function loadSaintTrad() {
+        async function updateLiturgie() {
             const now = new Date();
             const jourMois = `${String(now.getDate()).padStart(2, '0')}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+            
+            document.getElementById('date-du-jour').innerText = now.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
 
-            const { data, error } = await sb
-                .from('calendrier_traditionnel')
-                .select('*')
-                .eq('jour', jourMois)
-                .single();
-
-            const container = document.getElementById('saint-container');
-            const card = document.getElementById('saint-card');
+            const { data } = await sb.from('calendrier_traditionnel').select('*').eq('jour', jourMois).single();
 
             if (data) {
-                // Gestion des couleurs liturgiques
-                const couleursBordure = {
-                    'blanc': 'border-slate-200',
-                    'rouge': 'border-red-600',
-                    'vert': 'border-green-600',
-                    'violet': 'border-purple-600',
-                    'noir': 'border-black'
-                };
-                
-                card.classList.add('border-l-4', couleursBordure[data.couleur.toLowerCase()] || 'border-slate-200');
-
-                container.innerHTML = `
-                    <h2 id="saint-nom" class="text-sm font-800 text-slate-800 uppercase leading-tight">${data.saint_nom}</h2>
-                    <p id="classe-liturgique" class="text-[9px] font-bold text-slate-400 uppercase mt-1">
-                        ${data.classe}${data.classe == 1 ? "ère" : "ème"} classe • ${data.couleur}
-                    </p>
-                `;
+                document.getElementById('saint-nom').innerText = data.saint_nom;
+                document.getElementById('classe-liturgique').innerText = data.classe + (data.classe === 1 ? "ère" : "ème") + " classe • Missel 1962";
+                const couleurs = { 'blanc': '#ffffff', 'rouge': '#ef4444', 'vert': '#22c55e', 'violet': '#a855f7', 'noir': '#1e293b' };
+                document.getElementById('indic-couleur').style.backgroundColor = couleurs[data.couleur.toLowerCase()] || '#ffffff';
             } else {
-                container.innerHTML = `
-                    <h2 class="text-sm font-800 text-slate-800 uppercase">Férie du temps</h2>
-                    <p class="text-[9px] font-bold text-slate-400 uppercase mt-1">4ème classe</p>
-                `;
+                document.getElementById('saint-nom').innerText = "Férie du temps";
             }
         }
 
-        // 3. Flux d'Annonces (Table: annonces)
         async function loadAnnonces() {
             const { data } = await sb.from('annonces').select('*').order('created_at', { ascending: false }).limit(3);
-            const feed = document.getElementById('annonces-feed');
-            
+            const feed = document.getElementById('feed-annonces');
             if (data && data.length > 0) {
                 feed.innerHTML = data.map(a => `
-                    <div class="card animate-fade-in shadow-sm">
-                        <h3 class="font-800 text-red-700 text-sm uppercase mb-1">${a.titre}</h3>
+                    <div class="card animate-fade-in">
+                        <h3 class="font-800 text-sm mb-1 text-red-700 uppercase tracking-tight">${a.titre}</h3>
                         <p class="text-xs text-slate-500 leading-relaxed">${a.contenu}</p>
                     </div>
                 `).join('');
             } else {
-                feed.innerHTML = `<p class="text-xs text-slate-400 italic">Aucune annonce pour le moment.</p>`;
+                feed.innerHTML = "<p class='text-center text-xs text-slate-400 italic'>Aucune annonce.</p>";
             }
         }
 
-        // Lancement et écoute temps réel
-        initHome();
+        async function loadVerset() {
+            const container = document.getElementById('verset-container');
+            const { data } = await sb.from('versets').select('*');
 
-        sb.channel('annonces-channel')
-          .on('postgres_changes', { event: '*', schema: 'public', table: 'annonces' }, () => loadAnnonces())
-          .subscribe();
+            if (data && data.length > 0) {
+                const v = data[Math.floor(Math.random() * data.length)];
+                container.innerHTML = `
+                    <p class="text-sm italic font-semibold text-slate-700 leading-relaxed animate-fade-in">"${v.texte}"</p>
+                    <p class="text-[9px] font-black text-red-700 mt-2 uppercase text-right">— ${v.reference}</p>
+                `;
+            } else {
+                container.innerHTML = "<p class='text-sm italic font-semibold text-slate-700'>Le Seigneur est ma lumière et mon salut.</p>";
+            }
+        }
+
+        initHome();
     </script>
-    
     <script src="js/menu.js"></script>
 </body>
 </html>
