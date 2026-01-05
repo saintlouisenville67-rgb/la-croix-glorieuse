@@ -41,6 +41,13 @@
                 <button id="btn-today" onclick="goToday()" class="hidden text-[8px] font-black uppercase bg-white/20 px-2 py-1 rounded-lg">Aujourd'hui</button>
             </div>
         </div>
+
+        <div id="bloc-messe" class="mt-4 px-2 hidden">
+            <div class="flex items-center gap-2 text-white">
+                <span class="text-sm">⛪</span>
+                <p id="phrase-messe" class="text-[11px] font-black uppercase tracking-wider leading-tight"></p>
+            </div>
+        </div>
     </header>
 
     <main class="p-6">
@@ -68,6 +75,8 @@
     <script src="js/config.js"></script>
     <script>
         let currentDateDisplay = new Date();
+        const CALENDAR_API_KEY = 'AIzaSyAI5N6lamviexKaPR-WoOP4006m5IClDoQ';
+        const CALENDAR_ID = 'saintlouisenville67@gmail.com';
 
         async function initHome() {
             updateLiturgie();
@@ -108,22 +117,70 @@
             const jourMois = `${String(currentDateDisplay.getDate()).padStart(2, '0')}-${String(currentDateDisplay.getMonth() + 1).padStart(2, '0')}`;
             document.getElementById('date-du-jour').innerText = currentDateDisplay.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
             
+            // Récupération Liturgie Supabase
             const { data } = await sb.from('calendrier_traditionnel').select('*').eq('jour', jourMois).single();
             if (data) {
                 document.getElementById('saint-nom').innerText = data.saint_nom;
                 document.getElementById('classe-liturgique').innerText = data.classe + (data.classe === 1 ? "ère" : "ème") + " classe";
-                const couleurs = { 'blanc': '#ffffff', 'rouge': '#ef4444', 'vert': '#22c55e', 'violet': '#a855f7', 'noir': '#1e293b' };
+                const couleurs = { 'blanc': '#ffffff', 'rouge': '#ef4444', 'vert': '#22c55e', 'violet': '#a855f7', 'noir': '#1e293b', 'rose': '#f472b6' };
                 document.getElementById('indic-couleur').style.backgroundColor = couleurs[data.couleur.toLowerCase()] || '#ffffff';
             } else {
                 document.getElementById('saint-nom').innerText = "Férie du temps";
                 document.getElementById('classe-liturgique').innerText = "";
                 document.getElementById('indic-couleur').style.backgroundColor = "#ffffff";
             }
+
+            // Récupération des horaires de Messe
+            fetchMesseDuJour(currentDateDisplay);
+        }
+
+        async function fetchMesseDuJour(dateCible) {
+            const startOfDay = new Date(dateCible);
+            startOfDay.setHours(0, 0, 0, 0);
+            const endOfDay = new Date(dateCible);
+            endOfDay.setHours(23, 59, 59, 999);
+
+            const url = `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(CALENDAR_ID)}/events?key=${CALENDAR_API_KEY}&timeMin=${startOfDay.toISOString()}&timeMax=${endOfDay.toISOString()}&singleEvents=true&orderBy=startTime`;
+
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+                const events = data.items || [];
+
+                // Filtre les messes (ignore les anticipées)
+                const messes = events.filter(e => {
+                    const titre = e.summary.toLowerCase();
+                    return titre.includes('messe') && !titre.includes('anticipée');
+                });
+
+                const blocMesse = document.getElementById('bloc-messe');
+                const phraseMesse = document.getElementById('phrase-messe');
+
+                if (messes.length > 0) {
+                    blocMesse.classList.remove('hidden');
+                    
+                    const horaires = messes.map(m => {
+                        return m.start.dateTime 
+                            ? new Date(m.start.dateTime).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }).replace(':', 'h')
+                            : "Heure non précisée";
+                    });
+
+                    if (messes.length === 1) {
+                        phraseMesse.innerText = `Aujourd'hui la Messe est à ${horaires[0]}`;
+                    } else {
+                        phraseMesse.innerText = `Aujourd'hui les Messes sont à ${horaires.join(', ')}`;
+                    }
+                } else {
+                    blocMesse.classList.add('hidden');
+                }
+            } catch (e) {
+                console.error("Erreur calendrier:", e);
+                document.getElementById('bloc-messe').classList.add('hidden');
+            }
         }
 
         async function loadVerset() {
             const container = document.getElementById('verset-container');
-            // Animation de chargement
             container.classList.add('opacity-40');
             
             const { data } = await sb.from('versets').select('*');
