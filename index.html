@@ -42,6 +42,17 @@
             </div>
         </div>
 
+        <div class="mt-4 grid grid-cols-2 gap-3">
+            <div class="bg-white/10 backdrop-blur-sm p-3 rounded-2xl border border-white/10 flex flex-col items-center justify-center text-center">
+                <p class="text-[8px] font-black uppercase text-white/50 mb-1 tracking-widest">Intention du jour</p>
+                <p id="intention-du-jour" class="text-[10px] font-bold leading-tight italic min-h-[30px] flex items-center">...</p>
+            </div>
+            <div class="bg-white/10 backdrop-blur-sm p-3 rounded-2xl border border-white/10 flex flex-col items-center justify-center text-center">
+                <p class="text-[8px] font-black uppercase text-white/50 mb-1 tracking-widest">Confessions</p>
+                <p id="confession-statut" class="text-[10px] font-bold leading-tight min-h-[30px] flex items-center">...</p>
+            </div>
+        </div>
+
         <div id="bloc-messe" class="mt-4 px-2 hidden">
             <div class="flex items-center gap-2 text-white">
                 <span id="icone-messe" class="text-sm">⛪</span>
@@ -79,6 +90,7 @@
         async function initHome() {
             updateLiturgie();
             loadVerset();
+            loadIntention(); // AJOUT : Initialisation de l'intention
             checkNewAnnonces();
             
             sb.channel('custom-insert-channel')
@@ -88,14 +100,39 @@
             }).subscribe();
         }
 
+        // --- AJOUT : FONCTION PRIERES_DU_JOUR ---
+        async function loadIntention() {
+            const { data: prieres } = await sb.from('prieres_du_jour').select('*');
+            if (prieres && prieres.length > 0) {
+                const start = new Date(currentDateDisplay.getFullYear(), 0, 0);
+                const diff = (currentDateDisplay - start) + ((start.getTimezoneOffset() - currentDateDisplay.getTimezoneOffset()) * 60 * 1000);
+                const oneDay = 1000 * 60 * 60 * 24;
+                const dayOfYear = Math.floor(diff / oneDay);
+                
+                const index = dayOfYear % prieres.length;
+                document.getElementById('intention-du-jour').innerText = prieres[index].texte;
+            }
+        }
+
+        // AJOUT : LOGIQUE CONFESSIONS
+        function updateConfessionStatut() {
+            const day = currentDateDisplay.getDay();
+            const el = document.getElementById('confession-statut');
+            if (day === 0) el.innerText = "20 min avant la Messe";
+            else if (day === 6) el.innerText = "17h30 - 18h15";
+            else el.innerText = "Examen de conscience";
+        }
+
         function changeDay(offset) {
             currentDateDisplay.setDate(currentDateDisplay.getDate() + offset);
             updateLiturgie();
+            loadIntention(); // AJOUT : Mise à jour de l'intention
         }
 
         function goToday() {
             currentDateDisplay = new Date();
             updateLiturgie();
+            loadIntention(); // AJOUT : Mise à jour de l'intention
         }
 
         async function updateLiturgie() {
@@ -116,7 +153,8 @@
                 document.getElementById('classe-liturgique').innerText = "";
                 document.getElementById('indic-couleur').style.backgroundColor = "#ffffff";
             }
-
+            
+            updateConfessionStatut(); // AJOUT
             fetchMesseDuJour(currentDateDisplay);
         }
 
@@ -137,40 +175,27 @@
 
                 const isSamedi = dateCible.getDay() === 6;
 
-                // On filtre les événements liés à la messe ou à l'annulation de messe
                 const filteredEvents = events.filter(e => {
                     const titre = e.summary ? e.summary.toLowerCase() : "";
-                    
-                    // On garde si ça contient "messe" OU "pas de messe"
                     if (!titre.includes('messe')) return false;
-                    
-                    // On exclut "anticipée" le samedi
                     if (isSamedi && (titre.includes('anticipée') || titre.includes('anticipee'))) return false;
-                    
                     return true;
                 });
 
                 if (filteredEvents.length > 0) {
                     blocMesse.classList.remove('hidden');
-                    
                     const resultats = filteredEvents.map(e => {
                         const titre = e.summary.toLowerCase();
                         const h = e.start.dateTime ? new Date(e.start.dateTime).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }).replace(':', 'h') : "";
-                        
-                        // Si l'événement est explicitement "Pas de Messe"
-                        if (titre.includes('pas de messe')) {
-                            return { type: 'annulation', horaire: h };
-                        }
+                        if (titre.includes('pas de messe')) return { type: 'annulation', horaire: h };
                         return { type: 'messe', horaire: h };
                     });
 
-                    // Construction de la phrase finale
                     const annulations = resultats.filter(r => r.type === 'annulation');
                     const messes = resultats.filter(r => r.type === 'messe');
 
                     if (annulations.length > 0) {
                         iconeMesse.innerText = "🗓️";
-                        // On affiche l'horaire du premier événement d'annulation trouvé
                         phraseMesse.innerText = `Pas de Messe aujourd'hui à ${annulations[0].horaire}`;
                     } else if (messes.length === 1) {
                         iconeMesse.innerText = "⛪";
