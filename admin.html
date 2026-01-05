@@ -164,7 +164,7 @@
         async function loadAdminEntraide() {
             const { data } = await sb.from('entraide').select('*').order('created_at', { ascending: false });
             const list = document.getElementById('admin-list-entraide');
-            if (data) { list.innerHTML = data.map(e => `<div class="bg-white p-3 rounded-xl flex justify-between items-center border border-slate-100"><span class="text-xs text-slate-700 truncate mr-4">${e.titre}</span><button onclick="supprimerEntraide('${e.id}')" class="text-red-500 text-[10px] font-black">X</button></div>`).join(''); }
+            if (data) { list.innerHTML = data.map(e => `<div class="bg-white p-3 rounded-xl flex justify-between items-center border border-slate-100 shadow-sm"><span class="text-xs text-slate-700 truncate mr-4">${e.titre}</span><button onclick="supprimerEntraide('${e.id}')" class="text-red-500 text-[10px] font-black">X</button></div>`).join(''); }
         }
         async function supprimerEntraide(id) { await sb.from('entraide').delete().eq('id', id); loadAdminEntraide(); }
 
@@ -172,7 +172,7 @@
         async function loadAdminPrières() {
             const { data } = await sb.from('intentions').select('*').order('created_at', { ascending: false });
             const list = document.getElementById('admin-list-intentions');
-            if (data) { list.innerHTML = data.map(i => `<div class="bg-white p-3 rounded-xl flex justify-between items-center border border-slate-100"><span class="text-xs text-slate-700 truncate mr-4">${i.prenom}: ${i.contenu}</span><button onclick="supprimerPriere('${i.id}')" class="text-red-500 text-[10px] font-black">X</button></div>`).join(''); }
+            if (data) { list.innerHTML = data.map(i => `<div class="bg-white p-3 rounded-xl flex justify-between items-center border border-slate-100 shadow-sm"><span class="text-xs text-slate-700 truncate mr-4">${i.prenom}: ${i.contenu}</span><button onclick="supprimerPriere('${i.id}')" class="text-red-500 text-[10px] font-black">X</button></div>`).join(''); }
         }
         async function supprimerPriere(id) { await sb.from('intentions').delete().eq('id', id); loadAdminPrières(); }
 
