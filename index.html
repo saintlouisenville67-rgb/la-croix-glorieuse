@@ -271,36 +271,30 @@
             };
 
             const fetchAndShow = async (ref, div) => {
-    if (!ref) { div.innerText = ""; return; }
-    div.innerHTML = '<span class="opacity-50 italic">Chargement...</span>';
-    
-    // Dictionnaire étendu pour correspondre à votre fichier CSV
-    let apiRef = ref.trim()
-        .replace('1 Cor', '1 Corinthians')
-        .replace('1 Pierre', '1 Peter')
-        .replace('Apoc', 'Revelation')
-        .replace('Is', 'Isaiah')
-        .replace('Mt', 'Matthew')
-        .replace('Jn', 'John')
-        .replace('Lc', 'Luke')
-        .replace('Mc', 'Mark')
-        .replace('Act', 'Acts')
-        .replace('Rom', 'Romans')
-        .replace('Tit', 'Titus')
-        .replace(',', ':'); // Important pour transformer 2, 11 en 2:11
+                if (!ref) { div.innerText = ""; return; }
+                div.innerHTML = '<span class="opacity-50 italic">Chargement...</span>';
+                
+                // Nettoyage complet pour correspondre à votre CSV et à l'API
+                let cleaned = ref.trim().replace(/\s+/g, ' '); 
+                let apiRef = cleaned
+                    .replace('1 Pierre', '1 Peter').replace('1 Cor', '1 Corinthians')
+                    .replace('Apoc', 'Revelation').replace('Is', 'Isaiah')
+                    .replace('Mt', 'Matthew').replace('Jn', 'John')
+                    .replace('Lc', 'Luke').replace('Mc', 'Mark')
+                    .replace('Act', 'Acts').replace('Rom', 'Romans')
+                    .replace('Tit', 'Titus').replace('Ep', 'Ephesians')
+                    .replace(',', ':'); 
 
-    try {
-        const res = await fetch(`https://bible-api.com/${encodeURIComponent(apiRef)}`);
-        const json = await res.json();
-        if (json.text) {
-            div.innerText = await translate(json.text);
-        } else {
-            div.innerText = "Référence non trouvée (" + apiRef + ")";
-        }
-    } catch (e) {
-        div.innerText = "Erreur de connexion.";
-    }
-};
+                try {
+                    const res = await fetch(`https://bible-api.com/${encodeURIComponent(apiRef)}`);
+                    const json = await res.json();
+                    if (json.text) {
+                        div.innerText = await translate(json.text);
+                    } else {
+                        div.innerText = "Référence introuvable (" + apiRef + ")";
+                    }
+                } catch (e) { div.innerText = "Erreur de connexion."; }
+            };
 
             await Promise.all([fetchAndShow(epitreRef, epDiv), fetchAndShow(evangileRef, evDiv)]);
         }
