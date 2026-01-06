@@ -98,6 +98,7 @@
             if(np.length >= 4) { localStorage.setItem('admin_pin', np); alert("PIN mis à jour"); }
         }
 
+        // --- MESSAGES ---
         async function loadMessages() {
             const { data } = await sb.from('contact_messages').select('*').eq('lu', false).order('created_at', { ascending: false });
             const list = document.getElementById('admin-list-messages');
@@ -119,6 +120,7 @@
         }
         async function marquerMessageLu(id) { await sb.from('contact_messages').update({ lu: true }).eq('id', id); loadMessages(); }
 
+        // --- ENTRAIDE ---
         async function loadAdminEntraide() {
             const { data } = await sb.from('entraide').select('*').eq('est_terminee', false).order('created_at', { ascending: false });
             const list = document.getElementById('admin-list-entraide');
@@ -142,19 +144,26 @@
                                 <p class="text-[10px] text-slate-500">${e.contact_info}</p>
                             </div>
                             <div class="text-right">
-                                <p class="text-[8px] font-black text-red-400 uppercase">Code Abbé</p>
-                                <p class="text-sm font-black text-red-600 tracking-widest bg-white px-2 py-1 rounded shadow-sm border border-red-100">
-                                    ${e.code_validation ? e.code_validation : '---'}
-                                </p>
+                                <p class="text-[8px] font-black text-red-400 uppercase">Code de sécurité</p>
+                                ${e.code_validation 
+                                    ? `<p class="text-sm font-black text-red-600 tracking-widest bg-white px-2 py-1 rounded shadow-sm border border-red-100">${e.code_validation}</p>`
+                                    : `<button onclick="genererCode('${e.id}')" class="bg-red-600 text-white px-2 py-1 rounded text-[8px] font-black uppercase">Générer Code</button>`
+                                }
                             </div>
                         </div>
                     </div>
                 `).join('');
             }
         }
+        async function genererCode(id) {
+            const code = Math.floor(1000 + Math.random() * 9000).toString();
+            await sb.from('entraide').update({ code_validation: code }).eq('id', id);
+            loadAdminEntraide();
+        }
         async function validerEntraide(id) { await sb.from('entraide').update({ valide: true }).eq('id', id); loadAdminEntraide(); }
         async function supprimerEntraide(id) { if(confirm("Supprimer ?")) { await sb.from('entraide').delete().eq('id', id); loadAdminEntraide(); } }
 
+        // --- ANNONCES ACCUEIL ---
         async function loadAdminAnnonces() {
             const { data } = await sb.from('annonces').select('*').order('created_at', { ascending: false });
             const list = document.getElementById('admin-list-annonces');
@@ -163,7 +172,7 @@
                     <div class="flex justify-between items-center bg-slate-50 p-2 rounded-lg mb-1">
                         <div class="truncate mr-2">
                             <span class="text-[10px] font-bold">${a.titre}</span>
-                            ${a.est_importante ? '<span class="ml-2 text-[8px] font-black text-red-600">★</span>' : ''}
+                            ${a.est_importante ? '<span class="ml-2 text-[8px] font-black text-red-600">★ IMPORTANT</span>' : ''}
                         </div>
                         <button onclick="supprimerAnnonce('${a.id}')" class="text-red-500 text-[10px] font-black">X</button>
                     </div>
@@ -183,6 +192,7 @@
         }
         async function supprimerAnnonce(id) { await sb.from('annonces').delete().eq('id', id); loadAdminAnnonces(); }
 
+        // --- GROUPES ---
         async function loadAdminGroupes() {
             const { data } = await sb.from('groupes').select('*').order('nom');
             const list = document.getElementById('admin-list-groupes');
