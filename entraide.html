@@ -29,6 +29,20 @@
 
     <button onclick="toggleModal(true)" class="fixed bottom-28 right-6 w-14 h-14 gradient-header rounded-full shadow-2xl text-white text-3xl z-40 flex items-center justify-center active:scale-90 transition-transform">+</button>
 
+    <div id="modal-code" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[60] hidden flex items-center justify-center p-6">
+        <div class="bg-white w-full max-w-xs rounded-[30px] p-6 shadow-2xl animate-fade-in">
+            <h3 class="text-sm font-800 text-slate-800 uppercase mb-2 text-center">Code requis</h3>
+            <p class="text-[10px] text-slate-500 text-center mb-4">Saisissez le code donné par l'abbé pour voir les coordonnées.</p>
+            <input type="text" id="input-code-abbe" class="w-full bg-slate-50 p-3 rounded-xl border-none text-center font-bold text-lg mb-4 outline-none focus:ring-2 focus:ring-red-100 uppercase">
+            <div class="flex gap-2">
+                <button onclick="closeCodeModal()" class="flex-1 py-3 text-[10px] font-black uppercase text-slate-400">Annuler</button>
+                <button id="btn-valider-code" class="flex-2 py-3 px-6 gradient-header text-white rounded-xl text-[10px] font-black uppercase">Valider</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="notif-system" class="fixed top-6 left-6 right-6 z-[100] pointer-events-none space-y-2"></div>
+
     <div id="modal-form" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-end">
         <div class="bg-white w-full rounded-t-[40px] p-8 animate-slide-up max-h-[95vh] overflow-y-auto">
             <div class="flex justify-between items-center mb-6">
@@ -65,17 +79,29 @@
 
     <script src="js/config.js"></script>
     <script>
+        // --- NOUVELLES FONCTIONS GRAPHIQUES ---
+        function showNotif(msg, isError = false) {
+            const container = document.getElementById('notif-system');
+            const div = document.createElement('div');
+            div.className = `p-4 rounded-2xl shadow-xl text-white text-[10px] font-black uppercase tracking-widest animate-fade-in pointer-events-auto ${isError ? 'bg-red-600' : 'bg-slate-800'}`;
+            div.innerHTML = msg;
+            container.appendChild(div);
+            setTimeout(() => { div.style.opacity = '0'; setTimeout(() => div.remove(), 500); }, 3000);
+        }
+
+        function closeCodeModal() {
+            document.getElementById('modal-code').classList.add('hidden');
+            document.getElementById('input-code-abbe').value = '';
+        }
+
         function toggleModal(show) {
             document.getElementById('modal-form').classList.toggle('hidden', !show);
         }
 
         async function loadEntraide(filter = 'tous') {
             const feed = document.getElementById('feed-entraide');
-            // On ne sélectionne que les annonces validées et non terminées
             let query = sb.from('entraide').select('*').eq('valide', true).eq('est_terminee', false).order('created_at', { ascending: false });
-            
             if (filter !== 'tous') query = query.eq('type', filter);
-            
             const { data } = await query;
 
             if (data && data.length > 0) {
@@ -91,7 +117,7 @@
                         
                         <div class="pt-3 border-t border-slate-50 flex justify-between items-center">
                             <span class="text-[9px] font-black text-slate-400 uppercase">${a.contact_nom}</span>
-                            <button onclick="repondreAnnonce('${a.id}')" class="text-[9px] font-black text-blue-600 uppercase tracking-widest flex items-center gap-1">
+                            <button onclick="demanderCode('${a.id}')" class="text-[9px] font-black text-blue-600 uppercase tracking-widest flex items-center gap-1">
                                 🤝 Je souhaite répondre ➔
                             </button>
                         </div>
@@ -102,24 +128,33 @@
             }
         }
 
-        async function repondreAnnonce(id) {
-            const codeSaisi = prompt("Pour accéder aux coordonnées, demandez le code spécifique à un abbé et saisissez-le ici :");
-            if (!codeSaisi) return;
+        function demanderCode(id) {
+            const modal = document.getElementById('modal-code');
+            const btn = document.getElementById('btn-valider-code');
+            modal.classList.remove('hidden');
+            document.getElementById('input-code-abbe').focus();
 
-            const { data, error } = await sb.from('entraide')
-                .select('code_validation, contact_info, contact_nom')
-                .eq('id', id)
-                .single();
+            btn.onclick = async () => {
+                const codeSaisi = document.getElementById('input-code-abbe').value;
+                if (!codeSaisi) return showNotif("Veuillez saisir le code", true);
 
-            if (data && data.code_validation === codeSaisi) {
-                if (typeof hapticFeedback === 'function') hapticFeedback(50);
-                alert(`Code validé !\n\nContact : ${data.contact_nom}\nTel : ${data.contact_info}\n\nL'annonce va maintenant être retirée de la liste.`);
-                
-                await sb.from('entraide').update({ est_terminee: true }).eq('id', id);
-                loadEntraide();
-            } else {
-                alert("Code incorrect pour cette annonce.");
-            }
+                const { data } = await sb.from('entraide')
+                    .select('code_validation, contact_info, contact_nom')
+                    .eq('id', id)
+                    .single();
+
+                if (data && data.code_validation === codeSaisi) {
+                    closeCodeModal();
+                    if (typeof hapticFeedback === 'function') hapticFeedback(50);
+                    // Remplacement de l'alert par un modal de succès temporaire
+                    showNotif(`✅ Contact débloqué : ${data.contact_nom} - ${data.contact_info}`);
+                    
+                    await sb.from('entraide').update({ est_terminee: true }).eq('id', id);
+                    setTimeout(loadEntraide, 4000);
+                } else {
+                    showNotif("Code incorrect", true);
+                }
+            };
         }
 
         async function publierEntraide() {
@@ -134,15 +169,16 @@
                 est_terminee: false
             };
 
-            if (!fields.titre || !fields.description) return alert("Remplissez les champs.");
+            if (!fields.titre || !fields.description) return showNotif("Remplissez les champs.", true);
 
             btn.disabled = true;
             const { error } = await sb.from('entraide').insert([fields]);
             if (!error) {
-                alert("Annonce envoyée pour validation !");
+                showNotif("Annonce envoyée !");
                 toggleModal(false);
             } else {
                 btn.disabled = false;
+                showNotif("Erreur d'envoi", true);
             }
         }
 
