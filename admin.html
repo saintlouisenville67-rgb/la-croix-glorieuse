@@ -171,18 +171,34 @@
 
         // --- MESSAGES ---
         async function loadMessages() {
-            const { data } = await sb.from('contact_messages').select('*').order('created_at', { ascending: false });
-            const container = document.getElementById('admin-messages-list');
-            if (data && data.length > 0) {
-                container.innerHTML = data.map(m => `
-                    <div class="bg-white p-4 rounded-xl border border-slate-100 shadow-sm">
-                        <div class="flex justify-between items-start mb-2 text-xs">
-                            <span class="font-800 uppercase text-slate-900">${m.prenom} ${m.nom}</span>
-                            <button onclick="deleteMessage('${m.id}')" class="text-red-500 font-black">X</button>
+            const { data } = await sb.from('contact_messages').select('*').eq('lu', false).order('created_at', { ascending: false });
+            const list = document.getElementById('admin-list-messages');
+            if (data) {
+                list.innerHTML = data.length === 0 ? '<p class="text-[10px] text-slate-400 italic">Aucun nouveau message.</p>' : data.map(m => `
+                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="text-[9px] font-black text-slate-400 uppercase">${new Date(m.created_at).toLocaleDateString()}</span>
+                            <button onclick="marquerMessageLu('${m.id}')" class="text-emerald-600 text-[9px] font-black tracking-widest">ARCHIVER</button>
                         </div>
-                        <p class="text-xs text-slate-600 bg-slate-50 p-3 rounded-lg border-l-2 border-slate-200">"${m.message}"</p>
-                    </div>`).join('');
-            } else { container.innerHTML = "<p class='text-center text-xs italic text-slate-400'>Aucun message.</p>"; }
+                        
+                        <p class="text-xs font-900 text-slate-800 uppercase mb-1">${m.prenom} ${m.nom}</p>
+                        
+                        <div class="bg-slate-50 p-2 rounded-lg mb-3 border border-slate-100 text-[10px] font-bold text-slate-600 space-y-1">
+                            <div class="flex items-center gap-2">
+                                <span>📧</span> <span class="select-all">${m.email}</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span>📞</span> <span class="select-all">${m.telephone || 'Non renseigné'}</span>
+                            </div>
+                        </div>
+
+                        <div class="relative">
+                            <svg class="absolute -top-1 -left-1 w-3 h-3 text-slate-200" fill="currentColor" viewBox="0 0 24 24"><path d="M14.017 21L14.017 18C14.017 16.8954 14.9124 16 16.017 16H19.017C20.1216 16 21.017 16.8954 21.017 18V21C21.017 22.1046 20.1216 23 19.017 23H16.017C14.9124 23 14.017 22.1046 14.017 21ZM5.017 21L5.017 18C5.017 16.8954 5.91243 16 7.017 16H10.017C11.1216 16 12.017 16.8954 12.017 18V21C12.017 22.1046 11.1216 23 10.017 23H7.017C5.91243 23 5.017 22.1046 5.017 21ZM12.017 13H5.017C5.017 8.58172 8.59872 5 13.017 5V12.017C13.017 12.5693 12.5693 13.017 12.017 13.017V13ZM21.017 13H14.017C14.017 8.58172 17.5987 5 22.017 5V12.017C22.017 12.5693 21.5693 13.017 21.017 13.017V13Z"/></svg>
+                            <p class="text-xs text-slate-600 leading-relaxed pl-4 italic">"${m.message}"</p>
+                        </div>
+                    </div>
+                `).join('');
+            }
         }
         async function deleteMessage(id) { if(confirm("Supprimer ?")) { await sb.from('contact_messages').delete().eq('id', id); loadMessages(); } }
 
