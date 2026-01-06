@@ -9,6 +9,16 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="manifest" href="manifest.json">
+    <style>
+        @keyframes soft-pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+        .animate-soft-pulse {
+            animation: soft-pulse 2s infinite ease-in-out;
+        }
+    </style>
 </head>
 <body>
 
@@ -43,7 +53,7 @@
         </div>
 
         <div id="bloc-messe" class="mt-4 px-2 hidden">
-            <div class="flex items-center gap-2 text-white">
+            <div class="flex flex-col items-center justify-center gap-1 text-white text-center">
                 <span id="icone-messe" class="text-sm">⛪</span>
                 <p id="phrase-messe" class="text-[11px] font-black uppercase tracking-wider leading-tight"></p>
             </div>
@@ -53,9 +63,9 @@
     <main class="p-6 space-y-6 pb-24">
         
         <section id="bloc-annonce-importante" class="hidden">
-            <div class="bg-red-50 border-2 border-red-200 p-6 rounded-2xl shadow-sm relative overflow-hidden">
+            <div class="bg-red-50 border-2 border-red-200 p-6 rounded-2xl shadow-sm relative overflow-hidden animate-soft-pulse">
                 <div class="absolute top-0 right-0 bg-red-200 px-3 py-1 rounded-bl-xl">
-                    <span class="text-[8px] font-black text-red-700 uppercase tracking-tighter">Important</span>
+                    <span class="text-[8px] font-black text-red-700 uppercase tracking-tighter">Annonce à la une</span>
                 </div>
                 <h3 id="titre-important" class="text-sm font-900 text-red-800 mb-2 uppercase tracking-tight"></h3>
                 <p id="texte-important" class="text-xs text-red-900/80 leading-relaxed italic"></p>
@@ -111,7 +121,6 @@
             .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'annonces' }, (payload) => {
                 const badge = document.getElementById('badge-annonces');
                 if (badge) badge.classList.remove('hidden');
-                // Recharger si une nouvelle annonce importante est publiée
                 if (payload.new && payload.new.est_importante) {
                     loadAnnonceImportante();
                 }
@@ -236,13 +245,13 @@
 
         async function loadVerset() {
             const container = document.getElementById('verset-container');
-            container.classList.add('opacity-40');
+            container.style.opacity = '0.4';
             const { data } = await sb.from('versets').select('*');
             if (data && data.length > 0) {
                 const v = data[Math.floor(Math.random() * data.length)];
                 container.innerHTML = `<p class="text-sm italic font-semibold text-slate-700 leading-relaxed">"${v.texte}"</p><p class="text-[9px] font-black text-red-700 mt-2 uppercase text-right tracking-widest">— ${v.reference}</p>`;
             }
-            container.classList.remove('opacity-40');
+            container.style.opacity = '1';
         }
 
         async function checkNewAnnonces() {
