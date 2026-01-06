@@ -20,16 +20,65 @@ function loadMenu() {
 
     const currentPath = window.location.pathname.split('/').pop() || 'index.html';
 
-    // 2. Génération du HTML du menu avec support des badges textuels
+    // Configuration du conteneur pour l'effet de roue
+    nav.style.display = 'flex';
+    nav.style.overflowX = 'auto';
+    nav.style.perspective = '1000px';
+    nav.style.alignItems = 'center';
+    nav.style.paddingTop = '10px';
+    nav.style.paddingBottom = '10px';
+    // Masquer la barre de défilement pour une meilleure immersion
+    nav.style.scrollbarWidth = 'none'; // Firefox
+    nav.classList.add('scrollbar-hide');
+
+    // 2. Génération du HTML du menu avec support des badges textuels et structure 3D
     nav.innerHTML = menuItems.map(item => `
-        <a href="${item.href}" class="nav-item ${currentPath === item.href ? 'active' : ''} relative" onclick="hapticFeedback()">
-            <span class="block text-lg">${item.icon}</span>
-            ${item.label}
-            <span id="badge-${item.label.toLowerCase()}" class="hidden absolute -top-1 -right-4 bg-red-600 text-white text-[7px] font-black px-1.5 py-0.5 rounded-full animate-bounce uppercase">
+        <a href="${item.href}" 
+           class="nav-item-wheel flex-shrink-0 relative flex flex-col items-center justify-center transition-all duration-200 ease-out ${currentPath === item.href ? 'active' : ''}" 
+           style="min-width: 90px; transform-style: preserve-3d;"
+           onclick="hapticFeedback()">
+            <span class="block text-2xl mb-1 transition-transform duration-300 ${currentPath === item.href ? 'scale-125' : ''}">
+                ${item.icon}
+            </span>
+            <span class="text-[10px] font-bold uppercase tracking-tight ${currentPath === item.href ? 'text-blue-500' : 'opacity-70'}">
+                ${item.label}
+            </span>
+            <span id="badge-${item.label.toLowerCase()}" class="hidden absolute -top-1 -right-2 bg-red-600 text-white text-[7px] font-black px-1.5 py-0.5 rounded-full animate-bounce uppercase">
                 Nouveau
             </span>
+            ${currentPath === item.href ? '<div class="absolute -bottom-2 w-1.5 h-1.5 bg-blue-500 rounded-full shadow-[0_0_8px_rgba(59,130,246,0.8)]"></div>' : ''}
         </a>
     `).join('');
+
+    // Fonction interne pour calculer et appliquer l'effet de rotation/profondeur
+    const applyWheelEffect = () => {
+        const items = nav.querySelectorAll('.nav-item-wheel');
+        const navRect = nav.getBoundingClientRect();
+        const centerX = navRect.left + navRect.width / 2;
+
+        items.forEach(item => {
+            const itemRect = item.getBoundingClientRect();
+            const itemCenter = itemRect.left + itemRect.width / 2;
+            
+            // Distance relative au centre de l'écran (-1 à gauche, 0 au milieu, 1 à droite)
+            const distance = (itemCenter - centerX) / (navRect.width / 2);
+            const absDistance = Math.abs(distance);
+
+            // Calcul des transformations dynamiques
+            const rotateY = distance * -35; // Inclinaison
+            const translateZ = absDistance * -120; // Profondeur (s'éloigne sur les bords)
+            const scale = 1 - (absDistance * 0.25); // Taille
+            const opacity = 1 - (absDistance * 0.5); // Transparence
+
+            item.style.transform = `rotateY(${rotateY}deg) translateZ(${translateZ}px) scale(${scale})`;
+            item.style.opacity = opacity;
+        });
+    };
+
+    // Écouteur de scroll pour l'effet dynamique
+    nav.addEventListener('scroll', applyWheelEffect);
+    // Initialisation immédiate au chargement
+    setTimeout(applyWheelEffect, 50);
 
     // 3. Injection du bouton "Retour en haut"
     if (!document.getElementById('scrollTop')) {
