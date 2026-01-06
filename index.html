@@ -86,31 +86,6 @@
                     <div class="skeleton h-4 w-full mb-2"></div>
                     <div class="skeleton h-3 w-1/2"></div>
                 </div>
-
-                <div class="mt-4 pt-4 border-t border-slate-50">
-                    <button onclick="toggleLectures()" class="flex items-center justify-between w-full group">
-                        <span class="text-[10px] font-black text-red-700 uppercase tracking-wider">Épître & Évangile du jour</span>
-                        <svg id="chevron-lectures" class="text-slate-300 transition-transform duration-300" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
-                    </button>
-                    
-                    <div id="lectures-container" class="hidden mt-4 space-y-4">
-                        <div class="space-y-1">
-                            <div class="flex justify-between items-baseline">
-                                <h4 class="text-[9px] font-black text-red-800/60 uppercase tracking-widest">Épître</h4>
-                                <span id="ref-epitre" class="text-[9px] font-bold text-slate-300 italic"></span>
-                            </div>
-                            <div id="texte-epitre" class="text-xs text-slate-600 leading-relaxed italic"></div>
-                        </div>
-                        <div class="h-[1px] bg-slate-50"></div>
-                        <div class="space-y-1">
-                            <div class="flex justify-between items-baseline">
-                                <h4 class="text-[9px] font-black text-red-800/60 uppercase tracking-widest">Évangile</h4>
-                                <span id="ref-evangile" class="text-[9px] font-bold text-slate-300 italic"></span>
-                            </div>
-                            <div id="texte-evangile" class="text-xs text-slate-600 leading-relaxed italic"></div>
-                        </div>
-                    </div>
-                </div>
             </div>
         </section>
 
@@ -153,16 +128,20 @@
         }
 
         async function loadAnnonceImportante() {
-            try {
-                const { data } = await sb.from('annonces').select('*').eq('est_importante', true).order('created_at', { ascending: false }).limit(1).maybeSingle();
-                if (data) {
-                    document.getElementById('bloc-annonce-importante').classList.remove('hidden');
-                    document.getElementById('titre-important').innerText = data.titre;
-                    document.getElementById('texte-important').innerText = data.contenu;
-                } else {
-                    document.getElementById('bloc-annonce-importante').classList.add('hidden');
-                }
-            } catch (err) {}
+            const { data } = await sb.from('annonces')
+                .select('*')
+                .eq('est_importante', true)
+                .order('created_at', { ascending: false })
+                .limit(1)
+                .single();
+
+            if (data) {
+                document.getElementById('bloc-annonce-importante').classList.remove('hidden');
+                document.getElementById('titre-important').innerText = data.titre;
+                document.getElementById('texte-important').innerText = data.contenu;
+            } else {
+                document.getElementById('bloc-annonce-importante').classList.add('hidden');
+            }
         }
 
         async function loadIntention() {
@@ -170,7 +149,9 @@
             if (prieres && prieres.length > 0) {
                 const start = new Date(currentDateDisplay.getFullYear(), 0, 0);
                 const diff = (currentDateDisplay - start) + ((start.getTimezoneOffset() - currentDateDisplay.getTimezoneOffset()) * 60 * 1000);
-                const dayOfYear = Math.floor(diff / (1000 * 60 * 60 * 24));
+                const oneDay = 1000 * 60 * 60 * 24;
+                const dayOfYear = Math.floor(diff / oneDay);
+                
                 const index = dayOfYear % prieres.length;
                 document.getElementById('intention-du-jour').innerText = prieres[index].texte;
             }
@@ -178,8 +159,6 @@
 
         function changeDay(offset) {
             currentDateDisplay.setDate(currentDateDisplay.getDate() + offset);
-            document.getElementById('lectures-container').classList.add('hidden');
-            document.getElementById('chevron-lectures').style.transform = 'rotate(0deg)';
             updateLiturgie();
             loadIntention();
         }
@@ -193,22 +172,22 @@
         async function updateLiturgie() {
             const isToday = currentDateDisplay.toDateString() === new Date().toDateString();
             document.getElementById('btn-today').classList.toggle('hidden', isToday);
+            
             const jourMois = `${String(currentDateDisplay.getDate()).padStart(2, '0')}-${String(currentDateDisplay.getMonth() + 1).padStart(2, '0')}`;
             document.getElementById('date-du-jour').innerText = currentDateDisplay.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
             
-            const { data } = await sb.from('calendrier_traditionnel').select('*').eq('jour', jourMois).maybeSingle();
+            const { data } = await sb.from('calendrier_traditionnel').select('*').eq('jour', jourMois).single();
             if (data) {
                 document.getElementById('saint-nom').innerText = data.saint_nom;
                 document.getElementById('classe-liturgique').innerText = data.classe + (data.classe === 1 ? "ère" : "ème") + " classe";
                 const couleurs = { 'blanc': '#ffffff', 'rouge': '#ef4444', 'vert': '#22c55e', 'violet': '#a855f7', 'noir': '#1e293b', 'rose': '#f472b6' };
                 document.getElementById('indic-couleur').style.backgroundColor = couleurs[data.couleur.toLowerCase()] || '#ffffff';
-                loadLectures(data.epitre_ref, data.evangile_ref);
             } else {
                 document.getElementById('saint-nom').innerText = "Férie du temps";
                 document.getElementById('classe-liturgique').innerText = "";
                 document.getElementById('indic-couleur').style.backgroundColor = "#ffffff";
-                loadLectures(null, null);
             }
+
             fetchMesseDuJour(currentDateDisplay);
         }
 
@@ -216,87 +195,72 @@
             const start = new Date(dateCible.getFullYear(), dateCible.getMonth(), dateCible.getDate(), 0, 0, 0).toISOString();
             const end = new Date(dateCible.getFullYear(), dateCible.getMonth(), dateCible.getDate(), 23, 59, 59).toISOString();
             const url = `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(CALENDAR_ID)}/events?key=${CALENDAR_API_KEY}&timeMin=${start}&timeMax=${end}&singleEvents=true&orderBy=startTime`;
+
+            const blocMesse = document.getElementById('bloc-messe');
+            const phraseMesse = document.getElementById('phrase-messe');
+            const iconeMesse = document.getElementById('icone-messe');
+
             try {
                 const response = await fetch(url);
                 const data = await response.json();
                 const events = data.items || [];
-                const blocMesse = document.getElementById('bloc-messe');
-                if (events.length > 0) {
+                const isSamedi = dateCible.getDay() === 6;
+
+                const filteredEvents = events.filter(e => {
+                    const titre = e.summary ? e.summary.toLowerCase() : "";
+                    if (!titre.includes('messe')) return false;
+                    if (isSamedi && (titre.includes('anticipée') || titre.includes('anticipee'))) return false;
+                    return true;
+                });
+
+                if (filteredEvents.length > 0) {
                     blocMesse.classList.remove('hidden');
-                    document.getElementById('phrase-messe').innerText = "Messe à " + new Date(events[0].start.dateTime).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }).replace(':', 'h');
+                    const resultats = filteredEvents.map(e => {
+                        const titre = e.summary.toLowerCase();
+                        const h = e.start.dateTime ? new Date(e.start.dateTime).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }).replace(':', 'h') : "";
+                        if (titre.includes('pas de messe')) return { type: 'annulation', horaire: h };
+                        return { type: 'messe', horaire: h };
+                    });
+
+                    const annulations = resultats.filter(r => r.type === 'annulation');
+                    const messes = resultats.filter(r => r.type === 'messe');
+
+                    if (annulations.length > 0) {
+                        iconeMesse.innerText = "🗓️";
+                        phraseMesse.innerText = `Pas de Messe aujourd'hui à ${annulations[0].horaire}`;
+                    } else if (messes.length === 1) {
+                        iconeMesse.innerText = "⛪";
+                        phraseMesse.innerText = `La Messe est à ${messes[0].horaire}`;
+                    } else {
+                        iconeMesse.innerText = "⛪";
+                        phraseMesse.innerText = `Les Messes sont à ${messes.map(m => m.horaire).join(', ')}`;
+                    }
                 } else {
                     blocMesse.classList.add('hidden');
                 }
-            } catch (e) {}
+            } catch (e) {
+                blocMesse.classList.add('hidden');
+            }
         }
 
         async function loadVerset() {
+            const container = document.getElementById('verset-container');
+            container.style.opacity = '0.4';
             const { data } = await sb.from('versets').select('*');
             if (data && data.length > 0) {
                 const v = data[Math.floor(Math.random() * data.length)];
-                document.getElementById('verset-container').innerHTML = `<p class="text-sm italic font-semibold text-slate-700 leading-relaxed">"${v.texte}"</p><p class="text-[9px] font-black text-red-700 mt-2 uppercase text-right tracking-widest">— ${v.reference}</p>`;
+                container.innerHTML = `<p class="text-sm italic font-semibold text-slate-700 leading-relaxed">"${v.texte}"</p><p class="text-[9px] font-black text-red-700 mt-2 uppercase text-right tracking-widest">— ${v.reference}</p>`;
             }
+            container.style.opacity = '1';
         }
 
         async function checkNewAnnonces() {
             const lastSeen = localStorage.getItem('last_annonce_date') || "1970-01-01T00:00:00Z";
-            const { data } = await sb.from('annonces').select('created_at').order('created_at', { ascending: false }).limit(1).maybeSingle();
-            if (data && data.created_at > lastSeen) document.getElementById('badge-annonces')?.classList.remove('hidden');
-        }
-
-        function toggleLectures() {
-            const container = document.getElementById('lectures-container');
-            const isHidden = container.classList.toggle('hidden');
-            document.getElementById('chevron-lectures').style.transform = isHidden ? 'rotate(0deg)' : 'rotate(180deg)';
-        }
-
-        async function loadLectures(epitreRef, evangileRef) {
-            const epDiv = document.getElementById('texte-epitre');
-            const evDiv = document.getElementById('texte-evangile');
-            document.getElementById('ref-epitre').innerText = epitreRef || "";
-            document.getElementById('ref-evangile').innerText = evangileRef || "";
-
-            if (!epitreRef && !evangileRef) {
-                epDiv.innerText = "Non disponible.";
-                evDiv.innerText = "";
-                return;
+            const { data } = await sb.from('annonces').select('created_at').order('created_at', { ascending: false }).limit(1).single();
+            if (data && data.created_at > lastSeen) {
+                const badge = document.getElementById('badge-annonces');
+                if (badge) badge.classList.remove('hidden');
             }
-
-            const translate = async (text) => {
-                try {
-                    const res = await fetch("https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=fr&dt=t&q=" + encodeURIComponent(text));
-                    const data = await res.json();
-                    return data[0].map(item => item[0]).join('');
-                } catch (e) { return text; }
-            };
-
-            const fetchAndShow = async (ref, div) => {
-                if (!ref) { div.innerText = ""; return; }
-                div.innerHTML = '<span class="opacity-50 italic">Chargement...</span>';
-                
-                // Nettoyage complet pour correspondre à votre CSV et à l'API
-                let cleaned = ref.trim().replace(/\s+/g, ' '); 
-                let apiRef = cleaned
-                    .replace('1 Pierre', '1 Peter').replace('1 Cor', '1 Corinthians')
-                    .replace('Apoc', 'Revelation').replace('Is', 'Isaiah')
-                    .replace('Mt', 'Matthew').replace('Jn', 'John')
-                    .replace('Lc', 'Luke').replace('Mc', 'Mark')
-                    .replace('Act', 'Acts').replace('Rom', 'Romans')
-                    .replace('Tit', 'Titus').replace('Ep', 'Ephesians')
-                    .replace(',', ':'); 
-
-                try {
-                    const res = await fetch(`https://bible-api.com/${encodeURIComponent(apiRef)}`);
-                    const json = await res.json();
-                    if (json.text) {
-                        div.innerText = await translate(json.text);
-                    } else {
-                        div.innerText = "Référence introuvable (" + apiRef + ")";
-                    }
-                } catch (e) { div.innerText = "Erreur de connexion."; }
-            };
-
-            await Promise.all([fetchAndShow(epitreRef, epDiv), fetchAndShow(evangileRef, evDiv)]);
         }
 
         initHome();
