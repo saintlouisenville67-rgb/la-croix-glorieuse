@@ -16,55 +16,46 @@
         <p class="text-[10px] font-black uppercase tracking-widest opacity-80">Vie de la Paroisse</p>
     </header>
 
-    <main class="p-6 space-y-8">
-        
-        <section class="card shadow-xl -mt-12 relative z-10">
+    <main class="p-6 space-y-8 pb-32"> <section class="card shadow-xl -mt-12 relative z-10">
             <h2 class="text-sm font-800 mb-4 text-slate-800">Trouver un groupe</h2>
             <input type="text" id="groupSearch" onkeyup="filterGroupes()" 
                 placeholder="Rechercher (Scouts, Chorale...)" 
                 class="w-full bg-slate-50 p-3 rounded-xl border-none text-sm font-semibold outline-none focus:ring-2 focus:ring-red-100">
         </section>
 
+        <section class="px-2">
+            <a href="https://www.croix-glorieuse.org/" target="_blank" 
+                class="w-full bg-white border-2 border-slate-100 p-4 rounded-2xl flex items-center justify-between group active:scale-95 transition-all shadow-sm">
+                <span class="text-xs font-900 text-slate-700 uppercase tracking-widest">Découvrir toutes les activités de la paroisse</span>
+                <span class="text-slate-300 group-hover:text-red-700">→</span>
+            </a>
+        </section>
+
         <section>
-            <div class="flex items-center gap-2 mb-6">
-                <div class="h-[1px] flex-1 bg-slate-200"></div>
-                <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Fraternités & Services</span>
-                <div class="h-[1px] flex-1 bg-slate-200"></div>
-            </div>
-            
-            <div id="grid-groupes" class="grid grid-cols-1 gap-4">
-                <div class="text-center py-10">
-                    <p class="text-slate-400 text-xs italic">Chargement des groupes...</p>
+            <div id="groupes-list" class="grid grid-cols-1 gap-4">
                 </div>
-            </div>
         </section>
 
     </main>
-
-    <nav class="bottom-nav"></nav>
 
     <script src="js/config.js"></script>
     <script>
         let allGroupes = [];
 
         async function loadGroupes() {
-            const { data, error } = await sb
-                .from('groupes')
-                .select('*')
-                .order('nom', { ascending: true });
-
+            const { data, error } = await sb.from('groupes').select('*').order('nom');
             if (data) {
                 allGroupes = data;
-                displayGroupes(allGroupes);
+                displayGroupes(data);
             }
         }
 
         function displayGroupes(groupes) {
-            const grid = document.getElementById('grid-groupes');
-            grid.innerHTML = groupes.map(g => `
-                <div class="card animate-fade-in flex flex-col justify-between">
-                    <div class="mb-4">
-                        <div class="flex justify-between items-start mb-2">
+            const list = document.getElementById('groupes-list');
+            list.innerHTML = groupes.map(g => `
+                <div class="card animate-fade-in flex flex-col gap-4">
+                    <div class="flex flex-col gap-1">
+                        <div class="flex justify-between items-center">
                             <h3 class="text-sm font-800 text-slate-800">${g.nom}</h3>
                             <span class="text-[8px] font-black text-red-700 bg-red-50 px-2 py-1 rounded-full uppercase tracking-tighter">WhatsApp</span>
                         </div>
@@ -85,7 +76,6 @@
             displayGroupes(filtered);
         }
 
-        // Charger les groupes au démarrage
         loadGroupes();
     </script>
 
