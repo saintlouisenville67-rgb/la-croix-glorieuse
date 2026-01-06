@@ -153,19 +153,23 @@
         }
 
         async function loadAnnonceImportante() {
-            const { data } = await sb.from('annonces')
-                .select('*')
-                .eq('est_importante', true)
-                .order('created_at', { ascending: false })
-                .limit(1)
-                .single();
+            try {
+                const { data } = await sb.from('annonces')
+                    .select('*')
+                    .eq('est_importante', true)
+                    .order('created_at', { ascending: false })
+                    .limit(1)
+                    .maybeSingle(); // Utilise maybeSingle pour éviter l'erreur 406 si vide
 
-            if (data) {
-                document.getElementById('bloc-annonce-importante').classList.remove('hidden');
-                document.getElementById('titre-important').innerText = data.titre;
-                document.getElementById('texte-important').innerText = data.contenu;
-            } else {
-                document.getElementById('bloc-annonce-importante').classList.add('hidden');
+                if (data) {
+                    document.getElementById('bloc-annonce-importante').classList.remove('hidden');
+                    document.getElementById('titre-important').innerText = data.titre;
+                    document.getElementById('texte-important').innerText = data.contenu;
+                } else {
+                    document.getElementById('bloc-annonce-importante').classList.add('hidden');
+                }
+            } catch (err) {
+                console.error("Erreur annonce:", err);
             }
         }
 
@@ -184,8 +188,10 @@
 
         function changeDay(offset) {
             currentDateDisplay.setDate(currentDateDisplay.getDate() + offset);
-            document.getElementById('lectures-container').classList.add('hidden');
-            document.getElementById('chevron-lectures').style.transform = 'rotate(0deg)';
+            const container = document.getElementById('lectures-container');
+            if(container) container.classList.add('hidden');
+            const chevron = document.getElementById('chevron-lectures');
+            if(chevron) chevron.style.transform = 'rotate(0deg)';
             updateLiturgie();
             loadIntention();
         }
@@ -203,19 +209,19 @@
             const jourMois = `${String(currentDateDisplay.getDate()).padStart(2, '0')}-${String(currentDateDisplay.getMonth() + 1).padStart(2, '0')}`;
             document.getElementById('date-du-jour').innerText = currentDateDisplay.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
             
-            const { data } = await sb.from('calendrier_traditionnel').select('*').eq('jour', jourMois).single();
+            const { data } = await sb.from('calendrier_traditionnel').select('*').eq('jour', jourMois).maybeSingle();
             if (data) {
                 document.getElementById('saint-nom').innerText = data.saint_nom;
                 document.getElementById('classe-liturgique').innerText = data.classe + (data.classe === 1 ? "ère" : "ème") + " classe";
                 const couleurs = { 'blanc': '#ffffff', 'rouge': '#ef4444', 'vert': '#22c55e', 'violet': '#a855f7', 'noir': '#1e293b', 'rose': '#f472b6' };
                 document.getElementById('indic-couleur').style.backgroundColor = couleurs[data.couleur.toLowerCase()] || '#ffffff';
                 
-                // Appel loadLectures avec les données de Supabase
                 loadLectures(data.epitre_ref, data.evangile_ref);
             } else {
                 document.getElementById('saint-nom').innerText = "Férie du temps";
                 document.getElementById('classe-liturgique').innerText = "";
                 document.getElementById('indic-couleur').style.backgroundColor = "#ffffff";
+                loadLectures(null, null);
             }
 
             fetchMesseDuJour(currentDateDisplay);
@@ -286,7 +292,7 @@
 
         async function checkNewAnnonces() {
             const lastSeen = localStorage.getItem('last_annonce_date') || "1970-01-01T00:00:00Z";
-            const { data } = await sb.from('annonces').select('created_at').order('created_at', { ascending: false }).limit(1).single();
+            const { data } = await sb.from('annonces').select('created_at').order('created_at', { ascending: false }).limit(1).maybeSingle();
             if (data && data.created_at > lastSeen) {
                 const badge = document.getElementById('badge-annonces');
                 if (badge) badge.classList.remove('hidden');
@@ -324,12 +330,19 @@
                 if (!ref) { div.innerText = ""; return; }
                 div.innerHTML = '<span class="opacity-50 italic">Chargement...</span>';
                 try {
-                    let apiRef = ref.replace('Is', 'Isaiah').replace('Mt', 'Matthew').replace('Jn', 'John')
+                    // Nettoyage de la référence pour l'API : suppression des espaces superflus et conversion des noms
+                    let cleanedRef = ref.trim().replace(/\s+/g, ' '); 
+                    let apiRef = cleanedRef.replace('Is', 'Isaiah').replace('Mt', 'Matthew').replace('Jn', 'John')
                                     .replace('Lc', 'Luke').replace('Mc', 'Mark').replace(',', ':');
-                    const res = await fetch(`https://bible-api.com/${apiRef}`);
+                    
+                    const res = await fetch(`https://bible-api.com/${encodeURIComponent(apiRef)}`);
+                    if (!res.ok) throw new Error('Not found');
+                    
                     const json = await res.json();
                     div.innerText = json.text ? await translate(json.text) : "Texte introuvable.";
-                } catch (e) { div.innerText = "Erreur de connexion."; }
+                } catch (e) { 
+                    div.innerText = "Texte non disponible dans cette version."; 
+                }
             };
 
             await Promise.all([fetchAndShow(epitreRef, epDiv), fetchAndShow(evangileRef, evDiv)]);
