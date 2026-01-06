@@ -1,12 +1,12 @@
 /**
  * Configuration du menu et des fonctions UX globales
+ * Version : Roue 3D Infinie et Fluide
  */
 
 function loadMenu() {
     const nav = document.querySelector('.bottom-nav');
     if (!nav) return;
 
-    // 1. Liste des onglets (Mise à jour avec Entraide et Annonces)
     const menuItems = [
         { href: 'index.html', icon: '🏠', label: 'Accueil' },
         { href: 'annonces.html', icon: '📢', label: 'Annonces' },
@@ -20,67 +20,83 @@ function loadMenu() {
 
     const currentPath = window.location.pathname.split('/').pop() || 'index.html';
 
-    // Configuration du conteneur pour l'effet de roue
+    // Configuration du conteneur pour la fluidité et le snap
     nav.style.display = 'flex';
     nav.style.overflowX = 'auto';
     nav.style.perspective = '1000px';
     nav.style.alignItems = 'center';
-    nav.style.paddingTop = '10px';
-    nav.style.paddingBottom = '10px';
-    // Masquer la barre de défilement pour une meilleure immersion
-    nav.style.scrollbarWidth = 'none'; // Firefox
+    nav.style.scrollSnapType = 'x mandatory'; 
+    nav.style.scrollbarWidth = 'none';
     nav.classList.add('scrollbar-hide');
 
-    // 2. Génération du HTML du menu avec support des badges textuels et structure 3D
-    nav.innerHTML = menuItems.map(item => `
-        <a href="${item.href}" 
-           class="nav-item-wheel flex-shrink-0 relative flex flex-col items-center justify-center transition-all duration-200 ease-out ${currentPath === item.href ? 'active' : ''}" 
-           style="min-width: 90px; transform-style: preserve-3d;"
-           onclick="hapticFeedback()">
-            <span class="block text-2xl mb-1 transition-transform duration-300 ${currentPath === item.href ? 'scale-125' : ''}">
-                ${item.icon}
-            </span>
-            <span class="text-[10px] font-bold uppercase tracking-tight ${currentPath === item.href ? 'text-blue-500' : 'opacity-70'}">
-                ${item.label}
-            </span>
-            <span id="badge-${item.label.toLowerCase()}" class="hidden absolute -top-1 -right-2 bg-red-600 text-white text-[7px] font-black px-1.5 py-0.5 rounded-full animate-bounce uppercase">
-                Nouveau
-            </span>
-            ${currentPath === item.href ? '<div class="absolute -bottom-2 w-1.5 h-1.5 bg-blue-500 rounded-full shadow-[0_0_8px_rgba(59,130,246,0.8)]"></div>' : ''}
-        </a>
-    `).join('');
+    // 1. Fonction de génération d'item (pour faciliter le clonage)
+    const createItemHTML = (item) => {
+        const isActive = currentPath === item.href;
+        return `
+            <a href="${item.href}" 
+               class="nav-item-wheel flex-shrink-0 relative flex flex-col items-center justify-center py-2" 
+               style="min-width: 70px; transform-style: preserve-3d; scroll-snap-align: center;"
+               onclick="hapticFeedback()">
+                <span class="block text-2xl mb-1 transition-transform duration-300 ${isActive ? 'scale-125' : ''}">
+                    ${item.icon}
+                </span>
+                <span class="text-[9px] font-bold uppercase tracking-tighter ${isActive ? 'text-blue-500' : 'opacity-60'}">
+                    ${item.label}
+                </span>
+                ${isActive ? '<div class="absolute -bottom-1 w-1.5 h-1.5 bg-blue-500 rounded-full"></div>' : ''}
+            </a>
+        `;
+    };
 
-    // Fonction interne pour calculer et appliquer l'effet de rotation/profondeur
-    const applyWheelEffect = () => {
+    // 2. Création de la boucle infinie (Clonage début et fin)
+    const menuHTML = menuItems.map(item => createItemHTML(item)).join('');
+    nav.innerHTML = menuHTML + menuHTML + menuHTML; // On triple le contenu pour l'illusion d'infini
+
+    // Positionner au centre au démarrage
+    const centerInitial = () => {
+        const itemWidth = 70;
+        nav.scrollLeft = itemWidth * menuItems.length;
+    };
+
+    // 3. Logique de l'effet "Roue" et gestion de la boucle
+    const handleScroll = () => {
         const items = nav.querySelectorAll('.nav-item-wheel');
         const navRect = nav.getBoundingClientRect();
         const centerX = navRect.left + navRect.width / 2;
+        const itemWidth = 70;
+        const totalWidth = itemWidth * menuItems.length;
 
+        // Effet visuel de roue
         items.forEach(item => {
             const itemRect = item.getBoundingClientRect();
             const itemCenter = itemRect.left + itemRect.width / 2;
-            
-            // Distance relative au centre de l'écran (-1 à gauche, 0 au milieu, 1 à droite)
             const distance = (itemCenter - centerX) / (navRect.width / 2);
             const absDistance = Math.abs(distance);
 
-            // Calcul des transformations dynamiques
-            const rotateY = distance * -35; // Inclinaison
-            const translateZ = absDistance * -120; // Profondeur (s'éloigne sur les bords)
-            const scale = 1 - (absDistance * 0.25); // Taille
-            const opacity = 1 - (absDistance * 0.5); // Transparence
+            const rotateY = distance * -40; 
+            const translateZ = absDistance * -150; 
+            const scale = 1 - (absDistance * 0.3);
+            const opacity = 1 - (absDistance * 0.7);
 
             item.style.transform = `rotateY(${rotateY}deg) translateZ(${translateZ}px) scale(${scale})`;
             item.style.opacity = opacity;
         });
+
+        // Gestion de la boucle infinie sans saut visuel
+        if (nav.scrollLeft <= 0) {
+            nav.scrollLeft = totalWidth;
+        } else if (nav.scrollLeft >= nav.scrollWidth - navRect.width) {
+            nav.scrollLeft = totalWidth;
+        }
     };
 
-    // Écouteur de scroll pour l'effet dynamique
-    nav.addEventListener('scroll', applyWheelEffect);
-    // Initialisation immédiate au chargement
-    setTimeout(applyWheelEffect, 50);
+    nav.addEventListener('scroll', handleScroll);
+    setTimeout(() => {
+        centerInitial();
+        handleScroll();
+    }, 10);
 
-    // 3. Injection du bouton "Retour en haut"
+    // 4. Bouton Retour en haut (Inchangé mais présent)
     if (!document.getElementById('scrollTop')) {
         const scrollBtn = document.createElement('button');
         scrollBtn.id = 'scrollTop';
@@ -105,16 +121,10 @@ function loadMenu() {
     }
 }
 
-/**
- * Fonction globale pour le retour vibratoire (Haptic Feedback)
- */
 function hapticFeedback(intensity = 15) {
     if (window.navigator && window.navigator.vibrate) {
         window.navigator.vibrate(intensity);
     }
 }
 
-/**
- * Lancement automatique du menu
- */
 document.addEventListener('DOMContentLoaded', loadMenu);
