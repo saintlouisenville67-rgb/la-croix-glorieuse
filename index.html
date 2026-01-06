@@ -154,13 +154,7 @@
 
         async function loadAnnonceImportante() {
             try {
-                const { data } = await sb.from('annonces')
-                    .select('*')
-                    .eq('est_importante', true)
-                    .order('created_at', { ascending: false })
-                    .limit(1)
-                    .maybeSingle(); // Utilise maybeSingle pour éviter l'erreur 406 si vide
-
+                const { data } = await sb.from('annonces').select('*').eq('est_importante', true).order('created_at', { ascending: false }).limit(1).maybeSingle();
                 if (data) {
                     document.getElementById('bloc-annonce-importante').classList.remove('hidden');
                     document.getElementById('titre-important').innerText = data.titre;
@@ -168,9 +162,7 @@
                 } else {
                     document.getElementById('bloc-annonce-importante').classList.add('hidden');
                 }
-            } catch (err) {
-                console.error("Erreur annonce:", err);
-            }
+            } catch (err) {}
         }
 
         async function loadIntention() {
@@ -178,9 +170,7 @@
             if (prieres && prieres.length > 0) {
                 const start = new Date(currentDateDisplay.getFullYear(), 0, 0);
                 const diff = (currentDateDisplay - start) + ((start.getTimezoneOffset() - currentDateDisplay.getTimezoneOffset()) * 60 * 1000);
-                const oneDay = 1000 * 60 * 60 * 24;
-                const dayOfYear = Math.floor(diff / oneDay);
-                
+                const dayOfYear = Math.floor(diff / (1000 * 60 * 60 * 24));
                 const index = dayOfYear % prieres.length;
                 document.getElementById('intention-du-jour').innerText = prieres[index].texte;
             }
@@ -188,10 +178,8 @@
 
         function changeDay(offset) {
             currentDateDisplay.setDate(currentDateDisplay.getDate() + offset);
-            const container = document.getElementById('lectures-container');
-            if(container) container.classList.add('hidden');
-            const chevron = document.getElementById('chevron-lectures');
-            if(chevron) chevron.style.transform = 'rotate(0deg)';
+            document.getElementById('lectures-container').classList.add('hidden');
+            document.getElementById('chevron-lectures').style.transform = 'rotate(0deg)';
             updateLiturgie();
             loadIntention();
         }
@@ -205,7 +193,6 @@
         async function updateLiturgie() {
             const isToday = currentDateDisplay.toDateString() === new Date().toDateString();
             document.getElementById('btn-today').classList.toggle('hidden', isToday);
-            
             const jourMois = `${String(currentDateDisplay.getDate()).padStart(2, '0')}-${String(currentDateDisplay.getMonth() + 1).padStart(2, '0')}`;
             document.getElementById('date-du-jour').innerText = currentDateDisplay.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
             
@@ -215,7 +202,6 @@
                 document.getElementById('classe-liturgique').innerText = data.classe + (data.classe === 1 ? "ère" : "ème") + " classe";
                 const couleurs = { 'blanc': '#ffffff', 'rouge': '#ef4444', 'vert': '#22c55e', 'violet': '#a855f7', 'noir': '#1e293b', 'rose': '#f472b6' };
                 document.getElementById('indic-couleur').style.backgroundColor = couleurs[data.couleur.toLowerCase()] || '#ffffff';
-                
                 loadLectures(data.epitre_ref, data.evangile_ref);
             } else {
                 document.getElementById('saint-nom').innerText = "Férie du temps";
@@ -223,7 +209,6 @@
                 document.getElementById('indic-couleur').style.backgroundColor = "#ffffff";
                 loadLectures(null, null);
             }
-
             fetchMesseDuJour(currentDateDisplay);
         }
 
@@ -231,79 +216,38 @@
             const start = new Date(dateCible.getFullYear(), dateCible.getMonth(), dateCible.getDate(), 0, 0, 0).toISOString();
             const end = new Date(dateCible.getFullYear(), dateCible.getMonth(), dateCible.getDate(), 23, 59, 59).toISOString();
             const url = `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(CALENDAR_ID)}/events?key=${CALENDAR_API_KEY}&timeMin=${start}&timeMax=${end}&singleEvents=true&orderBy=startTime`;
-
-            const blocMesse = document.getElementById('bloc-messe');
-            const phraseMesse = document.getElementById('phrase-messe');
-            const iconeMesse = document.getElementById('icone-messe');
-
             try {
                 const response = await fetch(url);
                 const data = await response.json();
                 const events = data.items || [];
-                const isSamedi = dateCible.getDay() === 6;
-
-                const filteredEvents = events.filter(e => {
-                    const titre = e.summary ? e.summary.toLowerCase() : "";
-                    if (!titre.includes('messe')) return false;
-                    if (isSamedi && (titre.includes('anticipée') || titre.includes('anticipee'))) return false;
-                    return true;
-                });
-
-                if (filteredEvents.length > 0) {
+                const blocMesse = document.getElementById('bloc-messe');
+                if (events.length > 0) {
                     blocMesse.classList.remove('hidden');
-                    const resultats = filteredEvents.map(e => {
-                        const titre = e.summary.toLowerCase();
-                        const h = e.start.dateTime ? new Date(e.start.dateTime).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }).replace(':', 'h') : "";
-                        if (titre.includes('pas de messe')) return { type: 'annulation', horaire: h };
-                        return { type: 'messe', horaire: h };
-                    });
-
-                    const annulations = resultats.filter(r => r.type === 'annulation');
-                    const messes = resultats.filter(r => r.type === 'messe');
-
-                    if (annulations.length > 0) {
-                        iconeMesse.innerText = "🗓️";
-                        phraseMesse.innerText = `Pas de Messe aujourd'hui à ${annulations[0].horaire}`;
-                    } else if (messes.length === 1) {
-                        iconeMesse.innerText = "⛪";
-                        phraseMesse.innerText = `La Messe est à ${messes[0].horaire}`;
-                    } else {
-                        iconeMesse.innerText = "⛪";
-                        phraseMesse.innerText = `Les Messes sont à ${messes.map(m => m.horaire).join(', ')}`;
-                    }
+                    document.getElementById('phrase-messe').innerText = "Messe à " + new Date(events[0].start.dateTime).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }).replace(':', 'h');
                 } else {
                     blocMesse.classList.add('hidden');
                 }
-            } catch (e) {
-                blocMesse.classList.add('hidden');
-            }
+            } catch (e) {}
         }
 
         async function loadVerset() {
-            const container = document.getElementById('verset-container');
-            container.style.opacity = '0.4';
             const { data } = await sb.from('versets').select('*');
             if (data && data.length > 0) {
                 const v = data[Math.floor(Math.random() * data.length)];
-                container.innerHTML = `<p class="text-sm italic font-semibold text-slate-700 leading-relaxed">"${v.texte}"</p><p class="text-[9px] font-black text-red-700 mt-2 uppercase text-right tracking-widest">— ${v.reference}</p>`;
+                document.getElementById('verset-container').innerHTML = `<p class="text-sm italic font-semibold text-slate-700 leading-relaxed">"${v.texte}"</p><p class="text-[9px] font-black text-red-700 mt-2 uppercase text-right tracking-widest">— ${v.reference}</p>`;
             }
-            container.style.opacity = '1';
         }
 
         async function checkNewAnnonces() {
             const lastSeen = localStorage.getItem('last_annonce_date') || "1970-01-01T00:00:00Z";
             const { data } = await sb.from('annonces').select('created_at').order('created_at', { ascending: false }).limit(1).maybeSingle();
-            if (data && data.created_at > lastSeen) {
-                const badge = document.getElementById('badge-annonces');
-                if (badge) badge.classList.remove('hidden');
-            }
+            if (data && data.created_at > lastSeen) document.getElementById('badge-annonces')?.classList.remove('hidden');
         }
 
         function toggleLectures() {
             const container = document.getElementById('lectures-container');
-            const chevron = document.getElementById('chevron-lectures');
             const isHidden = container.classList.toggle('hidden');
-            chevron.style.transform = isHidden ? 'rotate(0deg)' : 'rotate(180deg)';
+            document.getElementById('chevron-lectures').style.transform = isHidden ? 'rotate(0deg)' : 'rotate(180deg)';
         }
 
         async function loadLectures(epitreRef, evangileRef) {
@@ -329,19 +273,26 @@
             const fetchAndShow = async (ref, div) => {
                 if (!ref) { div.innerText = ""; return; }
                 div.innerHTML = '<span class="opacity-50 italic">Chargement...</span>';
+                
+                // Dictionnaire de conversion robuste
+                let apiRef = ref.trim()
+                    .replace('Is ', 'Isaiah ').replace('Mt ', 'Matthew ').replace('Jn ', 'John ')
+                    .replace('Lc ', 'Luke ').replace('Mc ', 'Mark ').replace('Ac ', 'Acts ')
+                    .replace('Rm ', 'Romans ').replace('Co ', 'Corinthians ').replace('Ga ', 'Galatians ')
+                    .replace('Ep ', 'Ephesians ').replace('Ph ', 'Philippians ').replace('He ', 'Hebrews ')
+                    .replace('Ap ', 'Revelation ').replace('1 P ', '1 Peter ').replace('2 P ', '2 Peter ')
+                    .replace(',', ':'); // Remplace virgule par deux-points pour les chapitres
+
                 try {
-                    // Nettoyage de la référence pour l'API : suppression des espaces superflus et conversion des noms
-                    let cleanedRef = ref.trim().replace(/\s+/g, ' '); 
-                    let apiRef = cleanedRef.replace('Is', 'Isaiah').replace('Mt', 'Matthew').replace('Jn', 'John')
-                                    .replace('Lc', 'Luke').replace('Mc', 'Mark').replace(',', ':');
-                    
                     const res = await fetch(`https://bible-api.com/${encodeURIComponent(apiRef)}`);
-                    if (!res.ok) throw new Error('Not found');
-                    
                     const json = await res.json();
-                    div.innerText = json.text ? await translate(json.text) : "Texte introuvable.";
+                    if (json.text) {
+                        div.innerText = await translate(json.text);
+                    } else {
+                        div.innerText = "Référence introuvable (" + apiRef + ")";
+                    }
                 } catch (e) { 
-                    div.innerText = "Texte non disponible dans cette version."; 
+                    div.innerText = "Erreur de connexion."; 
                 }
             };
 
