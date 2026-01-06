@@ -28,230 +28,212 @@
                 <h1 class="text-2xl font-800 tracking-tight mb-1">La Croix Glorieuse</h1>
                 <p class="text-[10px] font-black uppercase tracking-widest opacity-80">Paroisse Personnelle • Strasbourg</p>
             </div>
-            <a href="admin.html" class="opacity-40 hover:opacity-100 transition-opacity p-2">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3m-3-3l-2.5-2.5"></path></svg>
+            <a href="admin.html" class="opacity-40 hover:opacity-100 transition-opacity p-2" title="Administration">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3m-3-3l-2.5-2.5"></path>
+                </svg>
             </a>
         </div>
 
         <div class="bg-white/10 backdrop-blur-md p-6 rounded-3xl border border-white/20">
             <div class="flex justify-between items-start mb-2">
                 <div class="flex items-center gap-3">
-                    <button onclick="changeDay(-1)" class="opacity-50 hover:opacity-100 text-lg transition-all active:scale-90 p-1">‹</button>
-                    <p id="date-du-jour" class="text-[10px] font-black uppercase text-white/70 min-w-[120px] text-center tracking-widest">Chargement...</p>
-                    <button onclick="changeDay(1)" class="opacity-50 hover:opacity-100 text-lg transition-all active:scale-90 p-1">›</button>
+                    <button onclick="changeDay(-1)" class="opacity-50 hover:opacity-100 text-lg">‹</button>
+                    <p id="date-du-jour" class="text-[10px] font-black uppercase text-white/70 min-w-[120px] text-center">Chargement...</p>
+                    <button onclick="changeDay(1)" class="opacity-50 hover:opacity-100 text-lg">›</button>
                 </div>
-                <div id="indic-couleur" class="w-3 h-3 rounded-full border border-white/40 shadow-inner"></div>
+                <div id="indic-couleur" class="w-3 h-3 rounded-full border border-white/40 shadow-inner transition-all duration-700"></div>
             </div>
-            <h2 id="saint-nom" class="text-xl font-800 mb-1 leading-tight text-white tracking-tight">...</h2>
-            <p id="classe-liturgique" class="text-[10px] font-bold opacity-60 uppercase tracking-tighter"></p>
+            
+            <h2 id="saint-nom" class="text-xl font-800 mb-1 leading-tight text-white">Recherche du saint...</h2>
+            <div class="flex justify-between items-end">
+                <p id="classe-liturgique" class="text-[10px] font-bold opacity-60 uppercase tracking-tighter"></p>
+                <button id="btn-today" onclick="goToday()" class="hidden text-[8px] font-black uppercase bg-white/20 px-2 py-1 rounded-lg">Aujourd'hui</button>
+            </div>
+        </div>
+
+        <div id="bloc-messe" class="mt-4 px-2 hidden">
+            <div class="flex flex-col items-center justify-center gap-1 text-white text-center">
+                <span id="icone-messe" class="text-sm">⛪</span>
+                <p id="phrase-messe" class="text-[11px] font-black uppercase tracking-wider leading-tight"></p>
+            </div>
         </div>
     </header>
 
     <main class="p-6 space-y-6 pb-24">
         
-        <section id="bloc-messe" class="hidden">
-            <div class="flex items-center gap-2 mb-4">
+        <section id="bloc-annonce-importante" class="hidden">
+            <div class="bg-red-50 border-2 border-red-200 p-6 rounded-2xl shadow-sm relative overflow-hidden animate-soft-pulse">
+                <div class="absolute top-0 right-0 bg-red-200 px-3 py-1 rounded-bl-xl">
+                    <span class="text-[8px] font-black text-red-700 uppercase tracking-tighter">Annonce à la une</span>
+                </div>
+                <h3 id="titre-important" class="text-sm font-900 text-red-800 mb-2 uppercase tracking-tight"></h3>
+                <p id="texte-important" class="text-xs text-red-900/80 leading-relaxed italic"></p>
+            </div>
+        </section>
+
+        <section>
+            <div class="flex items-center gap-2 mb-4 relative z-10">
                 <div class="h-[1px] flex-1 bg-slate-200"></div>
-                <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Messe du jour</span>
+                <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Parole de Dieu</span>
                 <div class="h-[1px] flex-1 bg-slate-200"></div>
             </div>
-            <div class="card bg-white p-6 rounded-2xl shadow-xl border-t-4 border-red-700 relative overflow-hidden">
-                <div class="flex items-start gap-4">
-                    <div class="bg-red-50 p-3 rounded-xl">
-                        <svg class="text-red-700" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 7v5l3 3"></path><circle cx="12" cy="12" r="10"></circle></svg>
-                    </div>
-                    <div>
-                        <p id="horaire-messe" class="text-sm font-800 text-slate-800"></p>
-                        <p class="text-[10px] font-bold text-slate-400 uppercase mt-0.5">Forme Extraordinaire</p>
-                    </div>
-                </div>
-
-                <div class="mt-4 pt-4 border-t border-slate-50">
-                    <button onclick="toggleLectures()" class="flex items-center justify-between w-full text-left group">
-                        <span class="text-[10px] font-black text-red-700 uppercase tracking-wider">Épître & Évangile du jour</span>
-                        <svg id="chevron-lectures" class="text-slate-300 group-hover:text-red-700 transition-transform duration-300" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
-                    </button>
-                    
-                    <div id="lectures-container" class="hidden mt-4 space-y-5 animate-in fade-in duration-500">
-                        <div>
-                            <div class="flex justify-between items-center mb-1">
-                                <h4 class="text-[9px] font-black text-red-800/50 uppercase">Épître</h4>
-                                <span id="ref-epitre" class="text-[9px] font-bold text-slate-300 italic"></span>
-                            </div>
-                            <div id="texte-epitre" class="text-xs text-slate-600 leading-relaxed italic">Chargement...</div>
-                        </div>
-                        <div class="h-[1px] bg-slate-50 w-full"></div>
-                        <div>
-                            <div class="flex justify-between items-center mb-1">
-                                <h4 class="text-[9px] font-black text-red-800/50 uppercase">Évangile</h4>
-                                <span id="ref-evangile" class="text-[9px] font-bold text-slate-300 italic"></span>
-                            </div>
-                            <div id="texte-evangile" class="text-xs text-slate-600 leading-relaxed italic">Chargement...</div>
-                        </div>
-                    </div>
+            <div class="card shadow-xl border-l-4 border-red-700 relative bg-white p-6 rounded-2xl">
+                <button onclick="loadVerset()" class="absolute top-4 right-4 opacity-20 hover:opacity-100 transition-opacity">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>
+                </button>
+                <div id="verset-container">
+                    <div class="skeleton h-4 w-full mb-2"></div>
+                    <div class="skeleton h-3 w-1/2"></div>
                 </div>
             </div>
         </section>
 
         <section>
-            <div class="flex items-center gap-2 mb-4">
+            <div class="flex items-center gap-2 mb-4 relative z-10">
                 <div class="h-[1px] flex-1 bg-slate-200"></div>
-                <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Parole de vie</span>
+                <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Intention de prière</span>
                 <div class="h-[1px] flex-1 bg-slate-200"></div>
             </div>
-            <div id="verset-container" class="card bg-white p-6 rounded-2xl shadow-xl border-l-4 border-red-700 transition-opacity duration-500">
-                <p class="text-sm italic font-semibold text-slate-700 leading-relaxed text-center animate-soft-pulse">Récupération de la manne spirituelle...</p>
+            <div class="bg-white shadow-lg p-6 rounded-2xl border border-slate-100 flex flex-col items-center justify-center text-center">
+                <p id="intention-du-jour" class="text-sm italic font-semibold text-slate-700 leading-relaxed">Chargement...</p>
             </div>
         </section>
 
-        <section id="section-annonces" class="hidden">
-            <div class="flex items-center gap-2 mb-4">
-                <div class="h-[1px] flex-1 bg-slate-200"></div>
-                <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Annonces & Infos</span>
-                <div class="h-[1px] flex-1 bg-slate-200"></div>
-            </div>
-            <a href="annonces.html" class="block bg-slate-900 p-6 rounded-2xl shadow-xl relative overflow-hidden group active:scale-[0.98] transition-transform">
-                <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform">
-                    <svg class="text-white" xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
-                </div>
-                <div class="relative z-10">
-                    <div class="flex items-center gap-2 mb-2">
-                        <h3 class="text-white font-800">Vie de la Paroisse</h3>
-                        <div id="badge-annonces" class="hidden w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
-                    </div>
-                    <p class="text-white/60 text-xs leading-relaxed">Découvrez les dernières annonces, événements et nouvelles de la communauté.</p>
-                </div>
-            </a>
-        </section>
-
-        <nav class="fixed bottom-6 left-6 right-6 z-50">
-            <div class="bg-white/80 backdrop-blur-lg border border-white/20 shadow-2xl rounded-3xl p-2 flex justify-around items-center">
-                <a href="index.html" class="p-3 bg-red-700 text-white rounded-2xl shadow-lg shadow-red-200 scale-110 transition-all">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-                </a>
-                <a href="intentions.html" class="p-3 text-slate-400 hover:text-red-700 transition-colors">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-8-4.5-8-11.8A5.5 5.5 0 0 1 12 5a5.5 5.5 0 0 1 8 4.2c0 7.3-8 11.8-8 11.8z"></path></svg>
-                </a>
-                <a href="messagerie.html" class="p-3 text-slate-400 hover:text-red-700 transition-colors">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-                </a>
-                <a href="communaute.html" class="p-3 text-slate-400 hover:text-red-700 transition-colors">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-                </a>
-            </div>
-        </nav>
     </main>
+
+    <nav class="bottom-nav"></nav>
 
     <script src="js/config.js"></script>
     <script>
         let currentDateDisplay = new Date();
+        const CALENDAR_API_KEY = 'AIzaSyAI5N6lamviexKaPR-WoOP4006m5IClDoQ';
+        const CALENDAR_ID = 'saintlouisenville67@gmail.com';
 
         async function initHome() {
             updateLiturgie();
             loadVerset();
+            loadIntention();
+            loadAnnonceImportante();
             checkNewAnnonces();
-            loadAnnoncesPreview();
+            
+            sb.channel('custom-insert-channel')
+            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'annonces' }, (payload) => {
+                const badge = document.getElementById('badge-annonces');
+                if (badge) badge.classList.remove('hidden');
+                if (payload.new && payload.new.est_importante) {
+                    loadAnnonceImportante();
+                }
+            }).subscribe();
+        }
+
+        async function loadAnnonceImportante() {
+            const { data } = await sb.from('annonces')
+                .select('*')
+                .eq('est_importante', true)
+                .order('created_at', { ascending: false })
+                .limit(1)
+                .single();
+
+            if (data) {
+                document.getElementById('bloc-annonce-importante').classList.remove('hidden');
+                document.getElementById('titre-important').innerText = data.titre;
+                document.getElementById('texte-important').innerText = data.contenu;
+            } else {
+                document.getElementById('bloc-annonce-importante').classList.add('hidden');
+            }
+        }
+
+        async function loadIntention() {
+            const { data: prieres } = await sb.from('prieres_du_jour').select('*');
+            if (prieres && prieres.length > 0) {
+                const start = new Date(currentDateDisplay.getFullYear(), 0, 0);
+                const diff = (currentDateDisplay - start) + ((start.getTimezoneOffset() - currentDateDisplay.getTimezoneOffset()) * 60 * 1000);
+                const oneDay = 1000 * 60 * 60 * 24;
+                const dayOfYear = Math.floor(diff / oneDay);
+                
+                const index = dayOfYear % prieres.length;
+                document.getElementById('intention-du-jour').innerText = prieres[index].texte;
+            }
+        }
+
+        function changeDay(offset) {
+            currentDateDisplay.setDate(currentDateDisplay.getDate() + offset);
+            updateLiturgie();
+            loadIntention();
+        }
+
+        function goToday() {
+            currentDateDisplay = new Date();
+            updateLiturgie();
+            loadIntention();
         }
 
         async function updateLiturgie() {
+            const isToday = currentDateDisplay.toDateString() === new Date().toDateString();
+            document.getElementById('btn-today').classList.toggle('hidden', isToday);
+            
             const jourMois = `${String(currentDateDisplay.getDate()).padStart(2, '0')}-${String(currentDateDisplay.getMonth() + 1).padStart(2, '0')}`;
+            document.getElementById('date-du-jour').innerText = currentDateDisplay.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
             
-            const options = { weekday: 'long', day: 'numeric', month: 'long' };
-            document.getElementById('date-du-jour').innerText = currentDateDisplay.toLocaleDateString('fr-FR', options);
-
-            try {
-                const { data, error } = await sb
-                    .from('calendrier_traditionnel')
-                    .select('*')
-                    .eq('jour', jourMois)
-                    .single();
-
-                if (data) {
-                    document.getElementById('saint-nom').innerText = data.saint_nom;
-                    document.getElementById('classe-liturgique').innerText = data.classe + (data.classe == 1 ? "ère" : "ème") + " classe";
-                    
-                    const indic = document.getElementById('indic-couleur');
-                    const couleurs = {
-                        'blanc': 'bg-white',
-                        'rouge': 'bg-red-600',
-                        'vert': 'bg-emerald-600',
-                        'violet': 'bg-violet-800',
-                        'noir': 'bg-slate-900'
-                    };
-                    indic.className = `w-3 h-3 rounded-full border border-white/40 shadow-inner ${couleurs[data.couleur.toLowerCase()] || 'bg-slate-400'}`;
-
-                    // Mise à jour des lectures (épître/évangile)
-                    loadLectures(data.epitre_ref, data.evangile_ref);
-                }
-                loadMesses(jourMois);
-            } catch (e) { console.error(e); }
-        }
-
-        /**
-         * Gestion de l'affichage Épître / Évangile
-         */
-        function toggleLectures() {
-            const container = document.getElementById('lectures-container');
-            const chevron = document.getElementById('chevron-lectures');
-            container.classList.toggle('hidden');
-            chevron.style.transform = container.classList.contains('hidden') ? 'rotate(0deg)' : 'rotate(180deg)';
-        }
-
-        async function loadLectures(refEpitre, refEvangile) {
-            const container = document.getElementById('lectures-container');
-            const epitreDiv = document.getElementById('texte-epitre');
-            const evangileDiv = document.getElementById('texte-evangile');
-            
-            document.getElementById('ref-epitre').innerText = refEpitre || "";
-            document.getElementById('ref-evangile').innerText = refEvangile || "";
-
-            if (!refEpitre && !refEvangile) {
-                epitreDiv.innerText = "Non disponible pour ce jour.";
-                evangileDiv.innerText = "";
-                return;
+            const { data } = await sb.from('calendrier_traditionnel').select('*').eq('jour', jourMois).single();
+            if (data) {
+                document.getElementById('saint-nom').innerText = data.saint_nom;
+                document.getElementById('classe-liturgique').innerText = data.classe + (data.classe === 1 ? "ère" : "ème") + " classe";
+                const couleurs = { 'blanc': '#ffffff', 'rouge': '#ef4444', 'vert': '#22c55e', 'violet': '#a855f7', 'noir': '#1e293b', 'rose': '#f472b6' };
+                document.getElementById('indic-couleur').style.backgroundColor = couleurs[data.couleur.toLowerCase()] || '#ffffff';
+            } else {
+                document.getElementById('saint-nom').innerText = "Férie du temps";
+                document.getElementById('classe-liturgique').innerText = "";
+                document.getElementById('indic-couleur').style.backgroundColor = "#ffffff";
             }
 
-            // Fonction interne de traduction automatique
-            const translate = async (text) => {
-                try {
-                    const res = await fetch("https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=fr&dt=t&q=" + encodeURIComponent(text));
-                    const data = await res.json();
-                    return data[0].map(item => item[0]).join('');
-                } catch (e) { return text; }
-            };
-
-            const fetchBible = async (ref, div) => {
-                if (!ref) { div.innerText = ""; return; }
-                div.innerHTML = '<span class="animate-pulse">Récupération...</span>';
-                try {
-                    // Nettoyage pour l'API (ex: Is 60, 1-6 -> Isaiah 60:1-6)
-                    let apiRef = ref.replace('Is', 'Isaiah').replace('Mt', 'Matthew').replace('Jn', 'John')
-                                    .replace('Lc', 'Luke').replace('Mc', 'Mark').replace(',', ':');
-                    const res = await fetch(`https://bible-api.com/${apiRef}`);
-                    const data = await res.json();
-                    if (data.text) {
-                        div.innerText = await translate(data.text);
-                    } else { div.innerText = "Référence non trouvée."; }
-                } catch (e) { div.innerText = "Erreur de chargement."; }
-            };
-
-            await Promise.all([
-                fetchBible(refEpitre, epitreDiv),
-                fetchBible(refEvangile, evangileDiv)
-            ]);
+            fetchMesseDuJour(currentDateDisplay);
         }
 
-        async function loadMesses(jourMois) {
+        async function fetchMesseDuJour(dateCible) {
+            const start = new Date(dateCible.getFullYear(), dateCible.getMonth(), dateCible.getDate(), 0, 0, 0).toISOString();
+            const end = new Date(dateCible.getFullYear(), dateCible.getMonth(), dateCible.getDate(), 23, 59, 59).toISOString();
+            const url = `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(CALENDAR_ID)}/events?key=${CALENDAR_API_KEY}&timeMin=${start}&timeMax=${end}&singleEvents=true&orderBy=startTime`;
+
             const blocMesse = document.getElementById('bloc-messe');
-            const txtHoraire = document.getElementById('horaire-messe');
+            const phraseMesse = document.getElementById('phrase-messe');
+            const iconeMesse = document.getElementById('icone-messe');
+
             try {
-                const { data: messes } = await sb.from('messes').select('horaire').eq('jour', jourMois);
-                if (messes && messes.length > 0) {
+                const response = await fetch(url);
+                const data = await response.json();
+                const events = data.items || [];
+                const isSamedi = dateCible.getDay() === 6;
+
+                const filteredEvents = events.filter(e => {
+                    const titre = e.summary ? e.summary.toLowerCase() : "";
+                    if (!titre.includes('messe')) return false;
+                    if (isSamedi && (titre.includes('anticipée') || titre.includes('anticipee'))) return false;
+                    return true;
+                });
+
+                if (filteredEvents.length > 0) {
                     blocMesse.classList.remove('hidden');
-                    if (messes.length === 1) {
-                        txtHoraire.innerText = `Messe à ${messes[0].horaire}`;
+                    const resultats = filteredEvents.map(e => {
+                        const titre = e.summary.toLowerCase();
+                        const h = e.start.dateTime ? new Date(e.start.dateTime).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }).replace(':', 'h') : "";
+                        if (titre.includes('pas de messe')) return { type: 'annulation', horaire: h };
+                        return { type: 'messe', horaire: h };
+                    });
+
+                    const annulations = resultats.filter(r => r.type === 'annulation');
+                    const messes = resultats.filter(r => r.type === 'messe');
+
+                    if (annulations.length > 0) {
+                        iconeMesse.innerText = "🗓️";
+                        phraseMesse.innerText = `Pas de Messe aujourd'hui à ${annulations[0].horaire}`;
+                    } else if (messes.length === 1) {
+                        iconeMesse.innerText = "⛪";
+                        phraseMesse.innerText = `La Messe est à ${messes[0].horaire}`;
                     } else {
-                        txtHoraire.innerText = `Messes sont à ${messes.map(m => m.horaire).join(', ')}`;
+                        iconeMesse.innerText = "⛪";
+                        phraseMesse.innerText = `Les Messes sont à ${messes.map(m => m.horaire).join(', ')}`;
                     }
                 } else {
                     blocMesse.classList.add('hidden');
@@ -267,7 +249,7 @@
             const { data } = await sb.from('versets').select('*');
             if (data && data.length > 0) {
                 const v = data[Math.floor(Math.random() * data.length)];
-                container.innerHTML = `<p class="text-sm italic font-semibold text-slate-700 leading-relaxed text-center">"${v.texte}"</p><p class="text-[9px] font-black text-red-700 mt-2 uppercase text-right tracking-widest">— ${v.reference}</p>`;
+                container.innerHTML = `<p class="text-sm italic font-semibold text-slate-700 leading-relaxed">"${v.texte}"</p><p class="text-[9px] font-black text-red-700 mt-2 uppercase text-right tracking-widest">— ${v.reference}</p>`;
             }
             container.style.opacity = '1';
         }
@@ -281,20 +263,8 @@
             }
         }
 
-        async function loadAnnoncesPreview() {
-            const { count } = await sb.from('annonces').select('*', { count: 'exact', head: true });
-            if (count > 0) document.getElementById('section-annonces').classList.remove('hidden');
-        }
-
-        function changeDay(offset) {
-            currentDateDisplay.setDate(currentDateDisplay.getDate() + offset);
-            // On cache les lectures par défaut lors d'un changement de jour pour respecter la consigne
-            document.getElementById('lectures-container').classList.add('hidden');
-            document.getElementById('chevron-lectures').style.transform = 'rotate(0deg)';
-            updateLiturgie();
-        }
-
-        window.onload = initHome;
+        initHome();
     </script>
+    <script src="js/menu.js"></script>
 </body>
 </html>
