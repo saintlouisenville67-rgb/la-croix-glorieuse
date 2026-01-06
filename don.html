@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Don - La Croix Glorieuse</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-50">
+
+    <header class="gradient-header text-white p-8 rounded-b-[40px] shadow-lg">
+        <h1 class="text-2xl font-800 tracking-tight">Faire un don</h1>
+        <p class="text-[10px] font-black uppercase tracking-widest opacity-80">Soutenir notre communauté</p>
+    </header>
+
+    <main class="p-6 mb-24 flex flex-col items-center">
+        <div class="w-full max-w-md bg-white rounded-3xl shadow-sm overflow-hidden p-2">
+            <iframe 
+                id="haWidgetLight" 
+                allowtransparency="true" 
+                allow="payment" 
+                scrolling="auto" 
+                src="https://www.helloasso.com/associations/association-pour-le-culte-catholique-traditionnel-en-alsace/formulaires/1/widget?view=form" 
+                style="width: 100%; border: none;" 
+                onload="window.addEventListener('message', e => {const dataHeight = e.data.height; const haWidgetElement = document.getElementById('haWidgetLight'); haWidgetElement.height = dataHeight + 'px';})">
+            </iframe>
+        </div>
+    </main>
+
+    <nav class="bottom-nav"></nav>
+
+    <script src="js/config.js"></script>
+    <script src="js/menu.js"></script>
+</body>
+</html>
