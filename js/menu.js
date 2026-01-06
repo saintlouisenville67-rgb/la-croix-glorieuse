@@ -14,6 +14,7 @@ function loadMenu() {
         { href: 'agenda.html', icon: '📅', label: 'Agenda' },
         { href: 'priere.html', icon: '🕯️', label: 'Prières' },
         { href: 'groupes.html', icon: '👥', label: 'Groupes' },
+        { href: 'don.html', icon: '❤️', label: 'Don' },
         { href: 'contact.html', icon: '✉️', label: 'Contact' }
     ];
 
