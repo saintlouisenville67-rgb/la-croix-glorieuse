@@ -32,12 +32,36 @@
     <div id="modal-code" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[60] hidden flex items-center justify-center p-6">
         <div class="bg-white w-full max-w-xs rounded-[30px] p-6 shadow-2xl animate-fade-in">
             <h3 class="text-sm font-800 text-slate-800 uppercase mb-2 text-center">Code requis</h3>
-            <p class="text-[10px] text-slate-500 text-center mb-4">Saisissez le code donné par l'abbé pour voir les coordonnées.</p>
+            <p class="text-[10px] text-slate-500 text-center mb-4">Saisissez le code donné par l'abbé.</p>
             <input type="text" id="input-code-abbe" class="w-full bg-slate-50 p-3 rounded-xl border-none text-center font-bold text-lg mb-4 outline-none focus:ring-2 focus:ring-red-100 uppercase">
             <div class="flex gap-2">
                 <button onclick="closeCodeModal()" class="flex-1 py-3 text-[10px] font-black uppercase text-slate-400">Annuler</button>
                 <button id="btn-valider-code" class="flex-2 py-3 px-6 gradient-header text-white rounded-xl text-[10px] font-black uppercase">Valider</button>
             </div>
+        </div>
+    </div>
+
+    <div id="modal-resultat" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[70] hidden flex items-center justify-center p-6">
+        <div class="bg-white w-full max-w-xs rounded-[30px] p-8 shadow-2xl animate-fade-in text-center">
+            <div class="text-4xl mb-4 text-green-500">✅</div>
+            <h3 class="text-sm font-800 text-slate-800 uppercase mb-4">Contact débloqué</h3>
+            
+            <div class="bg-slate-50 p-4 rounded-2xl mb-4">
+                <p id="res-nom" class="text-xs font-900 text-slate-800 uppercase mb-1"></p>
+                <p id="res-tel" class="text-lg font-black text-red-700"></p>
+                <div class="flex justify-center gap-4 mt-2">
+                    <button onclick="copierTel()" class="text-[8px] font-black uppercase text-blue-600 tracking-widest underline">Copier</button>
+                    <button onclick="partagerWhatsApp()" class="text-[8px] font-black uppercase text-green-600 tracking-widest underline">WhatsApp</button>
+                </div>
+            </div>
+
+            <p class="text-[9px] text-red-600 font-bold uppercase mb-6 leading-tight">
+                ⚠️ Notez bien les coordonnées.<br>L'annonce disparaîtra après fermeture.
+            </p>
+
+            <button onclick="terminerAnnonce()" class="w-full py-4 gradient-header text-white rounded-2xl text-[10px] font-black uppercase shadow-lg">
+                Fermer et terminer
+            </button>
         </div>
     </div>
 
@@ -49,28 +73,21 @@
                 <h2 class="text-lg font-800 text-slate-800 uppercase italic">Déposer une annonce</h2>
                 <button onclick="toggleModal(false)" class="text-slate-400 text-3xl">&times;</button>
             </div>
-            
             <div class="space-y-4 pb-12">
                 <select id="type" class="w-full bg-slate-50 p-4 rounded-xl text-sm font-semibold outline-none">
                     <option value="demande">Je demande de l'aide</option>
                     <option value="offre">Je propose mon aide</option>
                 </select>
-                
                 <input type="text" id="titre" placeholder="Titre de l'annonce" class="w-full bg-slate-50 p-4 rounded-xl text-sm font-semibold outline-none">
                 <textarea id="description" placeholder="Description..." class="w-full bg-slate-50 p-4 rounded-xl text-sm min-h-[100px] outline-none"></textarea>
-
                 <div class="grid grid-cols-2 gap-4">
                     <input type="text" id="contact_nom" placeholder="Votre Nom" class="w-full bg-slate-50 p-4 rounded-xl text-sm font-semibold outline-none">
                     <input type="tel" id="contact_info" placeholder="Téléphone" class="w-full bg-slate-50 p-4 rounded-xl text-sm font-semibold outline-none">
                 </div>
-
                 <div class="p-4 bg-red-50 rounded-2xl">
                     <p class="text-[8px] text-red-700 font-bold uppercase">⚠️ L'annonce sera vérifiée par un abbé avant publication.</p>
                 </div>
-
-                <button onclick="publierEntraide()" id="btn-publier" class="w-full gradient-header text-white py-4 rounded-2xl font-black text-[10px] uppercase shadow-lg">
-                    Envoyer pour validation
-                </button>
+                <button onclick="publierEntraide()" id="btn-publier" class="w-full gradient-header text-white py-4 rounded-2xl font-black text-[10px] uppercase shadow-lg">Envoyer pour validation</button>
             </div>
         </div>
     </div>
@@ -79,12 +96,13 @@
 
     <script src="js/config.js"></script>
     <script>
-        // --- NOUVELLES FONCTIONS GRAPHIQUES ---
+        let currentAnnonceId = null;
+
         function showNotif(msg, isError = false) {
             const container = document.getElementById('notif-system');
             const div = document.createElement('div');
             div.className = `p-4 rounded-2xl shadow-xl text-white text-[10px] font-black uppercase tracking-widest animate-fade-in pointer-events-auto ${isError ? 'bg-red-600' : 'bg-slate-800'}`;
-            div.innerHTML = msg;
+            div.innerText = msg;
             container.appendChild(div);
             setTimeout(() => { div.style.opacity = '0'; setTimeout(() => div.remove(), 500); }, 3000);
         }
@@ -105,7 +123,6 @@
             const { data } = await query;
 
             if (data && data.length > 0) {
-                localStorage.setItem('last_entraide_date', data[0].created_at);
                 feed.innerHTML = data.map(a => `
                     <div class="card animate-fade-in relative border-l-4 ${a.type === 'offre' ? 'border-green-500' : 'border-red-500'}">
                         <div class="flex justify-between items-start mb-2">
@@ -115,11 +132,8 @@
                         <h3 class="font-800 text-sm mb-1 text-slate-800 uppercase italic">${a.titre}</h3>
                         <p class="text-[10px] text-slate-500 mb-4">${a.description}</p>
                         
-                        <div class="pt-3 border-t border-slate-50 flex justify-between items-center">
-                            <span class="text-[9px] font-black text-slate-400 uppercase">${a.contact_nom}</span>
-                            <button onclick="demanderCode('${a.id}')" class="text-[9px] font-black text-blue-600 uppercase tracking-widest flex items-center gap-1">
-                                🤝 Je souhaite répondre ➔
-                            </button>
+                        <div class="pt-3 border-t border-slate-50 text-right">
+                            <button onclick="demanderCode('${a.id}')" class="text-[9px] font-black text-blue-600 uppercase tracking-widest flex items-center justify-end gap-1">🤝 Répondre à l'annonce ➔</button>
                         </div>
                     </div>
                 `).join('');
@@ -129,32 +143,42 @@
         }
 
         function demanderCode(id) {
-            const modal = document.getElementById('modal-code');
-            const btn = document.getElementById('btn-valider-code');
-            modal.classList.remove('hidden');
+            currentAnnonceId = id;
+            document.getElementById('modal-code').classList.remove('hidden');
             document.getElementById('input-code-abbe').focus();
 
-            btn.onclick = async () => {
+            document.getElementById('btn-valider-code').onclick = async () => {
                 const codeSaisi = document.getElementById('input-code-abbe').value;
-                if (!codeSaisi) return showNotif("Veuillez saisir le code", true);
-
-                const { data } = await sb.from('entraide')
-                    .select('code_validation, contact_info, contact_nom')
-                    .eq('id', id)
-                    .single();
+                const { data } = await sb.from('entraide').select('code_validation, contact_info, contact_nom').eq('id', id).single();
 
                 if (data && data.code_validation === codeSaisi) {
                     closeCodeModal();
-                    if (typeof hapticFeedback === 'function') hapticFeedback(50);
-                    // Remplacement de l'alert par un modal de succès temporaire
-                    showNotif(`✅ Contact débloqué : ${data.contact_nom} - ${data.contact_info}`);
-                    
-                    await sb.from('entraide').update({ est_terminee: true }).eq('id', id);
-                    setTimeout(loadEntraide, 4000);
+                    document.getElementById('res-nom').innerText = data.contact_nom;
+                    document.getElementById('res-tel').innerText = data.contact_info;
+                    document.getElementById('modal-resultat').classList.remove('hidden');
                 } else {
                     showNotif("Code incorrect", true);
                 }
             };
+        }
+
+        function copierTel() {
+            const tel = document.getElementById('res-tel').innerText;
+            navigator.clipboard.writeText(tel);
+            showNotif("Copié !");
+        }
+
+        function partagerWhatsApp() {
+            const nom = document.getElementById('res-nom').innerText;
+            const tel = document.getElementById('res-tel').innerText;
+            const msg = encodeURIComponent(`Bonjour ${nom}, je vous contacte via l'application Entraide de la Croix Glorieuse...`);
+            window.open(`https://wa.me/${tel.replace(/\s/g, '')}?text=${msg}`, '_blank');
+        }
+
+        async function terminerAnnonce() {
+            await sb.from('entraide').update({ est_terminee: true }).eq('id', currentAnnonceId);
+            document.getElementById('modal-resultat').classList.add('hidden');
+            loadEntraide();
         }
 
         async function publierEntraide() {
@@ -168,18 +192,11 @@
                 valide: false,
                 est_terminee: false
             };
-
             if (!fields.titre || !fields.description) return showNotif("Remplissez les champs.", true);
-
             btn.disabled = true;
             const { error } = await sb.from('entraide').insert([fields]);
-            if (!error) {
-                showNotif("Annonce envoyée !");
-                toggleModal(false);
-            } else {
-                btn.disabled = false;
-                showNotif("Erreur d'envoi", true);
-            }
+            if (!error) { showNotif("Envoyé pour validation !"); toggleModal(false); }
+            else { btn.disabled = false; showNotif("Erreur d'envoi", true); }
         }
 
         loadEntraide();
