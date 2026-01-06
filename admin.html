@@ -199,7 +199,19 @@
                 `).join('');
             }
         }
-        async function toggleImportance(id, current) { await sb.from('annonces').update({ est_importante: !current }).eq('id', id); loadAdminAnnonces(); }
+        async function toggleImportance(id, currentStatus) {
+    // On inverse la valeur actuelle (!currentStatus)
+    const { error } = await sb.from('annonces')
+        .update({ est_importante: !currentStatus })
+        .eq('id', id);
+
+    if (error) {
+        alert("Erreur SQL : " + error.message);
+    } else {
+        // Recharge la liste pour mettre à jour l'affichage de l'étoile
+        loadAdminAnnonces();
+    }
+}
         async function publierAnnonce() {
             const titre = document.getElementById('ann-titre').value;
             const contenu = document.getElementById('ann-texte').value;
