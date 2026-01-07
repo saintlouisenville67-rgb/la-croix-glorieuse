@@ -1,11 +1,26 @@
-// Configuration Supabase pour La Croix Glorieuse
+// =========================================================
+// 1. CONFIGURATION PROJET PRINCIPAL (La Croix Glorieuse)
+// =========================================================
 const SUPABASE_URL = "https://rixdjcjlepadtchctxnn.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJpeGRqY2psZXBhZHRjaGN0eG5uIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc2MTQ2MzMsImV4cCI6MjA4MzE5MDYzM30.0rcj8iFYw-kK7RbAAJ7ZbYqCTdHIWV1DmIQtKP_Ky4c";
 
-// Initialisation du client
+// Initialisation du client principal
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// Variables globales utiles
+
+// =========================================================
+// 2. CONFIGURATION PROJET INTENTIONS (Gestion des Messes)
+// =========================================================
+const INT_URL = "https://pmeaimfcwtykhqtueomd.supabase.co";
+const INT_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBtZWFpbWZjd3R5a2hxdHVlb21kIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc3MzA4MzIsImV4cCI6MjA4MzMwNjgzMn0.X91Usnq8WtZYuY40UFIo7Xl8P1O46LKqe1GvJ7RIWYE";
+
+// Initialisation du client secondaire pour les intentions de messe
+const sbMesses = supabase.createClient(INT_URL, INT_KEY);
+
+
+// =========================================================
+// 3. VARIABLES GLOBALES ET UTILITAIRES
+// =========================================================
 let userName = localStorage.getItem('croix_glorieuse_user') || "";
 
 // --- SYSTÈME DE TRAÇAGE DES VISITES (STATS) ---
@@ -17,8 +32,7 @@ async function trackUserPresence() {
         localStorage.setItem('user_presence_hash', userHash);
     }
 
-    // 2. Mettre à jour la présence dans Supabase
-    // .upsert va créer la ligne si le hash n'existe pas, ou la mettre à jour s'il existe
+    // 2. Mettre à jour la présence dans le projet principal (sb)
     try {
         await sb.from('user_presence').upsert({ 
             user_hash: userHash, 
@@ -29,5 +43,5 @@ async function trackUserPresence() {
     }
 }
 
-// Lancement du traçage dès que le fichier est chargé
+// Lancement automatique du traçage
 trackUserPresence();
