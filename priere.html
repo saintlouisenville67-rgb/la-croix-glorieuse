@@ -12,14 +12,14 @@
 <body class="bg-slate-50">
 
     <header class="gradient-header text-white p-8 rounded-b-[40px] shadow-lg">
-        <h1 class="text-2xl font-800 tracking-tight mb-1">Prière</h1>
+        <h1 class="text-2xl font-800 tracking-tight mb-1 font-bold">Prière</h1>
         <p class="text-[10px] font-black uppercase tracking-widest opacity-80">Communion des Saints</p>
     </header>
 
     <main class="p-6 space-y-8 mb-24">
         
-        <section class="card shadow-xl -mt-12 relative z-10">
-            <h2 class="text-sm font-800 mb-4 text-slate-800 dark:text-white">Confier une intention</h2>
+        <section class="card shadow-xl -mt-12 relative z-10 bg-white p-6 rounded-[32px]">
+            <h2 class="text-sm font-800 mb-4 text-slate-800 font-bold">Confier une intention</h2>
             <div class="space-y-4">
                 <input type="text" id="prenom" placeholder="Votre prénom (optionnel)" 
                     class="w-full bg-slate-50 p-3 rounded-xl border-none text-sm font-semibold outline-none focus:ring-2 focus:ring-red-100">
@@ -27,12 +27,31 @@
                 <textarea id="intention" placeholder="Votre intention de prière..." 
                     class="w-full bg-slate-50 p-4 rounded-xl border-none text-sm min-h-[100px] outline-none focus:ring-2 focus:ring-red-100"></textarea>
                 
-                <p class="text-[10px] text-slate-400 italic text-center px-2">pour des raisons de sécurité, votre intention de prière s'affichera dès que les abbés la valident</p>
+                <p class="text-[10px] text-slate-400 italic text-center px-2">Pour des raisons de sécurité, votre intention de prière s'affichera dès que les abbés la valident.</p>
 
                 <button onclick="envoyerPriere()" id="btn-priere"
-                    class="w-full gradient-header text-white py-4 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] shadow-lg shadow-red-100 active:scale-95 transition-all">
+                    class="w-full gradient-header text-white py-4 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] shadow-lg active:scale-95 transition-all font-bold">
                     Envoyer mon intention
                 </button>
+            </div>
+        </section>
+
+        <section class="space-y-4">
+            <button onclick="toggleMesse()" class="w-full flex items-center justify-between p-5 bg-white rounded-[28px] shadow-sm active:scale-95 transition-all border border-slate-100">
+                <div class="flex items-center gap-4">
+                    <div class="w-10 h-10 bg-red-50 rounded-full flex items-center justify-center text-lg">🕊️</div>
+                    <div class="text-left">
+                        <span class="block text-[11px] font-black text-red-700 uppercase tracking-widest">Offrande</span>
+                        <span class="text-sm font-bold text-slate-700">Demander une Messe</span>
+                    </div>
+                </div>
+                <svg id="chevron-messe" class="w-5 h-5 text-slate-300 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                </svg>
+            </button>
+
+            <div id="container-messe" class="hidden overflow-hidden transition-all duration-500 rounded-[32px] bg-slate-100/50 shadow-inner">
+                <iframe src="demande-messe.html" id="iframe-messe" class="w-full border-none" style="height: 680px;"></iframe>
             </div>
         </section>
 
@@ -44,9 +63,7 @@
             </div>
             
             <div id="feed-priere" class="space-y-4">
-                <div class="skeleton h-32 w-full"></div>
-                <div class="skeleton h-32 w-full"></div>
-                <div class="skeleton h-32 w-full"></div>
+                <div class="p-8 text-center text-slate-400 text-xs italic">Chargement des intentions...</div>
             </div>
         </section>
 
@@ -56,6 +73,24 @@
 
     <script src="js/config.js"></script>
     <script>
+        // --- LOGIQUE ACCORDÉON MESSE ---
+        function toggleMesse() {
+            const container = document.getElementById('container-messe');
+            const chevron = document.getElementById('chevron-messe');
+            const isHidden = container.classList.contains('hidden');
+            
+            if (isHidden) {
+                container.classList.remove('hidden');
+                chevron.style.transform = 'rotate(180deg)';
+                // Scroll doux vers le formulaire pour mobile
+                container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            } else {
+                container.classList.add('hidden');
+                chevron.style.transform = 'rotate(0deg)';
+            }
+        }
+
+        // --- LOGIQUE INTENTIONS DE PRIÈRE ---
         async function loadPrières() {
             const { data, error } = await sb
                 .from('intentions')
@@ -66,23 +101,19 @@
             if (data) {
                 const feed = document.getElementById('feed-priere');
                 feed.innerHTML = data.map(p => {
-                    // Logique de pluralisation
                     const count = p.bougies || 0;
                     const label = count > 1 ? "ont prié" : "a prié";
                     
                     return `
-                    <div class="card animate-fade-in relative">
+                    <div class="bg-white p-5 rounded-[24px] shadow-sm border border-slate-50 relative animate-fade-in mb-4">
                         <div class="flex justify-between items-start mb-3">
                             <span class="text-[9px] font-black text-red-700 uppercase tracking-widest">${p.prenom || 'Anonyme'}</span>
-                            <div class="flex gap-3">
-                                <button onclick="shareApp('Intention de prière', '${p.texte}')" class="text-xs opacity-30">📤</button>
-                                <span class="text-[8px] font-bold text-slate-300">${new Date(p.created_at).toLocaleDateString()}</span>
-                            </div>
+                            <span class="text-[8px] font-bold text-slate-300">${new Date(p.created_at).toLocaleDateString()}</span>
                         </div>
-                        <p class="text-sm text-slate-600 dark:text-slate-300 italic mb-4 leading-relaxed">"${p.texte}"</p>
+                        <p class="text-sm text-slate-600 italic mb-4 leading-relaxed">"${p.texte}"</p>
                         
                         <button onclick="allumerBougie('${p.id}')" 
-                            class="flex items-center gap-2 bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 px-4 py-2 rounded-full border border-amber-100 dark:border-amber-800 active:scale-90 transition-transform">
+                            class="flex items-center gap-2 bg-amber-50 text-amber-700 px-4 py-2 rounded-full border border-amber-100 active:scale-90 transition-transform">
                             <span class="text-sm">🕯️</span>
                             <span class="text-[10px] font-black uppercase tracking-tighter">${count} ${label}</span>
                         </button>
@@ -106,24 +137,26 @@
             ]);
 
             if (!error) {
-                if (typeof hapticFeedback === 'function') hapticFeedback(50);
                 document.getElementById('intention').value = '';
                 btn.disabled = false;
                 btn.innerText = "ENVOYER MON INTENTION";
+                alert("Votre intention a été envoyée avec succès et sera visible après modération.");
                 loadPrières();
+            } else {
+                alert("Erreur lors de l'envoi.");
+                btn.disabled = false;
             }
         }
 
         async function allumerBougie(id) {
-            if (typeof hapticFeedback === 'function') hapticFeedback(20);
             const { error } = await sb.rpc('increment_bougie', { row_id: id });
-            if (!error) {
-                loadPrières();
-            }
+            if (!error) loadPrières();
         }
 
+        // Initialisation
         loadPrières();
 
+        // Realtime
         sb.channel('intentions-channel')
           .on('postgres_changes', { event: '*', schema: 'public', table: 'intentions' }, payload => {
               loadPrières();
