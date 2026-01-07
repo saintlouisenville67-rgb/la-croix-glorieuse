@@ -66,6 +66,9 @@
             <div class="space-y-3 mb-4">
                 <input type="text" id="ann-titre" placeholder="Titre de l'annonce" class="w-full bg-slate-50 p-3 rounded-xl border-none text-xs font-bold">
                 <textarea id="ann-texte" placeholder="Contenu de l'annonce..." rows="3" class="w-full bg-slate-50 p-3 rounded-xl border-none text-xs"></textarea>
+                
+                <input type="url" id="ann-lien" placeholder="Lien (ex: https://...)" class="w-full bg-slate-50 p-3 rounded-xl border-none text-xs font-bold">
+                
                 <div class="flex items-center gap-2 px-1">
                     <input type="checkbox" id="ann-important" class="w-4 h-4 accent-red-600">
                     <label for="ann-important" class="text-[10px] font-black uppercase text-slate-500 tracking-widest">Annonce Importante (Haut de page)</label>
@@ -211,16 +214,17 @@
         async function validerEntraide(id) { await sb.from('entraide').update({ valide: true }).eq('id', id); loadAdminEntraide(); }
         async function supprimerEntraide(id) { if(confirm("Supprimer cette annonce d'entraide ?")) { await sb.from('entraide').delete().eq('id', id); loadAdminEntraide(); } }
 
-        // --- ANNONCES ACCUEIL ---
+        // --- ANNONCES ACCUEIL MODIFIÉ ---
         async function loadAdminAnnonces() {
             const { data } = await sb.from('annonces').select('*').order('created_at', { ascending: false });
             const list = document.getElementById('admin-list-annonces');
             if (data) {
                 list.innerHTML = data.map(a => `
                     <div class="flex justify-between items-center bg-white p-3 rounded-xl border border-slate-100 shadow-sm mb-1">
-                        <div class="truncate mr-4 flex items-center gap-2">
+                        <div class="truncate mr-4 flex items-center gap-2 text-xs font-800 text-slate-700">
                             <button onclick="toggleImportance('${a.id}', ${a.est_importante})" class="transition-all ${a.est_importante ? 'text-red-600 scale-125' : 'text-slate-300'}">★</button>
-                            <span class="text-xs font-800 text-slate-700">${a.titre}</span>
+                            <span class="truncate">${a.titre}</span>
+                            ${a.lien_url ? '<span class="text-[8px] bg-slate-100 px-1 rounded text-slate-400">LIEN</span>' : ''}
                         </div>
                         <button onclick="supprimerAnnonce('${a.id}')" class="text-red-500 text-[10px] font-black">X</button>
                     </div>
@@ -228,17 +232,27 @@
             }
         }
         async function toggleImportance(id, currentStatus) {
-            const { error } = await sb.from('annonces').update({ est_importante: !currentStatus }).eq('id', id);
-            if (error) { alert("Erreur SQL : " + error.message); } else { loadAdminAnnonces(); }
+            await sb.from('annonces').update({ est_importante: !currentStatus }).eq('id', id);
+            loadAdminAnnonces();
         }
         async function publierAnnonce() {
             const titre = document.getElementById('ann-titre').value;
             const contenu = document.getElementById('ann-texte').value;
+            const lien_url = document.getElementById('ann-lien').value; // Récupération lien
             const est_importante = document.getElementById('ann-important').checked;
+            
             if(!titre || !contenu) return;
-            await sb.from('annonces').insert([{ titre, contenu, est_importante }]);
+
+            await sb.from('annonces').insert([{ 
+                titre, 
+                contenu, 
+                est_importante, 
+                lien_url: lien_url.trim() || null // On sauve null si vide
+            }]);
+
             document.getElementById('ann-titre').value = '';
             document.getElementById('ann-texte').value = '';
+            document.getElementById('ann-lien').value = '';
             document.getElementById('ann-important').checked = false;
             loadAdminAnnonces();
         }
@@ -316,7 +330,7 @@
             loadAdminAnnonces();
             loadAdminPrières();
             loadAdminGroupes();
-            loadAdminTicker(); // Appel de la fonction du bandeau
+            loadAdminTicker();
         }
     </script>
 </body>
