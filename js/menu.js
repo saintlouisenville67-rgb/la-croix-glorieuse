@@ -10,73 +10,78 @@ async function loadMenu() {
     try {
         const { data: tickerData } = await sb.from('app_settings').select('value').eq('id', 'ticker_message').single();
         
-        // On affiche uniquement si un texte existe et n'a pas été masqué durant la session
         if (tickerData && tickerData.value.trim() !== "" && !sessionStorage.getItem('ticker_hidden')) {
             
-            // 1. Injection du style CSS pour l'élégance et l'animation
             if (!document.getElementById('ticker-style')) {
                 const style = document.createElement('style');
                 style.id = 'ticker-style';
                 style.innerHTML = `
                     @keyframes scrollTicker {
-                        0% { transform: translateX(100%); }
+                        0% { transform: translateX(100vw); }
                         100% { transform: translateX(-100%); }
                     }
                     .ticker-container {
                         position: fixed;
-                        bottom: 65px; /* Juste au-dessus du menu */
+                        bottom: 80px; /* Aligné pile au dessus du menu (height: 80px) */
                         left: 0;
                         width: 100%;
-                        background: rgba(15, 23, 42, 0.95); /* Ardoise foncée semi-transparente */
-                        backdrop-filter: blur(8px);
-                        color: #fbbf24; /* Ambre pour la lisibilité */
-                        padding: 10px 0;
-                        z-index: 40;
-                        font-size: 11px;
+                        background: #b91c1c; 
+                        color: white;
+                        height: 32px;
+                        z-index: 90; 
+                        font-size: 10px;
                         font-weight: 900;
                         text-transform: uppercase;
-                        letter-spacing: 0.05em;
+                        letter-spacing: 0.1em;
                         overflow: hidden;
                         display: flex;
                         align-items: center;
-                        border-top: 1px solid rgba(251, 191, 36, 0.3);
-                        box-shadow: 0 -4px 15px rgba(0,0,0,0.2);
+                        box-shadow: 0 -4px 10px rgba(0,0,0,0.1);
+                        border-bottom: 1px solid rgba(255,255,255,0.1);
+                        pointer-events: auto;
                     }
                     .ticker-text {
                         white-space: nowrap;
                         display: inline-block;
-                        animation: scrollTicker 18s linear infinite;
-                        padding-right: 100%; /* Espace pour la boucle */
+                        animation: scrollTicker 30s linear infinite; /* Vitesse ralentie à 30s */
+                        padding-right: 50px;
+                        will-change: transform;
                     }
                     .ticker-close {
                         position: absolute;
-                        right: 10px;
-                        background: rgba(255, 255, 255, 0.1);
+                        right: 8px;
+                        top: 50%;
+                        transform: translateY(-50%);
+                        background: rgba(0, 0, 0, 0.3);
                         color: white;
-                        border-radius: 50%;
-                        width: 20px;
-                        height: 20px;
+                        border: none;
+                        border-radius: 6px;
+                        width: 24px;
+                        height: 24px;
                         display: flex;
                         align-items: center;
                         justify-content: center;
                         font-size: 10px;
-                        z-index: 50;
+                        z-index: 95;
                         cursor: pointer;
-                        border: none;
+                    }
+                    @media (prefers-color-scheme: dark) {
+                        .ticker-container {
+                            background: #7f1d1d; 
+                        }
                     }
                 `;
                 document.head.appendChild(style);
             }
 
-            // 2. Création et insertion du bandeau dans le DOM
             const ticker = document.createElement('div');
             ticker.id = 'ticker-bar';
             ticker.className = 'ticker-container';
             ticker.innerHTML = `
-                <div class="ticker-text">${tickerData.value} &nbsp;&nbsp; • &nbsp;&nbsp; ${tickerData.value}</div>
+                <div class="ticker-text">${tickerData.value} &nbsp;&nbsp;&nbsp;&nbsp; • &nbsp;&nbsp;&nbsp;&nbsp; ${tickerData.value} &nbsp;&nbsp;&nbsp;&nbsp; • &nbsp;&nbsp;&nbsp;&nbsp; ${tickerData.value}</div>
                 <button onclick="document.getElementById('ticker-bar').remove(); sessionStorage.setItem('ticker_hidden', 'true')" class="ticker-close">✕</button>
             `;
-            nav.parentNode.insertBefore(ticker, nav);
+            document.body.appendChild(ticker);
         }
     } catch (e) {
         console.error("Erreur bandeau:", e);
