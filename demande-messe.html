@@ -16,8 +16,8 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
             </a>
             <div>
-                <h1 class="text-xl font-800 tracking-tight">Offrir une Messe</h1>
-                <p class="text-[10px] font-black uppercase tracking-widest opacity-80">Intention</p>
+                <h1 class="text-xl font-800 tracking-tight text-white">Offrir une Messe</h1>
+                <p class="text-[10px] font-black uppercase tracking-widest opacity-80 text-white">Intention de prière</p>
             </div>
         </div>
     </header>
@@ -25,35 +25,35 @@
     <main class="p-6 pb-24 space-y-6">
         <form id="form-messe" class="space-y-4">
             <div class="space-y-2">
-                <label class="text-[10px] font-black uppercase text-slate-400 ml-2">Demandeur</label>
+                <label class="text-[10px] font-black uppercase text-slate-400 ml-2">Votre identité</label>
                 <input type="text" id="nom_donateur" placeholder="Votre Prénom et Nom" required
-                    class="w-full p-4 rounded-2xl border-none shadow-sm text-sm font-bold bg-white">
+                    class="w-full p-4 rounded-2xl border-none shadow-sm text-sm font-bold bg-white focus:ring-2 focus:ring-red-700 outline-none">
                 <input type="email" id="email_donateur" placeholder="Votre Email" required
-                    class="w-full p-4 rounded-2xl border-none shadow-sm text-sm font-bold bg-white">
+                    class="w-full p-4 rounded-2xl border-none shadow-sm text-sm font-bold bg-white focus:ring-2 focus:ring-red-700 outline-none">
             </div>
 
             <div class="space-y-2">
-                <label class="text-[10px] font-black uppercase text-slate-400 ml-2">Intention</label>
+                <label class="text-[10px] font-black uppercase text-slate-400 ml-2">Intention de Messe</label>
                 <input type="text" id="nom_intention" placeholder="Pour qui / quelle intention ?" required
-                    class="w-full p-4 rounded-2xl border-none shadow-sm text-sm font-bold bg-white">
+                    class="w-full p-4 rounded-2xl border-none shadow-sm text-sm font-bold bg-white focus:ring-2 focus:ring-red-700 outline-none">
                 
-                <div class="grid grid-cols-3 gap-2">
-                    <button type="button" onclick="setType('Défunt')" id="btn-Défunt" class="type-btn p-3 rounded-xl border-2 border-slate-200 text-[9px] font-black uppercase text-slate-400">Défunt</button>
-                    <button type="button" onclick="setType('Vivant')" id="btn-Vivant" class="type-btn p-3 rounded-xl border-2 border-red-700 bg-red-50 text-[9px] font-black uppercase text-red-700">Vivant</button>
-                    <button type="button" onclick="setType('Particulière')" id="btn-Particulière" class="type-btn p-3 rounded-xl border-2 border-slate-200 text-[9px] font-black uppercase text-slate-400">Autre</button>
+                <div class="grid grid-cols-3 gap-2 pt-1">
+                    <button type="button" onclick="setType('Défunt')" id="btn-Défunt" class="type-btn p-3 rounded-xl border-2 border-slate-200 text-[9px] font-black uppercase text-slate-400 transition-all">✝️ Défunt</button>
+                    <button type="button" onclick="setType('Vivant')" id="btn-Vivant" class="type-btn p-3 rounded-xl border-2 border-red-700 bg-red-50 text-[9px] font-black uppercase text-red-700 transition-all font-bold">🌿 Vivant</button>
+                    <button type="button" onclick="setType('Particulière')" id="btn-Particulière" class="type-btn p-3 rounded-xl border-2 border-slate-200 text-[9px] font-black uppercase text-slate-400 transition-all">🙏 Autre</button>
                 </div>
             </div>
 
             <div class="space-y-2">
                 <label class="text-[10px] font-black uppercase text-slate-400 ml-2">Date souhaitée</label>
                 <input type="date" id="date_messe" required
-                    class="w-full p-4 rounded-2xl border-none shadow-sm text-sm font-bold bg-white">
+                    class="w-full p-4 rounded-2xl border-none shadow-sm text-sm font-bold bg-white focus:ring-2 focus:ring-red-700 outline-none">
             </div>
 
             <div class="space-y-2">
                 <label class="text-[10px] font-black uppercase text-slate-400 ml-2">Commentaire (optionnel)</label>
-                <textarea id="commentaire" placeholder="Précisions pour le secrétariat..." rows="2"
-                    class="w-full p-4 rounded-2xl border-none shadow-sm text-sm bg-white"></textarea>
+                <textarea id="commentaire" placeholder="Précisions pour le prêtre..." rows="2"
+                    class="w-full p-4 rounded-2xl border-none shadow-sm text-sm bg-white focus:ring-2 focus:ring-red-700 outline-none"></textarea>
             </div>
 
             <button type="submit" id="submit-btn" class="w-full gradient-header text-white py-5 rounded-3xl font-black text-xs uppercase tracking-widest shadow-xl transition-all active:scale-95">
@@ -62,6 +62,19 @@
         </form>
     </main>
 
+    <div id="success-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-sm">
+        <div class="bg-white w-full max-w-sm rounded-[40px] p-8 text-center shadow-2xl">
+            <div class="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+            </div>
+            <h2 class="text-xl font-800 text-slate-800 mb-2">Demande envoyée !</h2>
+            <p class="text-sm text-slate-500 mb-8 italic">Votre intention a bien été transmise. L'Abbé Molin vous répondra par email prochainement.</p>
+            <button onclick="window.location.href='index.html'" class="w-full py-5 bg-slate-900 text-white rounded-3xl font-black text-xs uppercase tracking-[0.2em] shadow-lg active:scale-95 transition-all">
+                Fermer
+            </button>
+        </div>
+    </div>
+
     <script src="js/config.js"></script>
     <script>
         let selectedType = 'Vivant';
@@ -69,18 +82,19 @@
         function setType(type) {
             selectedType = type;
             document.querySelectorAll('.type-btn').forEach(btn => {
-                btn.classList.remove('border-red-700', 'bg-red-50', 'text-red-700');
+                btn.classList.remove('border-red-700', 'bg-red-50', 'text-red-700', 'font-bold');
                 btn.classList.add('border-slate-200', 'text-slate-400');
             });
-            document.getElementById('btn-' + type).classList.add('border-red-700', 'bg-red-50', 'text-red-700');
-            document.getElementById('btn-' + type).classList.remove('border-slate-200', 'text-slate-400');
+            const activeBtn = document.getElementById('btn-' + type);
+            activeBtn.classList.add('border-red-700', 'bg-red-50', 'text-red-700', 'font-bold');
+            activeBtn.classList.remove('border-slate-200', 'text-slate-400');
         }
 
         document.getElementById('form-messe').onsubmit = async (e) => {
             e.preventDefault();
             const btn = document.getElementById('submit-btn');
             btn.disabled = true;
-            btn.innerText = "TRANSMISSION...";
+            btn.innerText = "ENVOI EN COURS...";
 
             const payload = {
                 nom_donateur: document.getElementById('nom_donateur').value,
@@ -96,13 +110,16 @@
             };
 
             try {
+                // Utilisation du client sbMesses vers le projet pmeaim...
                 const { error } = await sbMesses.from('intentions').insert([payload]);
+                
                 if (error) throw error;
                 
-                alert("Demande transmise ! Le prêtre vous répondra par email dès validation.");
-                window.location.href = "index.html";
+                // Affichage du modal personnalisé au lieu de l'alert
+                document.getElementById('success-modal').classList.remove('hidden');
+
             } catch (err) {
-                alert("Erreur : " + err.message);
+                alert("Erreur de connexion : " + err.message);
                 btn.disabled = false;
                 btn.innerText = "RÉESSAYER";
             }
