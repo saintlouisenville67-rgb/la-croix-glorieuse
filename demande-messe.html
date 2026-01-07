@@ -3,77 +3,74 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Demander une Messe - La Croix Glorieuse</title>
+    <title>Formulaire Messe Intégré</title>
     <link rel="stylesheet" href="css/style.css">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-<body class="bg-slate-50">
-
-    <header class="gradient-header text-white p-8 rounded-b-[40px] shadow-lg mb-6">
-        <div class="flex items-center gap-4">
-            <a href="index.html" class="bg-white/20 p-2 rounded-xl">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-            </a>
-            <div>
-                <h1 class="text-xl font-bold tracking-tight text-white">Offrir une Messe</h1>
-                <p class="text-[10px] font-black uppercase tracking-widest opacity-80 text-white">Intention de prière</p>
-            </div>
-        </div>
-    </header>
-
-    <main class="p-6 pb-24 space-y-6">
+<body class="bg-transparent"> <main class="p-2 space-y-5">
         <form id="form-messe" class="space-y-4">
+            
             <div class="space-y-2">
-                <label class="text-[10px] font-bold uppercase text-slate-400 ml-2">Votre identité</label>
+                <label class="text-[10px] font-black uppercase text-slate-400 ml-2">Votre identité (Demandeur)</label>
                 <input type="text" id="nom_donateur" placeholder="Votre Prénom et Nom" required
                     class="w-full p-4 rounded-2xl border-none shadow-sm text-sm font-bold bg-white focus:ring-2 focus:ring-red-700 outline-none">
-                <input type="email" id="email_donateur" placeholder="Votre Email" required
+                <input type="email" id="email_donateur" placeholder="Votre Email pour la confirmation" required
                     class="w-full p-4 rounded-2xl border-none shadow-sm text-sm font-bold bg-white focus:ring-2 focus:ring-red-700 outline-none">
             </div>
 
             <div class="space-y-2">
-                <label class="text-[10px] font-bold uppercase text-slate-400 ml-2">Intention de Messe</label>
+                <label class="text-[10px] font-black uppercase text-slate-400 ml-2">Intention de Messe</label>
                 <input type="text" id="nom_intention" placeholder="Pour qui / quelle intention ?" required
-                    class="w-full p-4 rounded-2xl border-none shadow-sm text-sm font-bold bg-white focus:ring-2 focus:ring-red-700 outline-none">
+                    class="w-full p-4 rounded-2xl border-none shadow-sm text-sm font-bold bg-white focus:ring-2 focus:ring-red-700 outline-none mb-2">
                 
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1">
-                    <button type="button" onclick="setType('Défunt')" id="btn-Défunt" 
-                        class="type-btn p-3 rounded-xl border-2 border-slate-200 text-[10px] font-black uppercase text-slate-400 transition-all">Défunt</button>
-                    <button type="button" onclick="setType('Vivant')" id="btn-Vivant" 
-                        class="type-btn p-3 rounded-xl border-2 border-red-700 bg-red-50 text-[10px] font-black uppercase text-red-700 transition-all font-bold">Vivant</button>
+                <div class="grid grid-cols-1 gap-2">
+                    <div class="flex gap-2">
+                        <button type="button" onclick="setType('Défunt')" id="btn-Défunt" 
+                            class="type-btn flex-1 p-3 rounded-xl border-2 border-slate-200 text-[10px] font-black uppercase text-slate-400 transition-all">
+                            ✝️ Défunt
+                        </button>
+                        <button type="button" onclick="setType('Vivant')" id="btn-Vivant" 
+                            class="type-btn flex-1 p-3 rounded-xl border-2 border-red-700 bg-red-50 text-[10px] font-black uppercase text-red-700 transition-all font-bold">
+                            🌿 Vivant
+                        </button>
+                    </div>
                     <button type="button" onclick="setType('Action de grâce')" id="btn-Action" 
-                        class="type-btn p-3 rounded-xl border-2 border-slate-200 text-[10px] font-black uppercase text-slate-400 transition-all">Action de grâce</button>
+                        class="type-btn w-full p-3 rounded-xl border-2 border-slate-200 text-[10px] font-black uppercase text-slate-400 transition-all">
+                        🙏 Action de grâce
+                    </button>
                 </div>
             </div>
 
             <div class="space-y-2">
-                <label class="text-[10px] font-bold uppercase text-slate-400 ml-2">Date souhaitée</label>
+                <label class="text-[10px] font-black uppercase text-slate-400 ml-2">Date souhaitée</label>
                 <input type="date" id="date_messe" required
                     class="w-full p-4 rounded-2xl border-none shadow-sm text-sm font-bold bg-white focus:ring-2 focus:ring-red-700 outline-none">
             </div>
 
             <div class="space-y-2">
-                <label class="text-[10px] font-bold uppercase text-slate-400 ml-2">Commentaire (optionnel)</label>
+                <label class="text-[10px] font-black uppercase text-slate-400 ml-2">Commentaire (optionnel)</label>
                 <textarea id="commentaire" placeholder="Précisions pour le prêtre..." rows="2"
                     class="w-full p-4 rounded-2xl border-none shadow-sm text-sm bg-white focus:ring-2 focus:ring-red-700 outline-none"></textarea>
             </div>
 
-            <button type="submit" id="submit-btn" class="w-full gradient-header text-white py-5 rounded-3xl font-bold text-xs uppercase tracking-widest shadow-xl transition-all active:scale-95">
-                Envoyer la demande
+            <button type="submit" id="submit-btn" class="w-full gradient-header text-white py-5 rounded-3xl font-black text-xs uppercase tracking-widest shadow-xl active:scale-95 transition-all">
+                Transmettre la demande
             </button>
         </form>
     </main>
 
     <div id="success-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-sm">
         <div class="bg-white w-full max-w-sm rounded-[40px] p-8 text-center shadow-2xl">
-            <div class="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6">
-                <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+            <div class="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
             </div>
-            <h2 class="text-xl font-bold text-slate-800 mb-2">Demande envoyée !</h2>
-            <p class="text-sm text-slate-500 mb-8 italic">Votre intention a bien été transmise. Le prêtre vous répondra par email prochainement. N'oubliez pas de lui transmettre votre offrande pour cette Messe.</p>
-            <button onclick="window.location.href='index.html'" class="w-full py-5 bg-slate-900 text-white rounded-3xl font-black text-xs uppercase tracking-[0.2em] shadow-lg active:scale-95 transition-all">
-                Fermer
+            <h2 class="text-xl font-black text-slate-800 mb-2">Demande envoyée !</h2>
+            <p class="text-[11px] text-slate-500 mb-6 italic leading-relaxed">
+                Votre intention a bien été transmise. Le prêtre vous répondra par email après validation.
+            </p>
+            <button onclick="parent.toggleMesse()" class="w-full py-4 bg-slate-900 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg active:scale-95 transition-all">
+                Fermer et retourner aux prières
             </button>
         </div>
     </div>
@@ -90,7 +87,6 @@
             });
             
             let id = (type === 'Action de grâce') ? 'btn-Action' : 'btn-' + type;
-
             const activeBtn = document.getElementById(id);
             if (activeBtn) {
                 activeBtn.classList.add('border-red-700', 'bg-red-50', 'text-red-700', 'font-bold');
@@ -108,7 +104,7 @@
                 nom_donateur: document.getElementById('nom_donateur').value,
                 email_donateur: document.getElementById('email_donateur').value.toLowerCase().trim(),
                 nom_intention: document.getElementById('nom_intention').value,
-                type_intention: selectedType, // Enverra exactement "Action de grâce"
+                type_intention: selectedType,
                 date_messe: document.getElementById('date_messe').value,
                 heure_messe: "à confirmer",
                 commentaire: document.getElementById('commentaire').value,
@@ -118,9 +114,13 @@
             };
 
             try {
+                // Utilisation du client sbMesses défini dans config.js
                 const { error } = await sbMesses.from('intentions').insert([payload]);
+                
                 if (error) throw error;
+                
                 document.getElementById('success-modal').classList.remove('hidden');
+
             } catch (err) {
                 alert("Erreur de connexion : " + err.message);
                 btn.disabled = false;
