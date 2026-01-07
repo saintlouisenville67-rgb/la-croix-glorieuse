@@ -8,18 +8,6 @@
     <link rel="stylesheet" href="css/style.css">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <style>
-        /* Styles pour le formulaire d'Intention de Messe */
-        .dmform { background: white; padding: 25px; border-radius: 24px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1); margin-top: 2rem; border: 1px solid #f1f5f9; }
-        .dmform input[type="text"], .dmform input[type="email"], .dmform input[type="tel"] { width: 100%; background: #f8fafc; border: 1px solid #e2e8f0; padding: 12px; border-radius: 12px; margin-top: 5px; margin-bottom: 15px; font-size: 14px; outline: none; }
-        .dmform label { font-size: 11px; font-weight: 800; text-transform: uppercase; color: #64748b; letter-spacing: 0.05em; }
-        .dmform-title { font-size: 18px; font-weight: 800; margin-bottom: 20px; color: #0f172a; text-align: center; }
-        .dmformsubmit input { width: 100%; background: linear-gradient(135deg, #ef4444, #b91c1c); color: white; padding: 16px; border-radius: 16px; font-weight: 900; text-transform: uppercase; font-size: 11px; letter-spacing: 0.1em; cursor: pointer; transition: transform 0.2s; border: none; }
-        .dmformsubmit input:active { transform: scale(0.98); }
-        .checkboxwrapper { display: flex; flex-direction: column; gap: 10px; margin: 15px 0; background: #f8fafc; padding: 15px; border-radius: 12px; }
-        .contact-checkable-container { display: flex; align-items: center; gap: 10px; font-size: 14px; color: #334155; }
-        .rteBlock { font-size: 12px; color: #64748b; line-height: 1.5; margin-top: 5px; }
-    </style>
 </head>
 <body class="bg-slate-50">
 
@@ -62,71 +50,6 @@
             </div>
         </section>
 
-        <section>
-            <div class="dmform" id="form-messe">
-                <h3 class="dmform-title">Intention de Messe</h3>
-                <form action="https://formspree.io/saintlouisenville67@gmail.com" method="POST">
-                    
-                    <div>
-                        <label>Prénom et Nom de la personne pour laquelle est dite la Messe</label>
-                        <input type="text" name="Pour_qui_est_la_messe" required>
-                    </div>
-
-                    <div class="checkboxwrapper">
-                        <label>La personne est</label>
-                        <div class="contact-checkable-container">
-                            <input type="checkbox" name="Statut" value="Défunte"> <span>Défunte</span>
-                        </div>
-                        <div class="contact-checkable-container">
-                            <input type="checkbox" name="Statut" value="Vivante"> <span>Vivante</span>
-                        </div>
-                    </div>
-
-                    <div>
-                        <label>Ou intention particulière</label>
-                        <input type="text" name="Intention_Particuliere" placeholder="En cas d'absence d'intention, la messe sera célébrée à mon intention.">
-                    </div>
-
-                    <div>
-                        <label>Je souhaite que cette Messe soit célébrée le : (sous réserve de disponibilité)</label>
-                        <input type="text" name="Date_souhaitee" placeholder="Ex: 25/12/2024">
-                    </div>
-
-                    <hr class="my-4 border-slate-100">
-
-                    <div>
-                        <label>Mon prénom et mon nom</label>
-                        <input type="text" name="Nom_Demandeur" required>
-                    </div>
-
-                    <div>
-                        <label>Mon numéro</label>
-                        <input type="tel" name="Tel_Demandeur">
-                    </div>
-
-                    <div>
-                        <label>Mon email</label>
-                        <input type="email" name="Email_Demandeur" required>
-                    </div>
-
-                    <div class="checkboxwrapper">
-                        <div class="contact-checkable-container">
-                            <input type="checkbox" name="Accord_Offrande" required>
-                            <p class="rteBlock">Je donne mon offrande à l'église Saint-Louis ou je l'envoie à "2 quai Charles Frey 67000 Strasbourg"</p>
-                        </div>
-                        <div class="contact-checkable-container">
-                            <input type="checkbox" name="Accord_Donnees" required>
-                            <p class="rteBlock">J’accepte que ces données soient conservées un an et d'être recontacté(e) par mail pour traiter ma demande.</p>
-                        </div>
-                    </div>
-
-                    <div class="dmformsubmit">
-                        <input type="submit" value="Envoyer mon intention de messe">
-                    </div>
-                </form>
-            </div>
-        </section>
-
     </main>
 
     <nav class="bottom-nav"></nav>
@@ -143,6 +66,7 @@
             if (data) {
                 const feed = document.getElementById('feed-priere');
                 feed.innerHTML = data.map(p => {
+                    // Logique de pluralisation
                     const count = p.bougies || 0;
                     const label = count > 1 ? "ont prié" : "a prié";
                     
@@ -198,10 +122,8 @@
             }
         }
 
-        // Appel initial des données
         loadPrières();
 
-        // Abonnement temps réel Supabase
         sb.channel('intentions-channel')
           .on('postgres_changes', { event: '*', schema: 'public', table: 'intentions' }, payload => {
               loadPrières();
