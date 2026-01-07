@@ -17,8 +17,8 @@
 
     <main class="p-6 mb-24">
         <div id="feed-annonces-complet" class="space-y-4">
-            <div class="skeleton h-32 w-full"></div>
-            <div class="skeleton h-32 w-full"></div>
+            <div class="skeleton h-32 w-full rounded-3xl"></div>
+            <div class="skeleton h-32 w-full rounded-3xl"></div>
         </div>
     </main>
 
@@ -34,14 +34,27 @@
 
             if (data && data.length > 0) {
                 feed.innerHTML = data.map(a => `
-                    <div class="card animate-fade-in shadow-sm border-l-4 border-red-700">
+                    <div class="card animate-fade-in shadow-sm border-l-4 ${a.est_importante ? 'border-red-700' : 'border-slate-200'}">
                         <div class="flex justify-between items-start mb-2">
-                            <h3 class="font-800 text-sm text-red-700 uppercase">${a.titre}</h3>
-                            <span class="text-[8px] font-bold text-slate-400">
+                            <h3 class="font-800 text-sm ${a.est_importante ? 'text-red-700' : 'text-slate-800'} uppercase leading-tight mr-2">${a.titre}</h3>
+                            <span class="text-[8px] font-bold text-slate-400 whitespace-nowrap">
                                 ${new Date(a.created_at).toLocaleDateString('fr-FR')}
                             </span>
                         </div>
-                        <p class="text-xs text-slate-600 leading-relaxed">${a.contenu}</p>
+                        
+                        <p class="text-xs text-slate-600 leading-relaxed ${a.lien_url ? 'mb-4' : ''}">${a.contenu}</p>
+
+                        ${a.lien_url ? `
+                            <a href="${a.lien_url}" target="_blank" 
+                               class="inline-flex items-center gap-2 bg-slate-900 text-white px-5 py-2.5 rounded-xl text-[9px] font-black uppercase tracking-widest shadow-md active:scale-95 transition-all">
+                                <span>En savoir plus</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                                    <polyline points="15 3 21 3 21 9"></polyline>
+                                    <line x1="10" y1="14" x2="21" y2="3"></line>
+                                </svg>
+                            </a>
+                        ` : ''}
                     </div>
                 `).join('');
                 
