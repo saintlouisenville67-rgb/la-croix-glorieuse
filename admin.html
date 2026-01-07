@@ -35,6 +35,20 @@
         </div>
     </header>
 
+    <div class="grid grid-cols-2 gap-4 px-6 -mt-10 relative z-10 mb-8">
+        <div class="bg-white p-4 rounded-3xl shadow-xl border border-slate-100 text-center">
+            <p class="text-[8px] font-black uppercase text-slate-400 tracking-widest mb-1">En ligne</p>
+            <div class="flex items-center justify-center gap-2">
+                <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
+                <span id="stat-online" class="text-xl font-900 text-slate-800">...</span>
+            </div>
+        </div>
+        <div class="bg-white p-4 rounded-3xl shadow-xl border border-slate-100 text-center">
+            <p class="text-[8px] font-black uppercase text-slate-400 tracking-widest mb-1">Visiteurs Jour</p>
+            <span id="stat-today" class="text-xl font-900 text-slate-800">...</span>
+        </div>
+    </div>
+
     <main class="p-6 space-y-8 pb-24">
 
         <section class="card border-t-4 border-amber-500">
@@ -66,9 +80,7 @@
             <div class="space-y-3 mb-4">
                 <input type="text" id="ann-titre" placeholder="Titre de l'annonce" class="w-full bg-slate-50 p-3 rounded-xl border-none text-xs font-bold">
                 <textarea id="ann-texte" placeholder="Contenu de l'annonce..." rows="3" class="w-full bg-slate-50 p-3 rounded-xl border-none text-xs"></textarea>
-                
                 <input type="url" id="ann-lien" placeholder="Lien (ex: https://...)" class="w-full bg-slate-50 p-3 rounded-xl border-none text-xs font-bold">
-                
                 <div class="flex items-center gap-2 px-1">
                     <input type="checkbox" id="ann-important" class="w-4 h-4 accent-red-600">
                     <label for="ann-important" class="text-[10px] font-black uppercase text-slate-500 tracking-widest">Annonce Importante (Haut de page)</label>
@@ -126,6 +138,30 @@
             } else { alert("Le PIN doit faire au moins 4 chiffres"); }
         }
 
+        // --- STATISTIQUES ---
+        async function loadStats() {
+            try {
+                // 1. Personnes en ligne (activité il y a moins de 5 minutes)
+                const fiveMinsAgo = new Date(Date.now() - 5 * 60000).toISOString();
+                const { count: online } = await sb
+                    .from('user_presence')
+                    .select('*', { count: 'exact', head: true })
+                    .gt('last_seen', fiveMinsAgo);
+
+                // 2. Visiteurs différents aujourd'hui
+                const today = new Date().toISOString().split('T')[0];
+                const { count: daily } = await sb
+                    .from('user_presence')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('created_at', today);
+
+                document.getElementById('stat-online').innerText = online || 0;
+                document.getElementById('stat-today').innerText = daily || 0;
+            } catch (e) {
+                console.error("Erreur stats:", e);
+            }
+        }
+
         // --- GESTION DU BANDEAU (TICKER) ---
         async function loadAdminTicker() {
             const { data } = await sb.from('app_settings').select('value').eq('id', 'ticker_message').single();
@@ -161,7 +197,7 @@
                         </div>
                         <p class="text-xs font-900 text-slate-800 uppercase mb-1">${m.prenom} ${m.nom}</p>
                         <div class="bg-slate-50 p-2 rounded-lg mb-2 border border-slate-100 text-[10px] font-bold text-slate-600">
-                             📧 ${m.email} <br> 📞 ${m.telephone || 'Non renseigné'}
+                            📧 ${m.email} <br> 📞 ${m.telephone || 'Non renseigné'}
                         </div>
                         <p class="text-xs text-slate-600 leading-relaxed italic">"${m.message}"</p>
                     </div>
@@ -214,7 +250,7 @@
         async function validerEntraide(id) { await sb.from('entraide').update({ valide: true }).eq('id', id); loadAdminEntraide(); }
         async function supprimerEntraide(id) { if(confirm("Supprimer cette annonce d'entraide ?")) { await sb.from('entraide').delete().eq('id', id); loadAdminEntraide(); } }
 
-        // --- ANNONCES ACCUEIL MODIFIÉ ---
+        // --- ANNONCES ACCUEIL ---
         async function loadAdminAnnonces() {
             const { data } = await sb.from('annonces').select('*').order('created_at', { ascending: false });
             const list = document.getElementById('admin-list-annonces');
@@ -238,7 +274,7 @@
         async function publierAnnonce() {
             const titre = document.getElementById('ann-titre').value;
             const contenu = document.getElementById('ann-texte').value;
-            const lien_url = document.getElementById('ann-lien').value; // Récupération lien
+            const lien_url = document.getElementById('ann-lien').value;
             const est_importante = document.getElementById('ann-important').checked;
             
             if(!titre || !contenu) return;
@@ -247,7 +283,7 @@
                 titre, 
                 contenu, 
                 est_importante, 
-                lien_url: lien_url.trim() || null // On sauve null si vide
+                lien_url: lien_url.trim() || null
             }]);
 
             document.getElementById('ann-titre').value = '';
@@ -325,6 +361,7 @@
         async function supprimerGroupe(id) { await sb.from('groupes').delete().eq('id', id); loadAdminGroupes(); }
 
         function refreshData() {
+            loadStats();
             loadMessages();
             loadAdminEntraide();
             loadAdminAnnonces();
