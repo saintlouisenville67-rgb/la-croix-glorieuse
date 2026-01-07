@@ -36,10 +36,28 @@
             </div>
         </section>
 
-        <section class="space-y-4">
+        <section>
+            <div class="flex items-center gap-2 mb-6">
+                <div class="h-[1px] flex-1 bg-slate-200"></div>
+                <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Intentions de la communauté</span>
+                <div class="h-[1px] flex-1 bg-slate-200"></div>
+            </div>
+            
+            <div id="feed-priere" class="space-y-4">
+                <div class="p-8 text-center text-slate-400 text-xs italic">Chargement des intentions...</div>
+            </div>
+        </section>
+
+        <section class="space-y-4 pb-12">
+            <div class="flex items-center gap-2 mb-2">
+                <div class="h-[1px] flex-1 bg-slate-200"></div>
+                <span class="text-[10px] font-black text-slate-300 uppercase tracking-widest text-center">Soutenir & Offrir</span>
+                <div class="h-[1px] flex-1 bg-slate-200"></div>
+            </div>
+
             <button onclick="toggleMesse()" class="w-full flex items-center justify-between p-5 bg-white rounded-[28px] shadow-sm active:scale-95 transition-all border border-slate-100">
                 <div class="flex items-center gap-4">
-                    <div class="w-10 h-10 bg-red-50 rounded-full flex items-center justify-center text-lg">🕊️</div>
+                    <div class="w-10 h-10 bg-red-50 rounded-full flex items-center justify-center text-lg shadow-inner">🕊️</div>
                     <div class="text-left">
                         <span class="block text-[11px] font-black text-red-700 uppercase tracking-widest">Offrande</span>
                         <span class="text-sm font-bold text-slate-700">Demander une Messe</span>
@@ -50,20 +68,8 @@
                 </svg>
             </button>
 
-            <div id="container-messe" class="hidden overflow-hidden transition-all duration-500 rounded-[32px] bg-slate-100/50 shadow-inner">
+            <div id="container-messe" class="hidden overflow-hidden transition-all duration-500 rounded-[32px] bg-white shadow-inner border border-slate-100">
                 <iframe src="demande-messe.html" id="iframe-messe" class="w-full border-none" style="height: 680px;"></iframe>
-            </div>
-        </section>
-
-        <section>
-            <div class="flex items-center gap-2 mb-6">
-                <div class="h-[1px] flex-1 bg-slate-200"></div>
-                <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Intentions de la communauté</span>
-                <div class="h-[1px] flex-1 bg-slate-200"></div>
-            </div>
-            
-            <div id="feed-priere" class="space-y-4">
-                <div class="p-8 text-center text-slate-400 text-xs italic">Chargement des intentions...</div>
             </div>
         </section>
 
@@ -82,8 +88,10 @@
             if (isHidden) {
                 container.classList.remove('hidden');
                 chevron.style.transform = 'rotate(180deg)';
-                // Scroll doux vers le formulaire pour mobile
-                container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                // Petit délai pour laisser l'animation commencer avant le scroll
+                setTimeout(() => {
+                    container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 100);
             } else {
                 container.classList.add('hidden');
                 chevron.style.transform = 'rotate(0deg)';
@@ -153,10 +161,8 @@
             if (!error) loadPrières();
         }
 
-        // Initialisation
         loadPrières();
 
-        // Realtime
         sb.channel('intentions-channel')
           .on('postgres_changes', { event: '*', schema: 'public', table: 'intentions' }, payload => {
               loadPrières();
