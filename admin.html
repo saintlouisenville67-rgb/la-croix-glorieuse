@@ -77,6 +77,34 @@
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
             <div class="space-y-10">
+                <section class="card p-8 border-t-4 border-indigo-400">
+                    <h2 class="text-xs font-800 uppercase text-indigo-600 mb-6 flex items-center gap-2">📅 Calendrier Traditionnel (Fixe)</h2>
+                    <div class="flex gap-2 mb-6">
+                        <input type="date" id="cal-date-select" class="flex-1 bg-slate-50 p-4 rounded-xl text-sm font-bold border-none">
+                        <button onclick="chargerInfosCalendrier()" class="bg-indigo-100 text-indigo-600 px-6 rounded-xl font-800 text-[10px] uppercase">Charger</button>
+                    </div>
+                    <div id="cal-edit-form" class="space-y-4 opacity-30 pointer-events-none transition-all">
+                        <input type="text" id="cal-saint" placeholder="Nom du Saint / Fête" class="w-full bg-slate-50 p-4 rounded-xl text-sm font-bold border-none">
+                        <div class="grid grid-cols-2 gap-4">
+                            <select id="cal-classe" class="bg-slate-50 p-4 rounded-xl text-sm font-bold border-none">
+                                <option value="1">1ère Classe</option>
+                                <option value="2">2ème Classe</option>
+                                <option value="3">3ème Classe</option>
+                                <option value="4">4ème Classe</option>
+                            </select>
+                            <select id="cal-couleur" class="bg-slate-50 p-4 rounded-xl text-sm font-bold border-none">
+                                <option value="blanc">Blanc</option>
+                                <option value="rouge">Rouge</option>
+                                <option value="vert">Vert</option>
+                                <option value="violet">Violet</option>
+                                <option value="noir">Noir</option>
+                                <option value="rose">Rose</option>
+                            </select>
+                        </div>
+                        <button onclick="sauvegarderCalendrier()" class="w-full bg-indigo-600 text-white py-4 rounded-2xl font-800 text-xs uppercase tracking-widest shadow-lg shadow-indigo-500/20">Enregistrer les modifications</button>
+                    </div>
+                </section>
+
                 <section class="card p-8 border-t-4 border-amber-500">
                     <h2 class="text-xs font-800 uppercase text-amber-600 mb-6 flex items-center gap-2">📺 Bandeau Défilant</h2>
                     <textarea id="ticker-input" rows="2" class="w-full bg-slate-50 p-5 rounded-2xl text-sm font-bold focus:bg-white focus:ring-4 focus:ring-amber-500/10 outline-none transition-all"></textarea>
@@ -162,6 +190,39 @@
             showModal("Copié !", `${label} ajouté au presse-papier.`, "✅");
         }
 
+        // --- FONCTIONS CALENDRIER FIXE ---
+        async function chargerInfosCalendrier() {
+            const dateInput = document.getElementById('cal-date-select').value;
+            if(!dateInput) return;
+            const [year, month, day] = dateInput.split('-');
+            const jourMois = `${day}-${month}`;
+            const { data, error } = await sb.from('calendrier_traditionnel').select('*').eq('jour', jourMois).single();
+            if (data) {
+                document.getElementById('cal-saint').value = data.saint_nom;
+                document.getElementById('cal-classe').value = data.classe;
+                document.getElementById('cal-couleur').value = data.couleur.toLowerCase();
+                document.getElementById('cal-edit-form').classList.remove('opacity-30', 'pointer-events-none');
+            } else {
+                showModal("Erreur", "Aucune donnée trouvée pour le " + jourMois, "❌");
+            }
+        }
+
+        async function sauvegarderCalendrier() {
+            const dateInput = document.getElementById('cal-date-select').value;
+            const [year, month, day] = dateInput.split('-');
+            const jourMois = `${day}-${month}`;
+            const { error } = await sb.from('calendrier_traditionnel').update({
+                saint_nom: document.getElementById('cal-saint').value,
+                classe: parseInt(document.getElementById('cal-classe').value),
+                couleur: document.getElementById('cal-couleur').value
+            }).eq('jour', jourMois);
+            if (!error) {
+                showModal("Succès", "Le calendrier a été mis à jour pour le " + jourMois, "✅");
+            } else {
+                showModal("Erreur", "Impossible de mettre à jour.", "❌");
+            }
+        }
+
         // --- MESSAGES ---
         async function loadMessages() {
             const { data } = await sb.from('contact_messages').select('*').order('lu', { ascending: true }).order('created_at', { ascending: false });
@@ -213,13 +274,11 @@
             const titre = document.getElementById('ann-titre').value;
             const contenu = document.getElementById('ann-texte').value;
             if(!titre || !contenu) return showModal("Champs requis","Titre et contenu obligatoires","⚠️");
-            
             const { error } = await sb.from('annonces').insert([{
                 titre, contenu, 
                 lien_url: document.getElementById('ann-url').value, 
                 est_importante: document.getElementById('ann-important').checked
             }]);
-            
             if(!error) {
                 document.getElementById('ann-titre').value = ""; document.getElementById('ann-texte').value = "";
                 loadAdminAnnonces(); showModal("Publié !","L'annonce est en ligne.","🚀");
