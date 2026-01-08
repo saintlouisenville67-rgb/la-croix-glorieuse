@@ -8,6 +8,15 @@
     <link rel="stylesheet" href="css/style.css">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        .animate-fade-in {
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
 </head>
 <body class="bg-slate-50">
 
@@ -33,6 +42,9 @@
                     class="w-full gradient-header text-white py-4 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] shadow-lg active:scale-95 transition-all font-bold">
                     Envoyer mon intention
                 </button>
+
+                <div id="msg-feedback" class="hidden p-4 rounded-2xl text-center text-[10px] font-black uppercase tracking-widest animate-fade-in border">
+                </div>
             </div>
         </section>
 
@@ -88,7 +100,6 @@
             if (isHidden) {
                 container.classList.remove('hidden');
                 chevron.style.transform = 'rotate(180deg)';
-                // Petit délai pour laisser l'animation commencer avant le scroll
                 setTimeout(() => {
                     container.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 }, 100);
@@ -131,29 +142,57 @@
         }
 
         async function envoyerPriere() {
-            const prenom = document.getElementById('prenom').value;
-            const texte = document.getElementById('intention').value;
+            const prenomInput = document.getElementById('prenom');
+            const texteInput = document.getElementById('intention');
             const btn = document.getElementById('btn-priere');
 
-            if (!texte) return alert("Veuillez écrire votre intention.");
+            const prenom = prenomInput.value;
+            const texte = texteInput.value;
 
+            if (!texte) {
+                afficherFeedback("Veuillez écrire votre intention.", "error");
+                return;
+            }
+
+            // État de chargement visuel
             btn.disabled = true;
-            btn.innerText = "ENVOI...";
+            btn.innerText = "ENVOI EN COURS...";
+            btn.style.opacity = "0.7";
 
             const { error } = await sb.from('intentions').insert([
                 { prenom: prenom || 'Anonyme', texte: texte }
             ]);
 
+            // Retour à l'état normal
+            btn.disabled = false;
+            btn.innerText = "ENVOYER MON INTENTION";
+            btn.style.opacity = "1";
+
             if (!error) {
-                document.getElementById('intention').value = '';
-                btn.disabled = false;
-                btn.innerText = "ENVOYER MON INTENTION";
-                alert("Votre intention a été envoyée avec succès et sera visible après modération.");
+                prenomInput.value = '';
+                texteInput.value = '';
+                afficherFeedback("Union de prière ! Votre intention est transmise aux abbés.", "success");
                 loadPrières();
             } else {
-                alert("Erreur lors de l'envoi.");
-                btn.disabled = false;
+                afficherFeedback("Oups, l'envoi a échoué. Réessayez.", "error");
             }
+        }
+
+        function afficherFeedback(message, type) {
+            const feedback = document.getElementById('msg-feedback');
+            feedback.innerText = message;
+            feedback.classList.remove('hidden', 'bg-green-50', 'text-green-700', 'border-green-100', 'bg-red-50', 'text-red-700', 'border-red-100');
+
+            if (type === 'success') {
+                feedback.classList.add('bg-green-50', 'text-green-700', 'border-green-100');
+            } else {
+                feedback.classList.add('bg-red-50', 'text-red-700', 'border-red-100');
+            }
+
+            // Disparaît après 5 secondes
+            setTimeout(() => {
+                feedback.classList.add('hidden');
+            }, 5000);
         }
 
         async function allumerBougie(id) {
@@ -163,6 +202,7 @@
 
         loadPrières();
 
+        // Temps réel Supabase
         sb.channel('intentions-channel')
           .on('postgres_changes', { event: '*', schema: 'public', table: 'intentions' }, payload => {
               loadPrières();
