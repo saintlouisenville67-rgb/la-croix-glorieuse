@@ -3,131 +3,113 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Missel 2026</title>
+    <title>Missel 1962 - Référence Crampon</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        :root { --prie-dieu: #4a0404; --liturgie-gold: #c5a059; }
-        body { margin: 0; font-family: -apple-system, sans-serif; background-color: #f4f1ea; color: #1a1a1a; }
-        
-        /* BANDEAU SUPÉRIEUR HAUTE VISIBILITÉ */
-        .header-content { background: var(--prie-dieu); padding: 25px 15px; text-align: center; color: white; border-bottom: 4px solid var(--liturgie-gold); }
-        .nav-header { display: flex; justify-content: space-between; align-items: center; max-width: 500px; margin: 0 auto 10px; }
-        .date-badge { background: #ffffff; color: #000000; padding: 10px 20px; border-radius: 8px; font-weight: 800; font-size: 1.2rem; box-shadow: 0 2px 4px rgba(0,0,0,0.3); }
-        .btn-nav { background: none; border: none; color: white; font-size: 2.5rem; cursor: pointer; padding: 0 10px; }
-        
-        #display-feast { font-size: 1.5rem; font-weight: 900; margin: 15px 0 5px; color: #ffffff; text-shadow: 1px 1px 2px #000; }
-        .rank-tag { display: inline-block; font-size: 0.9rem; font-weight: bold; padding: 4px 12px; border-radius: 4px; background: var(--liturgie-gold); color: #000; text-transform: uppercase; }
-
-        /* LECTURES */
-        .main-content { padding: 20px; max-width: 600px; margin: 0 auto; }
-        .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); border: 1px solid #d1cec7; margin-bottom: 25px; }
-        .reading-label { color: #8b0000; font-weight: 900; text-transform: uppercase; font-size: 0.85rem; border-bottom: 2px solid #f4f1ea; padding-bottom: 5px; margin-bottom: 15px; display: block; }
-        .reading-ref { font-family: serif; font-size: 1.3rem; font-weight: bold; color: #2d3748; margin-bottom: 15px; display: block; font-style: italic; }
-        .bible-text { font-family: 'Georgia', serif; line-height: 1.8; font-size: 1.25rem; color: #2d3436; text-align: justify; }
-        .v-num { font-size: 0.8rem; font-weight: bold; color: #b91c1c; vertical-align: super; margin-right: 5px; }
+        :root { --prie-dieu: #630a0a; --fond: #fdfaf5; }
+        body { margin: 0; font-family: 'Georgia', serif; background: var(--fond); color: #1a1a1a; }
+        header { background: var(--prie-dieu); color: white; padding: 30px 15px; text-align: center; border-bottom: 5px solid #c5a059; }
+        .date-badge { background: white; color: black; padding: 10px 20px; border-radius: 5px; font-weight: bold; font-size: 1.2rem; display: inline-block; margin-bottom: 10px; }
+        .nav-btns { display: flex; justify-content: center; gap: 40px; align-items: center; margin-bottom: 15px; }
+        .btn-nav { background: none; border: 2px solid white; color: white; font-size: 1.5rem; cursor: pointer; border-radius: 50%; width: 45px; height: 45px; }
+        .card { background: white; max-width: 600px; margin: 20px auto; padding: 25px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); border: 1px solid #e0d9cc; }
+        .ref-titre { color: #8b0000; font-weight: bold; text-transform: uppercase; border-bottom: 1px solid #eee; margin-bottom: 10px; display: block; }
+        .ref-bible { font-size: 1.3rem; font-style: italic; display: block; margin-bottom: 15px; }
+        .texte-v { line-height: 1.8; font-size: 1.25rem; text-align: justify; }
+        .v-num { color: #8b0000; font-size: 0.8rem; font-weight: bold; vertical-align: super; margin-right: 5px; }
     </style>
 </head>
 <body>
 
-    <header class="header-content">
-        <div class="nav-header">
-            <button class="btn-nav" onclick="changeDate(-1)">‹</button>
-            <div class="date-badge" id="display-date">-- -- --</div>
-            <button class="btn-nav" onclick="changeDate(1)">›</button>
-        </div>
-        <div id="display-feast">Chargement...</div>
-        <div id="display-rank" class="rank-tag">CLASSE --</div>
-    </header>
+<header>
+    <div class="nav-btns">
+        <button class="btn-nav" onclick="changeDate(-1)">❮</button>
+        <div class="date-badge" id="date-label">1 JANVIER 2026</div>
+        <button class="btn-nav" onclick="changeDate(1)">❯</button>
+    </div>
+    <div id="fete-nom" style="font-size: 1.6rem; font-weight: 900;">...</div>
+</header>
 
-    <main class="main-content">
-        <div class="card">
-            <span class="reading-label">Épître</span>
-            <span class="reading-ref" id="ref-epitre">...</span>
-            <div id="text-epitre" class="bible-text"></div>
-        </div>
-        <div class="card">
-            <span class="reading-label">Évangile</span>
-            <span class="reading-ref" id="ref-evangile">...</span>
-            <div id="text-evangile" class="bible-text"></div>
-        </div>
-    </main>
+<main>
+    <div class="card">
+        <span class="ref-titre">Épître</span>
+        <span id="ref-epitre" class="ref-bible">...</span>
+        <div id="txt-epitre" class="texte-v"></div>
+    </div>
+    <div class="card">
+        <span class="ref-titre">Évangile</span>
+        <span id="ref-evangile" class="ref-bible">...</span>
+        <div id="txt-evangile" class="texte-v"></div>
+    </div>
+</main>
 
 <script>
 const SB_URL = 'https://rixdjcjlepadtchctxnn.supabase.co';
 const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJpeGRqY2psZXBhZHRjaGN0eG5uIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc2MTQ2MzMsImV4cCI6MjA4MzE5MDYzM30.0rcj8iFYw-kK7RbAAJ7ZbYqCTdHIWV1DmIQtKP_Ky4c';
 const _supabase = supabase.createClient(SB_URL, SB_KEY);
 
-let activeDate = new Date(2026, 0, 1); // Début 2026
+let currentD = new Date(2026, 0, 1);
 
-async function loadDay() {
-    const day = String(activeDate.getDate()).padStart(2, '0');
-    const month = String(activeDate.getMonth() + 1).padStart(2, '0');
-    const lookupDate = `${day}-${month}`;
+// CONVERTISSEUR : Calendrier (Clé) -> Bible Crampon (Valeur)
+const mapLivres = {
+    "Genesis": "Genèse", "Exodus": "Exode", "Leviticus": "Lévitique", "Numbers": "Nombres", "Deuteronomy": "Deutéronome",
+    "Joshua": "Josué", "Judges": "Juges", "Ruth": "Ruth", "1 Samuel": "1 Samuel", "2 Samuel": "2 Samuel",
+    "1 Kings": "1 Rois", "2 Kings": "2 Rois", "Isaiah": "Isaïe", "Jeremiah": "Jérémie", "Ezekiel": "Ézéchiel",
+    "Matthew": "S. Matthieu", "Mark": "S. Marc", "Luke": "S. Luc", "John": "S. Jean", "Acts": "Actes",
+    "Romans": "Romains", "1 Corinthians": "1 Corinthiens", "2 Corinthians": "2 Corinthiens", "Galatians": "Galates",
+    "Ephesians": "Éphésiens", "Philippians": "Philippiens", "Colossians": "Colossiens", "1 Thessalonians": "1 Thessaloniens",
+    "2 Thessalonians": "2 Thessaloniens", "1 Timothy": "1 Timothée", "2 Timothy": "2 Timothée", "Titus": "Tite",
+    "Hebrews": "Hébreux", "James": "S. Jacques", "1 Peter": "1 S. Pierre", "2 Peter": "2 S. Pierre",
+    "1 John": "1 S. Jean", "Revelation": "Apocalypse", "Sirach": "Siracide"
+};
 
-    // Affichage Date en clair
-    const options = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
-    document.getElementById('display-date').innerText = activeDate.toLocaleDateString('fr-FR', options).toUpperCase();
+async function load() {
+    const jourCle = `${String(currentD.getDate()).padStart(2,'0')}-${String(currentD.getMonth()+1).padStart(2,'0')}`;
+    document.getElementById('date-label').innerText = currentD.toLocaleDateString('fr-FR', {day:'numeric', month:'long', year:'numeric'}).toUpperCase();
 
-    // Recherche dans votre nouvelle table (calendrier_traditionnel)
-    const { data, error } = await _supabase
-        .from('calendrier_traditionnel')
-        .select('*')
-        .eq('jour', lookupDate)
-        .maybeSingle();
+    const { data } = await _supabase.from('calendrier_traditionnel').select('*').eq('jour', jourCle).maybeSingle();
 
     if (data) {
-        document.getElementById('display-feast').innerText = data.saint_nom || "Férie";
-        document.getElementById('display-rank').innerText = "CLASSE " + (data.classe || "IV");
+        document.getElementById('fete-nom').innerText = data.saint_nom;
         document.getElementById('ref-epitre').innerText = data.epitre_ref || "---";
         document.getElementById('ref-evangile').innerText = data.evangile_ref || "---";
-        
-        fetchBible(data.epitre_ref, 'text-epitre');
-        fetchBible(data.evangile_ref, 'text-evangile');
-    } else {
-        document.getElementById('display-feast').innerText = "Jour non répertorié";
-        document.getElementById('ref-epitre').innerText = "---";
-        document.getElementById('ref-evangile').innerText = "---";
+        fetchCrampon(data.epitre_ref, 'txt-epitre');
+        fetchCrampon(data.evangile_ref, 'txt-evangile');
     }
 }
 
-async function fetchBible(ref, targetId) {
-    const container = document.getElementById(targetId);
-    if (!ref || ref === "" || ref === "---") { container.innerHTML = "Pas de lecture propre."; return; }
+async function fetchCrampon(refBrute, targetId) {
+    const target = document.getElementById(targetId);
+    if (!refBrute || refBrute === "") { target.innerHTML = "Pas de lecture."; return; }
 
-    // Parsing robuste : "1 Corinthians 9: 24-27" -> Livre: 1 Corinthians, Chap: 9, Versets: 24-27
-    const match = ref.match(/^(.+)\s(\d+):\s(\d+)(?:-(\d+))?$/);
-    if (!match) { container.innerHTML = "Format de référence non reconnu."; return; }
+    // Regex adaptée au format "Livre Chapitre: Verset-Verset"
+    const parts = refBrute.match(/^(.+)\s(\d+):\s(\d+)(?:-(\d+))?$/);
+    if (!parts) return;
 
-    const book = match[1].trim();
-    const chap = parseInt(match[2]);
-    const start = parseInt(match[3]);
-    const end = match[4] ? parseInt(match[4]) : start;
+    let livreOrigine = parts[1].trim();
+    let chap = parts[2];
+    let debut = parts[3];
+    let fin = parts[4] || debut;
 
-    const { data } = await _supabase
-        .from('bible_crampon')
+    // TRADUCTION DU NOM DE LIVRE POUR LA BIBLE CRAMPON
+    let livreCrampon = mapLivres[livreOrigine] || livreOrigine;
+
+    const { data } = await _supabase.from('bible_crampon')
         .select('texte, verset')
-        .eq('livre', book)
+        .eq('livre', livreCrampon)
         .eq('chapitre', chap)
-        .gte('verset', start)
-        .lte('verset', end)
+        .gte('verset', debut).lte('verset', fin)
         .order('verset');
 
     if (data && data.length > 0) {
-        let fullText = data.map(v => `<span class="v-num">${v.verset}</span>${v.texte}`).join(' ');
-        // Ajouter un point final si manquant
-        if (!/[.!?]$/.test(fullText.trim())) fullText += ".";
-        container.innerHTML = fullText;
+        target.innerHTML = data.map(v => `<span class="v-num">${v.verset}</span>${v.texte}`).join(' ');
     } else {
-        container.innerHTML = `<span style="color:red">Texte introuvable (${book} ${chap}).</span>`;
+        target.innerHTML = `<span style="color:red">Erreur : ${livreCrampon} ${chap}:${debut} non trouvé.</span>`;
     }
 }
 
-function changeDate(n) {
-    activeDate.setDate(activeDate.getDate() + n);
-    loadDay();
-}
-
-document.addEventListener('DOMContentLoaded', loadDay);
+function changeDate(n) { currentD.setDate(currentD.getDate()+n); load(); }
+document.addEventListener('DOMContentLoaded', load);
 </script>
 </body>
 </html>
