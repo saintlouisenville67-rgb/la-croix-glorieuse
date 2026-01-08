@@ -10,27 +10,21 @@
     <style>
         :root { color-scheme: light; }
         body { color: #0f172a; font-family: system-ui, -apple-system, sans-serif; -webkit-font-smoothing: antialiased; }
-        .card { background: white; padding: 1.25rem; border-radius: 1.5rem; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05); border: 1px solid #f1f5f9; }
+        .card { background: white; padding: 1.25rem; border-radius: 1.5rem; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05); border: 1px solid #f1f5f9; height: fit-content; }
         .gradient-header { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); }
-        input, textarea { border: 1px solid #e2e8f0 !important; outline: none; transition: border-color 0.2s; }
+        input, textarea, select { border: 1px solid #e2e8f0 !important; outline: none; transition: border-color 0.2s; }
         input:focus { border-color: #6366f1 !important; }
         
-        /* Notifications dynamiques */
+        /* Badges de notification animés */
         .notif-badge {
-            background-color: #ef4444;
-            color: white;
-            font-size: 10px;
-            font-weight: 900;
-            padding: 2px 7px;
-            border-radius: 99px;
-            margin-left: 8px;
-            display: none;
+            background-color: #ef4444; color: white; font-size: 10px; font-weight: 900;
+            padding: 2px 7px; border-radius: 99px; margin-left: 8px; display: none;
             animation: pulse-notif 2s infinite;
         }
         @keyframes pulse-notif {
-            0% { transform: scale(1); shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
-            70% { transform: scale(1.1); shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
-            100% { transform: scale(1); shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+            70% { transform: scale(1.1); box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
         }
     </style>
 </head>
@@ -39,14 +33,13 @@
     <div id="pin-overlay" class="fixed inset-0 z-[200] bg-slate-900 flex items-center justify-center p-6 backdrop-blur-sm">
         <div class="card w-full max-w-sm text-center">
             <h2 class="text-[10px] font-black mb-6 text-slate-400 uppercase tracking-widest">Accès Administrateur</h2>
-            <input type="password" id="pin-input" placeholder="••••" 
-                class="w-full bg-slate-50 p-4 rounded-xl text-center text-3xl font-black tracking-[0.3em] mb-4 shadow-inner border-none">
+            <input type="password" id="pin-input" placeholder="••••" class="w-full bg-slate-50 p-4 rounded-xl text-center text-3xl font-black tracking-[0.3em] mb-4 shadow-inner border-none">
             <button onclick="checkPin()" class="w-full bg-indigo-600 text-white py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg active:scale-95 transition-transform">Déverrouiller</button>
         </div>
     </div>
 
     <header class="gradient-header p-8 rounded-b-[40px] shadow-lg text-white mb-6">
-        <div class="flex justify-between items-center">
+        <div class="max-w-6xl mx-auto flex justify-between items-center">
             <div>
                 <h1 class="text-xl font-800 tracking-tight">Espace Admin</h1>
                 <p class="text-[9px] font-black uppercase opacity-60">La Croix Glorieuse • Gestion</p>
@@ -62,7 +55,7 @@
         </div>
     </header>
 
-    <div class="grid grid-cols-2 gap-4 px-6 -mt-10 relative z-10 mb-8">
+    <div class="max-w-6xl mx-auto grid grid-cols-2 gap-4 px-6 -mt-10 relative z-10 mb-8">
         <div class="card text-center">
             <p class="text-[8px] font-black uppercase text-slate-400 mb-1">En direct</p>
             <div class="flex items-center justify-center gap-2">
@@ -76,62 +69,72 @@
         </div>
     </div>
 
-    <main class="p-6 space-y-6 pb-24">
-
-        <section class="card border-t-4 border-amber-500">
-            <h2 class="text-[10px] font-black uppercase text-slate-400 mb-3">Bandeau défilant (Accueil)</h2>
-            <div class="flex gap-2">
-                <input type="text" id="ticker-input" placeholder="Message du bandeau..." class="flex-1 bg-slate-50 p-3 rounded-xl text-xs font-bold">
-                <button onclick="updateTicker()" class="bg-amber-500 text-white px-4 rounded-xl font-black text-[10px] uppercase">OK</button>
-            </div>
-        </section>
-
-        <section class="card border-t-4 border-red-600">
-            <h2 class="text-[10px] font-black uppercase text-slate-400 mb-4">Publier une Annonce</h2>
-            <div class="space-y-3">
-                <input type="text" id="ann-titre" placeholder="Titre" class="w-full bg-slate-50 p-3 rounded-xl text-xs font-bold">
-                <textarea id="ann-texte" placeholder="Message..." rows="2" class="w-full bg-slate-50 p-3 rounded-xl text-xs"></textarea>
-                <div class="flex items-center gap-2">
-                    <input type="checkbox" id="ann-important" class="w-4 h-4 accent-red-600">
-                    <label class="text-[10px] font-black uppercase text-slate-500">Urgente</label>
-                    <button onclick="publierAnnonce()" class="ml-auto bg-red-600 text-white px-6 py-2 rounded-xl font-black text-[10px] uppercase">Publier</button>
+    <main class="max-w-6xl mx-auto p-6 grid grid-cols-1 lg:grid-cols-2 gap-6 pb-24">
+        
+        <div class="space-y-6">
+            <section class="card border-t-4 border-amber-500">
+                <h2 class="text-[10px] font-black uppercase text-slate-400 mb-3">Bandeau défilant</h2>
+                <div class="flex gap-2">
+                    <input type="text" id="ticker-input" placeholder="Message du bandeau..." class="flex-1 bg-slate-50 p-3 rounded-xl text-xs font-bold">
+                    <button onclick="updateTicker()" class="bg-amber-500 text-white px-4 rounded-xl font-black text-[10px] uppercase">OK</button>
                 </div>
-            </div>
-            <div id="admin-list-annonces" class="mt-4 space-y-2 border-t pt-4"></div>
-        </section>
+            </section>
 
-        <section class="card border-t-4 border-emerald-600">
-            <h2 class="flex items-center text-[10px] font-black uppercase text-slate-400 mb-4">
-                Modération Entraide <span id="badge-entraide" class="notif-badge">0</span>
-            </h2>
-            <div id="admin-list-entraide" class="space-y-4"></div>
-        </section>
+            <section class="card border-t-4 border-red-600">
+                <h2 class="text-[10px] font-black uppercase text-slate-400 mb-4">Publier une Annonce</h2>
+                <div class="space-y-3">
+                    <input type="text" id="ann-titre" placeholder="Titre de l'annonce" class="w-full bg-slate-50 p-3 rounded-xl text-xs font-bold">
+                    <textarea id="ann-texte" placeholder="Message..." rows="2" class="w-full bg-slate-50 p-3 rounded-xl text-xs font-bold"></textarea>
+                    <input type="url" id="ann-url" placeholder="Lien URL (ex: https://...)" class="w-full bg-slate-50 p-3 rounded-xl text-[10px]">
+                    
+                    <div class="grid grid-cols-2 gap-2">
+                        <div class="flex flex-col gap-1">
+                            <label class="text-[8px] font-black uppercase text-slate-400">Ordre (Priorité)</label>
+                            <input type="number" id="ann-priorite" value="0" class="w-full bg-slate-50 p-2 rounded-lg text-xs font-bold text-center">
+                        </div>
+                        <div class="flex items-center gap-2 justify-end">
+                            <input type="checkbox" id="ann-important" class="w-4 h-4 accent-red-600">
+                            <label class="text-[10px] font-black uppercase text-slate-500">Urgente</label>
+                        </div>
+                    </div>
+                    <button onclick="publierAnnonce()" class="w-full bg-red-600 text-white py-3 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-md active:scale-95 transition-transform">Diffuser l'annonce</button>
+                </div>
+                <div id="admin-list-annonces" class="mt-4 space-y-2 border-t pt-4"></div>
+            </section>
 
-        <section class="space-y-4">
-            <h2 class="flex items-center text-[10px] font-black uppercase text-slate-400 px-2">
-                Messages Reçus <span id="badge-messages" class="notif-badge">0</span>
-            </h2>
-            <div id="admin-list-messages" class="space-y-3"></div>
-        </section>
-
-        <section class="card border-t-4 border-indigo-600">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="flex items-center text-[10px] font-black uppercase text-slate-400">
-                    Intentions <span id="badge-intentions" class="notif-badge">0</span>
+            <section class="card border-t-4 border-emerald-600">
+                <h2 class="flex items-center text-[10px] font-black uppercase text-slate-400 mb-4">
+                    Modération Entraide <span id="badge-entraide" class="notif-badge">0</span>
                 </h2>
-                <button onclick="anonymiserToutesIntentions()" class="text-[8px] font-black uppercase bg-slate-100 px-2 py-1 rounded hover:bg-slate-200">Anonymiser tout</button>
-            </div>
-            <div id="admin-list-prières" class="space-y-3"></div>
-        </section>
+                <div id="admin-list-entraide" class="space-y-4"></div>
+            </section>
+        </div>
 
+        <div class="space-y-6">
+            <section class="card border-t-4 border-indigo-600">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="flex items-center text-[10px] font-black uppercase text-slate-400">
+                        Intentions <span id="badge-intentions" class="notif-badge">0</span>
+                    </h2>
+                    <button onclick="anonymiserToutesIntentions()" class="text-[8px] font-black uppercase bg-slate-100 px-2 py-1 rounded hover:bg-slate-200">Anonymiser tout</button>
+                </div>
+                <div id="admin-list-prières" class="space-y-3"></div>
+            </section>
+
+            <section class="space-y-4">
+                <h2 class="flex items-center text-[10px] font-black uppercase text-slate-400 px-2">
+                    Messages Reçus <span id="badge-messages" class="notif-badge">0</span>
+                </h2>
+                <div id="admin-list-messages" class="space-y-3"></div>
+            </section>
+        </div>
     </main>
 
     <script src="js/config.js"></script>
     <script>
-        // Global pour les badges
         window.counts = { entraide: 0, messages: 0, intentions: 0 };
 
-        // AUTH
+        // AUTHENTIFICATION PIN
         function checkPin() {
             const input = document.getElementById('pin-input').value;
             const correctPin = localStorage.getItem('admin_pin') || "5717";
@@ -141,7 +144,7 @@
             } else { alert("Code incorrect"); }
         }
 
-        // BADGES
+        // MISE À JOUR DES BADGES
         function updateBadges() {
             ['entraide', 'messages', 'intentions'].forEach(s => {
                 const el = document.getElementById(`badge-${s}`);
@@ -152,17 +155,19 @@
             });
         }
 
-        // STATS
+        // CHARGEMENT DES STATS
         async function loadStats() {
-            const fiveMins = new Date(Date.now() - 5*60000).toISOString();
-            const today = new Date().toISOString().split('T')[0];
-            const { count: online } = await sb.from('user_presence').select('*', { count: 'exact', head: true }).gt('last_seen', fiveMins);
-            const { count: daily } = await sb.from('user_presence').select('*', { count: 'exact', head: true }).gte('created_at', today);
-            document.getElementById('stat-online').innerText = online || 0;
-            document.getElementById('stat-today').innerText = daily || 0;
+            try {
+                const fiveMins = new Date(Date.now() - 5*60000).toISOString();
+                const today = new Date().toISOString().split('T')[0];
+                const { count: online } = await sb.from('user_presence').select('*', { count: 'exact', head: true }).gt('last_seen', fiveMins);
+                const { count: daily } = await sb.from('user_presence').select('*', { count: 'exact', head: true }).gte('created_at', today);
+                document.getElementById('stat-online').innerText = online || 0;
+                document.getElementById('stat-today').innerText = daily || 0;
+            } catch(e) {}
         }
 
-        // TICKER
+        // GESTION DU BANDEAU (TICKER)
         async function loadAdminTicker() {
             const { data } = await sb.from('app_settings').select('value').eq('id', 'ticker_message').single();
             if (data) document.getElementById('ticker-input').value = data.value;
@@ -173,32 +178,45 @@
             alert("Bandeau mis à jour !");
         }
 
-        // ANNONCES
+        // GESTION DES ANNONCES
         async function loadAdminAnnonces() {
-            const { data } = await sb.from('annonces').select('*').order('created_at', { ascending: false });
+            const { data } = await sb.from('annonces').select('*').order('priorite', { ascending: false }).order('created_at', { ascending: false });
             if (data) {
                 document.getElementById('admin-list-annonces').innerHTML = data.map(a => `
                     <div class="flex justify-between items-center bg-slate-50 p-2 rounded-lg border border-slate-100">
-                        <span class="text-xs font-bold truncate ${a.est_importante ? 'text-red-600' : 'text-slate-600'}">
-                            ${a.est_importante ? '★ ' : ''}${a.titre}
-                        </span>
-                        <button onclick="deleteRow('annonces', '${a.id}', loadAdminAnnonces)" class="text-red-400 px-2">✕</button>
+                        <div class="truncate pr-2">
+                            <span class="text-[7px] font-black text-slate-300 uppercase">Priorité: ${a.priorite || 0} ${a.lien_url ? '• LIEN' : ''}</span>
+                            <p class="text-xs font-bold truncate ${a.est_importante ? 'text-red-600' : 'text-slate-600'}">
+                                ${a.est_importante ? '★ ' : ''}${a.titre}
+                            </p>
+                        </div>
+                        <button onclick="deleteRow('annonces', '${a.id}', loadAdminAnnonces)" class="text-red-400 px-2 font-black">✕</button>
                     </div>
                 `).join('');
             }
         }
+
         async function publierAnnonce() {
             const titre = document.getElementById('ann-titre').value;
             const contenu = document.getElementById('ann-texte').value;
+            const lien_url = document.getElementById('ann-url').value;
+            const priorite = parseInt(document.getElementById('ann-priorite').value) || 0;
             const est_importante = document.getElementById('ann-important').checked;
-            if(!titre || !contenu) return alert("Champs vides");
-            await sb.from('annonces').insert([{ titre, contenu, est_importante }]);
-            document.getElementById('ann-titre').value = '';
-            document.getElementById('ann-texte').value = '';
-            loadAdminAnnonces();
+            
+            if(!titre || !contenu) return alert("Titre et contenu obligatoires");
+            
+            const { error } = await sb.from('annonces').insert([{ titre, contenu, lien_url, priorite, est_importante }]);
+            
+            if(error) { alert("Erreur : " + error.message); } else {
+                document.getElementById('ann-titre').value = '';
+                document.getElementById('ann-texte').value = '';
+                document.getElementById('ann-url').value = '';
+                document.getElementById('ann-priorite').value = '0';
+                loadAdminAnnonces();
+            }
         }
 
-        // ENTRAIDE
+        // GESTION ENTRAIDE
         async function loadAdminEntraide() {
             const { data } = await sb.from('entraide').select('*').order('valide', { ascending: true });
             if (data) {
@@ -208,7 +226,7 @@
                     <div class="bg-slate-50 p-4 rounded-xl border ${e.valide ? 'border-slate-100' : 'border-emerald-200 bg-emerald-50'}">
                         <div class="flex justify-between mb-2">
                             <span class="text-[8px] font-black uppercase ${e.valide ? 'text-slate-400' : 'text-emerald-600'}">
-                                ${e.valide ? 'Visible' : 'À Valider'}
+                                ${e.valide ? 'En ligne' : 'À Valider'}
                             </span>
                             <div class="flex gap-3">
                                 ${!e.valide ? `<button onclick="updateField('entraide','${e.id}',{valide:true},loadAdminEntraide)" class="text-emerald-700 text-[8px] font-black uppercase">Valider</button>` : ''}
@@ -224,8 +242,8 @@
                             <div class="text-right">
                                 <p class="text-[8px] text-amber-500 uppercase font-black">Code Retrait</p>
                                 ${e.code_validation 
-                                    ? `<span class="text-xs font-black text-indigo-600">${e.code_validation}</span>`
-                                    : `<button onclick="genererCodeEntraide('${e.id}')" class="text-[8px] bg-amber-500 text-white px-2 py-1 rounded font-black uppercase">Générer</button>`
+                                    ? `<span class="text-xs font-black text-indigo-600">${e.code_validation}</span>` 
+                                    : `<button onclick="genererCodeEntraide('${e.id}')" class="text-[8px] bg-amber-500 text-white px-2 py-1 rounded font-black">Générer</button>`
                                 }
                             </div>
                         </div>
@@ -239,7 +257,7 @@
             loadAdminEntraide();
         }
 
-        // MESSAGES
+        // GESTION MESSAGES
         async function loadMessages() {
             const { data } = await sb.from('contact_messages').select('*').order('lu', { ascending: true }).order('created_at', { ascending: false });
             if (data) {
@@ -247,7 +265,7 @@
                 updateBadges();
                 document.getElementById('admin-list-messages').innerHTML = data.map(m => `
                     <div class="card ${m.lu ? 'opacity-50' : 'border-indigo-100 shadow-md'}">
-                        <div class="flex justify-between items-start">
+                        <div class="flex justify-between items-start mb-2">
                             <p class="text-xs font-black uppercase">${m.prenom} ${m.nom}</p>
                             <button onclick="deleteRow('contact_messages','${m.id}',loadMessages)" class="text-red-400">✕</button>
                         </div>
@@ -261,7 +279,7 @@
             }
         }
 
-        // INTENTIONS
+        // GESTION INTENTIONS
         async function loadAdminPrières() {
             const { data } = await sb.from('intentions').select('*').order('valide', { ascending: true }).order('created_at', { ascending: false });
             if (data) {
@@ -274,7 +292,7 @@
                             <div class="flex gap-3">
                                 ${i.prenom !== 'Anonyme' ? `<button onclick="anonymiserUneIntention('${i.id}')" class="text-indigo-600 text-[8px] font-black uppercase">Anonymiser</button>` : ''}
                                 ${!i.valide ? `<button onclick="updateField('intentions','${i.id}',{valide:true},loadAdminPrières)" class="text-emerald-600 text-[8px] font-black uppercase">Valider</button>` : ''}
-                                <button onclick="deleteRow('intentions','${i.id}',loadAdminPrières)" class="text-red-400 text-xs">✕</button>
+                                <button onclick="deleteRow('intentions','${i.id}',loadAdminPrières)" class="text-red-400 text-xs font-black">✕</button>
                             </div>
                         </div>
                         <p class="text-xs italic text-slate-600 mt-1">"${i.texte}"</p>
@@ -283,32 +301,31 @@
             }
         }
         async function anonymiserUneIntention(id) {
-            if(confirm("Anonymiser ?")) {
-                await sb.from('intentions').update({ prenom: 'Anonyme' }).eq('id', id);
-                loadAdminPrières();
-            }
+            if(confirm("Anonymiser cette intention ?")) { await sb.from('intentions').update({ prenom: 'Anonyme' }).eq('id', id); loadAdminPrières(); }
         }
         async function anonymiserToutesIntentions() {
-            if(confirm("Anonymiser TOUT ?")) {
-                await sb.from('intentions').update({ prenom: 'Anonyme' });
-                loadAdminPrières();
-            }
+            if(confirm("Anonymiser TOUTES les intentions ?")) { await sb.from('intentions').update({ prenom: 'Anonyme' }); loadAdminPrières(); }
         }
 
-        // HELPERS
+        // HELPERS (SUPPRESSION ET MISE À JOUR)
         async function deleteRow(table, id, cb) {
-            if(confirm("Supprimer ?")) { await sb.from(table).delete().eq('id', id); cb(); }
+            if(confirm("Supprimer définitivement ?")) { await sb.from(table).delete().eq('id', id); cb(); }
         }
         async function updateField(table, id, obj, cb) {
             await sb.from(table).update(obj).eq('id', id); cb();
         }
 
+        // RECHARGEMENT GLOBAL
         function refreshData() {
-            loadStats(); loadAdminTicker(); loadAdminAnnonces(); 
-            loadAdminEntraide(); loadMessages(); loadAdminPrières();
+            loadStats(); 
+            loadAdminTicker(); 
+            loadAdminAnnonces(); 
+            loadAdminEntraide(); 
+            loadMessages(); 
+            loadAdminPrières();
         }
 
-        // Rafraîchissement auto chaque minute pour les badges
+        // Rafraîchissement automatique toutes les minutes
         setInterval(refreshData, 60000);
     </script>
 </body>
