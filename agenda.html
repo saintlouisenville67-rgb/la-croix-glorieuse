@@ -52,7 +52,7 @@
         async function fetchCalendar() {
             const now = new Date();
             const timeMax = new Date();
-            timeMax.setDate(now.getDate() + 14);
+            timeMax.setDate(now.getDate() + 300);
             const url = `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(CALENDAR_ID)}/events?key=${API_KEY}&timeMin=${now.toISOString()}&timeMax=${timeMax.toISOString()}&singleEvents=true&orderBy=startTime`;
 
             try {
