@@ -52,8 +52,12 @@
         async function fetchCalendar() {
             const now = new Date();
             const timeMax = new Date();
-            timeMax.setDate(now.getDate() + 300);
-            const url = `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(CALENDAR_ID)}/events?key=${API_KEY}&timeMin=${now.toISOString()}&timeMax=${timeMax.toISOString()}&singleEvents=true&orderBy=startTime`;
+            
+            // On définit la recherche sur 365 jours (1 an)
+            timeMax.setDate(now.getDate() + 365); 
+
+            // Ajout de &maxResults=2500 pour ne pas être limité aux 250 premiers résultats par défaut
+            const url = `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(CALENDAR_ID)}/events?key=${API_KEY}&timeMin=${now.toISOString()}&timeMax=${timeMax.toISOString()}&singleEvents=true&orderBy=startTime&maxResults=2500`;
 
             try {
                 const response = await fetch(url);
@@ -74,8 +78,10 @@
                 return;
             }
 
+            // Groupement par date
             const groups = events.reduce((acc, event) => {
-                const date = new Date(event.start.dateTime || event.start.date).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+                const dateStr = event.start.dateTime || event.start.date;
+                const date = new Date(dateStr).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
                 if (!acc[date]) acc[date] = [];
                 acc[date].push(event);
                 return acc;
@@ -97,6 +103,7 @@
                 groups[date].forEach(event => {
                     const start = new Date(event.start.dateTime);
                     const end = new Date(event.end.dateTime);
+                    // Vérification si l'événement est en cours
                     const isLive = event.start.dateTime && start <= now && end >= now;
                     
                     const time = event.start.dateTime ? start.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : "Journée";
@@ -120,12 +127,16 @@
 
         function filterEvents() {
             const query = document.getElementById('searchInput').value.toLowerCase();
-            const filtered = allEvents.filter(e => e.summary.toLowerCase().includes(query));
+            const filtered = allEvents.filter(e => 
+                (e.summary && e.summary.toLowerCase().includes(query)) || 
+                (e.description && e.description.toLowerCase().includes(query))
+            );
             displayAgenda(filtered);
         }
 
         function quickSearch(term) {
-            hapticFeedback(15);
+            // Si la fonction hapticFeedback existe dans votre menu.js, elle sera appelée
+            if (typeof hapticFeedback === "function") hapticFeedback(15);
             document.getElementById('searchInput').value = term;
             filterEvents();
         }
