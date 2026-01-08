@@ -7,6 +7,18 @@
     
     <link rel="stylesheet" href="css/style.css">
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .loader {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #b91c1c; /* Rouge paroisse */
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
 </head>
 <body class="bg-slate-50">
 
@@ -33,10 +45,9 @@
         </section>
 
         <div id="agenda-container" class="space-y-8 mb-20">
-            <div class="space-y-4">
-                <div class="h-4 w-32 skeleton mb-6 mx-auto"></div>
-                <div class="skeleton h-24 w-full"></div>
-                <div class="skeleton h-24 w-full"></div>
+            <div id="loading-state" class="text-center py-20">
+                <div class="loader mb-4"></div>
+                <p class="text-slate-400 text-xs font-bold uppercase tracking-widest">Chargement de l'année...</p>
             </div>
         </div>
 
@@ -52,36 +63,48 @@
         async function fetchCalendar() {
             const now = new Date();
             const timeMax = new Date();
-            
-            // On définit la recherche sur 365 jours (1 an)
-            timeMax.setDate(now.getDate() + 365); 
+            timeMax.setDate(now.getDate() + 365); // Recherche sur 1 an
 
-            // Ajout de &maxResults=2500 pour ne pas être limité aux 250 premiers résultats par défaut
             const url = `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(CALENDAR_ID)}/events?key=${API_KEY}&timeMin=${now.toISOString()}&timeMax=${timeMax.toISOString()}&singleEvents=true&orderBy=startTime&maxResults=2500`;
 
             try {
                 const response = await fetch(url);
                 const data = await response.json();
                 allEvents = data.items || [];
+                
+                // On retire l'indicateur de chargement
+                document.getElementById('loading-state').style.display = 'none';
+                
                 displayAgenda(allEvents);
             } catch (e) {
-                document.getElementById('agenda-container').innerHTML = "<p class='text-center text-xs text-slate-400'>Erreur de connexion au calendrier.</p>";
+                document.getElementById('agenda-container').innerHTML = `
+                    <div class="text-center py-10">
+                        <p class='text-xs text-slate-400'>Erreur de connexion au calendrier.</p>
+                        <button onclick="location.reload()" class="mt-4 text-[10px] font-black text-red-700 uppercase">Réessayer</button>
+                    </div>`;
             }
         }
 
         function displayAgenda(events) {
             const container = document.getElementById('agenda-container');
+            // On s'assure de vider le container mais de garder le loading-state caché
+            const loadingState = document.getElementById('loading-state');
             container.innerHTML = "";
+            if(loadingState) container.appendChild(loadingState); 
 
             if (events.length === 0) {
-                container.innerHTML = "<p class='text-center text-slate-400 text-xs italic py-10'>Aucun événement trouvé.</p>";
+                container.innerHTML += "<p class='text-center text-slate-400 text-xs italic py-10'>Aucun événement trouvé.</p>";
                 return;
             }
 
-            // Groupement par date
             const groups = events.reduce((acc, event) => {
-                const dateStr = event.start.dateTime || event.start.date;
-                const date = new Date(dateStr).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+                const dateRaw = event.start.dateTime || event.start.date;
+                const date = new Date(dateRaw).toLocaleDateString('fr-FR', { 
+                    weekday: 'long', 
+                    day: 'numeric', 
+                    month: 'long',
+                    year: 'numeric'
+                });
                 if (!acc[date]) acc[date] = [];
                 acc[date].push(event);
                 return acc;
@@ -91,25 +114,23 @@
 
             for (const date in groups) {
                 let dayHtml = `
-                    <div class="animate-fade-in">
-                        <div class="flex items-center gap-2 mb-6">
+                    <div class="animate-fade-in mb-8">
+                        <div class="flex items-center gap-2 mb-4">
                             <div class="h-[1px] flex-1 bg-slate-200 dark:bg-slate-700"></div>
                             <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">${date}</span>
                             <div class="h-[1px] flex-1 bg-slate-200 dark:bg-slate-700"></div>
                         </div>
-                        <div class="space-y-4">
+                        <div class="space-y-3">
                 `;
 
                 groups[date].forEach(event => {
                     const start = new Date(event.start.dateTime);
                     const end = new Date(event.end.dateTime);
-                    // Vérification si l'événement est en cours
                     const isLive = event.start.dateTime && start <= now && end >= now;
-                    
                     const time = event.start.dateTime ? start.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : "Journée";
                     
                     dayHtml += `
-                        <div class="card ${isLive ? 'ring-2 ring-green-500/20' : ''}">
+                        <div class="card bg-white p-4 rounded-2xl shadow-sm ${isLive ? 'ring-2 ring-green-500/20' : ''}">
                             <div class="flex justify-between items-start">
                                 <span class="text-[9px] font-black ${isLive ? 'text-green-600 animate-pulse' : 'text-red-700'} uppercase tracking-widest">
                                     ${isLive ? '● En direct' : time}
@@ -128,14 +149,12 @@
         function filterEvents() {
             const query = document.getElementById('searchInput').value.toLowerCase();
             const filtered = allEvents.filter(e => 
-                (e.summary && e.summary.toLowerCase().includes(query)) || 
-                (e.description && e.description.toLowerCase().includes(query))
+                (e.summary && e.summary.toLowerCase().includes(query))
             );
             displayAgenda(filtered);
         }
 
         function quickSearch(term) {
-            // Si la fonction hapticFeedback existe dans votre menu.js, elle sera appelée
             if (typeof hapticFeedback === "function") hapticFeedback(15);
             document.getElementById('searchInput').value = term;
             filterEvents();
@@ -143,6 +162,5 @@
 
         fetchCalendar();
     </script>
-    <script src="js/menu.js"></script>
 </body>
 </html>
