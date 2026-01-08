@@ -9,30 +9,30 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
         body { font-family: 'Plus Jakarta Sans', sans-serif; background: #f8fafc; color: #0f172a; }
-        .card { background: white; border: 1px solid #e2e8f0; border-radius: 24px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .card { background: white; border: 1px solid #e2e8f0; border-radius: 24px; transition: all 0.3s ease; }
         .gradient-dark { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); }
         
-        /* MODALE HARMONISÉE */
-        #custom-modal { display: none; backdrop-filter: blur(8px); }
-        .modal-content { animation: modalSlide 0.3s ease-out; }
-        @keyframes modalSlide { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        /* Respect des retours à la ligne pour les messages et annonces */
+        .preserve-lines { white-space: pre-wrap; }
 
-        /* BADGES ANIMÉS */
-        .badge-pulse { position: relative; display: inline-flex; }
-        .badge-pulse::after {
-            content: ''; position: absolute; inset: 0; border-radius: 99px;
-            background: currentColor; opacity: 0.4; animation: pulse 2s infinite;
+        /* MODALE UI */
+        #custom-modal { display: none; backdrop-filter: blur(12px); }
+        .modal-content { animation: modalEnter 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        @keyframes modalEnter { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+        /* BADGE NOUVEAU */
+        .badge-new { 
+            background: #10b981; color: white; padding: 2px 8px; border-radius: 99px;
+            font-size: 10px; font-weight: 800; animation: pulse-green 2s infinite;
         }
-        @keyframes pulse { 0% { transform: scale(1); opacity: 0.4; } 100% { transform: scale(2.5); opacity: 0; } }
-        
-        .copy-btn:active { transform: scale(0.95); background: #f1f5f9; }
+        @keyframes pulse-green { 0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); } 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); } }
     </style>
 </head>
 <body class="antialiased">
 
-    <div id="custom-modal" class="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-slate-900/60">
+    <div id="custom-modal" class="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-slate-900/40">
         <div class="modal-content card w-full max-w-sm p-8 text-center shadow-2xl">
-            <div id="modal-icon" class="mb-4 flex justify-center text-4xl"></div>
+            <div id="modal-icon" class="mb-4 text-4xl"></div>
             <h3 id="modal-title" class="text-lg font-800 mb-2"></h3>
             <p id="modal-text" class="text-sm text-slate-500 mb-8 leading-relaxed"></p>
             <div id="modal-footer" class="flex gap-3"></div>
@@ -41,8 +41,8 @@
 
     <div id="pin-overlay" class="fixed inset-0 z-[200] bg-slate-950 flex items-center justify-center p-6">
         <div class="w-full max-w-sm text-center">
-            <div class="mb-8 italic text-indigo-400 font-bold tracking-widest uppercase text-[10px]">Accès Administrateur</div>
-            <input type="password" id="pin-input" maxlength="4" placeholder="••••" class="w-full bg-white/5 border border-white/10 p-6 rounded-3xl text-center text-5xl font-black text-white tracking-[0.3em] mb-6 focus:border-indigo-500 outline-none">
+            <h2 class="mb-8 text-indigo-400 font-800 tracking-widest uppercase text-xs">Accès Console Maître</h2>
+            <input type="password" id="pin-input" maxlength="4" placeholder="••••" class="w-full bg-white/5 border border-white/10 p-6 rounded-3xl text-center text-5xl font-black text-white tracking-[0.3em] mb-6 outline-none focus:border-indigo-500 transition-all">
             <button onclick="checkPin()" class="w-full bg-indigo-600 text-white py-5 rounded-3xl font-800 uppercase tracking-widest hover:bg-indigo-500 transition-all">Déverrouiller</button>
         </div>
     </div>
@@ -51,43 +51,49 @@
         <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
             <div>
                 <h1 class="text-3xl font-800 tracking-tight">Console Maître</h1>
-                <p class="text-[11px] font-black uppercase text-indigo-300 tracking-[0.2em] mt-1">Paroisse La Croix Glorieuse</p>
+                <p class="text-[11px] font-black uppercase text-indigo-300 tracking-[0.2em] mt-1">La Croix Glorieuse — Administration</p>
             </div>
-            <div class="flex gap-4">
+            <div class="flex gap-3">
+                <a href="accueil.html" title="Retour Accueil" class="p-4 bg-white/5 rounded-2xl hover:bg-white/10 border border-white/10 transition-all">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                </a>
                 <button onclick="refreshData()" class="p-4 bg-white/5 rounded-2xl hover:bg-white/10 border border-white/10 transition-all">
                     <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 2v6h-6M3 12a9 9 0 0 1 15-6.7L21 8M3 22v-6h6M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>
+                </button>
+                <button onclick="location.reload()" class="p-4 bg-red-500/10 text-red-400 rounded-2xl hover:bg-red-500 hover:text-white transition-all">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
                 </button>
             </div>
         </div>
     </header>
 
     <main class="max-w-7xl mx-auto px-6 -mt-16 pb-32">
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-10 text-center">
-            <div class="card p-6"><p class="text-[10px] font-800 uppercase text-slate-400 mb-1">En ligne</p><span id="stat-online" class="text-3xl font-800 text-indigo-600">0</span></div>
-            <div class="card p-6"><p class="text-[10px] font-800 uppercase text-slate-400 mb-1">Vues/Jour</p><span id="stat-today" class="text-3xl font-800 text-slate-800">0</span></div>
-            <div class="card p-6"><p class="text-[10px] font-800 uppercase text-slate-400 mb-1">Intentions</p><span id="total-intentions" class="text-3xl font-800 text-slate-800">0</span></div>
-            <div class="card p-6"><p class="text-[10px] font-800 uppercase text-slate-400 mb-1">Entraide</p><span id="total-entraide" class="text-3xl font-800 text-slate-800">0</span></div>
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+            <div class="card p-6 text-center"><p class="text-[10px] font-800 uppercase text-slate-400 mb-1">En ligne</p><span id="stat-online" class="text-3xl font-800 text-indigo-600">0</span></div>
+            <div class="card p-6 text-center"><p class="text-[10px] font-800 uppercase text-slate-400 mb-1">Visites Jour</p><span id="stat-today" class="text-3xl font-800 text-slate-800">0</span></div>
+            <div class="card p-6 text-center"><p class="text-[10px] font-800 uppercase text-slate-400 mb-1">Intentions</p><span id="total-intentions" class="text-3xl font-800 text-slate-800">0</span></div>
+            <div class="card p-6 text-center"><p class="text-[10px] font-800 uppercase text-slate-400 mb-1">Entraide</p><span id="total-entraide" class="text-3xl font-800 text-slate-800">0</span></div>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
             <div class="space-y-10">
                 <section class="card p-8 border-t-4 border-amber-500">
-                    <h2 class="text-xs font-800 uppercase text-amber-600 mb-6 flex items-center gap-2">📺 Message Défilant</h2>
-                    <textarea id="ticker-input" rows="2" class="w-full bg-slate-50 p-4 rounded-2xl text-sm font-bold border-none outline-none focus:ring-2 focus:ring-amber-500/20" placeholder="Entrez le flash info..."></textarea>
-                    <button onclick="updateTicker()" class="w-full mt-4 bg-amber-500 text-white py-4 rounded-2xl font-800 text-xs uppercase tracking-widest shadow-lg shadow-amber-500/20">Actualiser le bandeau</button>
+                    <h2 class="text-xs font-800 uppercase text-amber-600 mb-6 flex items-center gap-2">📺 Bandeau Défilant</h2>
+                    <textarea id="ticker-input" rows="2" class="w-full bg-slate-50 p-5 rounded-2xl text-sm font-bold focus:bg-white focus:ring-4 focus:ring-amber-500/10 outline-none transition-all"></textarea>
+                    <button onclick="updateTicker()" class="w-full mt-4 bg-amber-500 text-white py-4 rounded-2xl font-800 text-xs uppercase tracking-widest shadow-lg shadow-amber-500/20">Mettre à jour le direct</button>
                 </section>
 
                 <section class="card p-8 border-t-4 border-red-500">
-                    <h2 class="text-xs font-800 uppercase text-slate-400 mb-6 italic">Publier une Annonce (CSV Ready)</h2>
+                    <h2 class="text-xs font-800 uppercase text-slate-400 mb-6">Diffuser une Annonce</h2>
                     <div class="space-y-4">
-                        <input type="text" id="ann-titre" placeholder="Titre de l'annonce" class="w-full bg-slate-50 p-4 rounded-xl text-sm font-bold border-none outline-none">
-                        <textarea id="ann-texte" placeholder="Contenu (accepte les retours à la ligne)" rows="4" class="w-full bg-slate-50 p-4 rounded-xl text-sm border-none outline-none"></textarea>
-                        <input type="url" id="ann-url" placeholder="Lien (ex: https://monespace.fr)" class="w-full bg-slate-50 p-4 rounded-xl text-xs border-none outline-none">
-                        <div class="flex items-center gap-4 bg-slate-50 p-4 rounded-xl">
+                        <input type="text" id="ann-titre" placeholder="Titre de l'annonce" class="w-full bg-slate-50 p-4 rounded-xl text-sm font-bold border-none">
+                        <textarea id="ann-texte" placeholder="Contenu de l'annonce..." rows="4" class="w-full bg-slate-50 p-4 rounded-xl text-sm border-none"></textarea>
+                        <input type="url" id="ann-url" placeholder="Lien URL (ex: https://...)" class="w-full bg-slate-50 p-4 rounded-xl text-xs border-none font-mono">
+                        <label class="flex items-center gap-3 bg-slate-50 p-4 rounded-xl cursor-pointer">
                             <input type="checkbox" id="ann-important" class="w-6 h-6 accent-red-600">
-                            <label for="ann-important" class="text-xs font-800 text-red-600 uppercase">Mettre en avant (Prioritaire ★)</label>
-                        </div>
-                        <button onclick="publierAnnonce()" class="w-full bg-slate-900 text-white py-5 rounded-2xl font-800 text-xs uppercase tracking-widest hover:bg-black shadow-xl">Diffuser immédiatement</button>
+                            <span class="text-xs font-800 text-red-600 uppercase">Mettre en avant (Prioritaire ★)</span>
+                        </label>
+                        <button onclick="publierAnnonce()" class="w-full bg-slate-900 text-white py-5 rounded-3xl font-800 text-xs uppercase tracking-widest shadow-2xl">Publier sur le site</button>
                     </div>
                     <div id="admin-list-annonces" class="mt-10 space-y-4 border-t pt-10"></div>
                 </section>
@@ -95,19 +101,19 @@
 
             <div class="space-y-10">
                 <section class="space-y-4">
-                    <h2 class="text-xs font-800 uppercase text-slate-400 flex items-center px-2">📬 Nouveaux Messages <span id="badge-messages" class="ml-auto bg-red-500 text-white px-2 py-0.5 rounded-full text-[10px] hidden">0</span></h2>
+                    <h2 class="text-xs font-800 uppercase text-slate-400 flex items-center px-2">📬 Messages <span id="badge-messages" class="ml-auto badge-new hidden">0</span></h2>
                     <div id="admin-list-messages" class="space-y-4"></div>
                 </section>
 
                 <section class="card p-8 border-t-4 border-emerald-500">
-                    <h2 class="text-xs font-800 uppercase text-slate-400 mb-6">Modération Entraide</h2>
+                    <h2 class="text-xs font-800 uppercase text-slate-400 mb-6">Entraide & Services</h2>
                     <div id="admin-list-entraide" class="space-y-4"></div>
                 </section>
 
                 <section class="card p-8 border-t-4 border-indigo-600">
                     <div class="flex justify-between items-center mb-6">
                         <h2 class="text-xs font-800 uppercase text-slate-400">Intentions</h2>
-                        <button onclick="confirmAction('Voulez-vous anonymiser toutes les intentions ?', anonymiserToutesIntentions)" class="text-[9px] font-800 uppercase bg-slate-100 px-3 py-2 rounded-xl">Anonymiser Tout</button>
+                        <button onclick="confirmAction('Anonymiser TOUTES les intentions ?', anonymiserToutesIntentions)" class="text-[9px] font-800 uppercase bg-slate-100 px-4 py-2 rounded-xl">Anonymiser tout</button>
                     </div>
                     <div id="admin-list-prières" class="space-y-4"></div>
                 </section>
@@ -117,7 +123,7 @@
 
     <script src="js/config.js"></script>
     <script>
-        // --- LOGIQUE MODALE HARMONISÉE ---
+        // --- SYSTÈME DE MODALE ---
         function showModal(title, text, icon, type = 'info', onConfirm = null) {
             const m = document.getElementById('custom-modal');
             const footer = document.getElementById('modal-footer');
@@ -127,185 +133,150 @@
             footer.innerHTML = '';
             
             if (type === 'confirm') {
-                const btnCancel = document.createElement('button');
-                btnCancel.className = "flex-1 py-3 rounded-xl bg-slate-100 font-800 text-[10px] uppercase";
-                btnCancel.innerText = "Annuler";
-                btnCancel.onclick = () => m.style.display = 'none';
-                const btnOk = document.createElement('button');
-                btnOk.className = "flex-1 py-3 rounded-xl bg-red-600 text-white font-800 text-[10px] uppercase";
-                btnOk.innerText = "Confirmer";
-                btnOk.onclick = () => { onConfirm(); m.style.display = 'none'; };
-                footer.append(btnCancel, btnOk);
+                const b1 = document.createElement('button'); b1.className="flex-1 py-4 bg-slate-100 rounded-2xl font-800 text-[10px] uppercase"; b1.innerText="Annuler"; b1.onclick=()=>m.style.display='none';
+                const b2 = document.createElement('button'); b2.className="flex-1 py-4 bg-red-600 text-white rounded-2xl font-800 text-[10px] uppercase"; b2.innerText="Confirmer"; b2.onclick=()=>{onConfirm(); m.style.display='none';};
+                footer.append(b1, b2);
             } else {
-                const btnOk = document.createElement('button');
-                btnOk.className = "w-full py-3 rounded-xl bg-indigo-600 text-white font-800 text-[10px] uppercase";
-                btnOk.innerText = "Fermer";
-                btnOk.onclick = () => m.style.display = 'none';
-                footer.append(btnOk);
+                const b1 = document.createElement('button'); b1.className="w-full py-4 bg-indigo-600 text-white rounded-2xl font-800 text-[10px] uppercase"; b1.innerText="D'accord"; b1.onclick=()=>m.style.display='none';
+                footer.append(b1);
             }
             m.style.display = 'flex';
         }
 
-        function confirmAction(text, action) { showModal("Confirmer ?", text, "⚠️", "confirm", action); }
+        function confirmAction(text, action) { showModal("Confirmation", text, "⚠️", "confirm", action); }
 
+        // --- AUTH ---
         function checkPin() {
             if (document.getElementById('pin-input').value === "5717") {
                 document.getElementById('pin-overlay').style.display = 'none';
                 refreshData();
             } else {
-                showModal("Erreur", "Code incorrect.", "❌");
+                showModal("Erreur", "Code PIN invalide.", "❌");
                 document.getElementById('pin-input').value = "";
             }
         }
 
-        function copyToClip(text, label) {
+        function copy(text, label) {
+            if(!text) return;
             navigator.clipboard.writeText(text);
-            showModal("Copié !", `${label} est dans le presse-papier.`, "✅");
+            showModal("Copié !", `${label} ajouté au presse-papier.`, "✅");
         }
 
-        // --- GESTION DES MESSAGES (INTEGRALITE DES CHAMPS) ---
+        // --- MESSAGES ---
         async function loadMessages() {
             const { data } = await sb.from('contact_messages').select('*').order('lu', { ascending: true }).order('created_at', { ascending: false });
             if (data) {
                 const unread = data.filter(x => !x.lu).length;
-                const b = document.getElementById('badge-messages');
-                b.innerText = unread; b.style.display = unread > 0 ? 'inline-block' : 'none';
-
+                document.getElementById('badge-messages').innerText = unread;
+                document.getElementById('badge-messages').style.display = unread > 0 ? 'inline-block' : 'none';
                 document.getElementById('admin-list-messages').innerHTML = data.map(m => `
-                    <div class="card p-6 ${m.lu ? 'opacity-50 grayscale-[0.5]' : 'border-l-4 border-l-indigo-600 shadow-xl'}">
+                    <div class="card p-6 ${m.lu ? 'opacity-50' : 'border-l-4 border-l-indigo-600 shadow-xl'}">
                         <div class="flex justify-between mb-4">
-                            <div>
-                                <p class="text-xs font-800 text-slate-800 uppercase">${m.prenom} ${m.nom}</p>
-                                <p class="text-[9px] text-slate-400 font-bold">${new Date(m.created_at).toLocaleString()}</p>
-                            </div>
-                            <button onclick="confirmAction('Supprimer ce message ?', () => deleteRow('contact_messages','${m.id}',loadMessages))" class="text-slate-300 hover:text-red-500">✕</button>
+                            <div><p class="text-xs font-800 uppercase text-slate-800">${m.prenom} ${m.nom}</p>
+                            <p class="text-[9px] text-slate-400 font-bold">${new Date(m.created_at).toLocaleString()}</p></div>
+                            <button onclick="confirmAction('Supprimer ce message ?',()=>deleteRow('contact_messages','${m.id}',loadMessages))" class="text-slate-300 hover:text-red-500">✕</button>
                         </div>
-                        <div class="bg-slate-50 p-4 rounded-2xl mb-4 italic text-sm text-slate-600 leading-relaxed">"${m.message}"</div>
-                        <div class="flex flex-wrap gap-2 mb-4">
-                            <button onclick="copyToClip('${m.email}','Email')" class="copy-btn bg-white border border-slate-200 px-3 py-2 rounded-xl text-[10px] font-800 flex items-center gap-2">📧 ${m.email || 'Email non fourni'}</button>
-                            <button onclick="copyToClip('${m.telephone}','Téléphone')" class="copy-btn bg-white border border-slate-200 px-3 py-2 rounded-xl text-[10px] font-800 flex items-center gap-2">📞 ${m.telephone || 'Tél non fourni'}</button>
+                        <div class="bg-slate-50 p-4 rounded-2xl mb-4 italic text-sm text-slate-600 preserve-lines border border-slate-100">"${m.message}"</div>
+                        <div class="flex gap-2 mb-4">
+                            <button onclick="copy('${m.email}','Email')" class="bg-white border px-3 py-2 rounded-xl text-[10px] font-800 ${!m.email ? 'opacity-30 cursor-not-allowed' : 'hover:bg-slate-50'}">📧 Email</button>
+                            <button onclick="copy('${m.telephone}','Tél')" class="bg-white border px-3 py-2 rounded-xl text-[10px] font-800 ${!m.telephone ? 'opacity-30 cursor-not-allowed' : 'hover:bg-slate-50'}">📞 Tél</button>
                         </div>
                         <button onclick="updateField('contact_messages','${m.id}',{lu:${!m.lu}},loadMessages)" class="text-[9px] font-800 uppercase ${m.lu ? 'text-slate-400' : 'text-indigo-600'}">
-                            ${m.lu ? 'Rétablir comme nouveau' : '✓ Marquer comme traité'}
+                            ${m.lu ? 'Rétablir en nouveau' : '✓ Marquer comme traité'}
                         </button>
-                    </div>
-                `).join('');
+                    </div>`).join('');
             }
         }
 
-        // --- GESTION DES ANNONCES (BASÉ SUR CSV) ---
+        // --- ANNONCES ---
         async function loadAdminAnnonces() {
             const { data } = await sb.from('annonces').select('*').order('created_at', { ascending: false });
             if (data) {
                 document.getElementById('admin-list-annonces').innerHTML = data.map(a => `
-                    <div class="bg-slate-50 p-5 rounded-2xl border border-slate-100 flex justify-between items-center group">
-                        <div class="flex-1 pr-4">
+                    <div class="bg-slate-50 p-5 rounded-2xl border border-slate-100 flex justify-between items-center">
+                        <div class="flex-1 truncate pr-4">
                             <div class="flex items-center gap-2 mb-1">
-                                ${a.est_importante ? '<span class="text-[8px] font-800 px-2 py-0.5 rounded bg-red-100 text-red-600 uppercase">Important ★</span>' : ''}
-                                <span class="text-[8px] font-800 text-slate-400 uppercase">${new Date(a.created_at).toLocaleDateString()}</span>
+                                ${a.est_importante ? '<span class="text-[8px] font-800 px-2 py-0.5 rounded bg-red-100 text-red-600 uppercase">Urgent</span>' : ''}
+                                <span class="text-[8px] font-800 text-slate-300 uppercase">${new Date(a.created_at).toLocaleDateString()}</span>
                             </div>
                             <p class="text-sm font-800 text-slate-800 truncate">${a.titre}</p>
                         </div>
                         <div class="flex gap-2">
-                            <button onclick="updateField('annonces','${a.id}',{est_importante:${!a.est_importante}},loadAdminAnnonces)" class="p-3 bg-white rounded-xl hover:bg-indigo-50 text-slate-300 hover:text-indigo-600 transition-all">★</button>
-                            <button onclick="confirmAction('Supprimer cette annonce ?', () => deleteRow('annonces','${a.id}',loadAdminAnnonces))" class="p-3 bg-white rounded-xl hover:bg-red-50 text-slate-300 hover:text-red-500 transition-all">✕</button>
+                            <button onclick="updateField('annonces','${a.id}',{est_importante:${!a.est_importante}},loadAdminAnnonces)" class="p-3 bg-white rounded-xl text-slate-300 hover:text-indigo-600 transition-all">★</button>
+                            <button onclick="confirmAction('Supprimer ?',()=>deleteRow('annonces','${a.id}',loadAdminAnnonces))" class="p-3 bg-white rounded-xl text-slate-300 hover:text-red-500">✕</button>
                         </div>
-                    </div>
-                `).join('');
+                    </div>`).join('');
             }
         }
 
         async function publierAnnonce() {
             const titre = document.getElementById('ann-titre').value;
             const contenu = document.getElementById('ann-texte').value;
-            const lien_url = document.getElementById('ann-url').value;
-            const est_importante = document.getElementById('ann-important').checked;
+            if(!titre || !contenu) return showModal("Champs requis","Titre et contenu obligatoires","⚠️");
             
-            if(!titre || !contenu) return showModal("Champs manquants", "Le titre et le contenu sont obligatoires.", "⚠️");
+            const { error } = await sb.from('annonces').insert([{
+                titre, contenu, 
+                lien_url: document.getElementById('ann-url').value, 
+                est_importante: document.getElementById('ann-important').checked
+            }]);
             
-            const { error } = await sb.from('annonces').insert([{ titre, contenu, lien_url, est_importante }]);
-            if (error) {
-                showModal("Erreur", "Impossible de publier : " + error.message, "❌");
-            } else {
-                document.getElementById('ann-titre').value = "";
-                document.getElementById('ann-texte').value = "";
-                document.getElementById('ann-url').value = "";
-                loadAdminAnnonces();
-                showModal("Succès", "L'annonce est en ligne !", "🚀");
+            if(!error) {
+                document.getElementById('ann-titre').value = ""; document.getElementById('ann-texte').value = "";
+                loadAdminAnnonces(); showModal("Publié !","L'annonce est en ligne.","🚀");
             }
         }
 
-        // --- ENTRAIDE ---
+        // --- AUTRES FONCTIONS ---
         async function loadAdminEntraide() {
             const { data } = await sb.from('entraide').select('*').order('valide', { ascending: true }).order('created_at', { ascending: false });
             if (data) {
                 document.getElementById('total-entraide').innerText = data.length;
                 document.getElementById('admin-list-entraide').innerHTML = data.map(e => `
-                    <div class="bg-slate-50 p-5 rounded-2xl border ${e.valide ? 'border-slate-100' : 'border-emerald-200 bg-emerald-50/50'}">
+                    <div class="bg-slate-50 p-5 rounded-3xl border ${e.valide ? 'border-slate-100' : 'border-emerald-200 bg-emerald-50/40'}">
                         <div class="flex justify-between items-start mb-4">
-                            <span class="text-[9px] font-800 uppercase px-2 py-1 rounded-md ${e.valide ? 'bg-slate-200 text-slate-500' : 'bg-emerald-600 text-white badge-pulse'}">
-                                ${e.valide ? 'En ligne' : 'Nouveau'}
-                            </span>
+                            <span class="${e.valide ? 'text-slate-400' : 'badge-new'} uppercase text-[9px] font-800">${e.valide ? 'En ligne' : 'À valider'}</span>
                             <div class="flex gap-4 text-[9px] font-800 uppercase">
                                 ${!e.valide ? `<button onclick="updateField('entraide','${e.id}',{valide:true},loadAdminEntraide)" class="text-emerald-600">Valider</button>` : ''}
-                                <button onclick="confirmAction('Supprimer ?', () => deleteRow('entraide','${e.id}',loadAdminEntraide))" class="text-red-400">Supprimer</button>
+                                <button onclick="confirmAction('Supprimer ?',()=>deleteRow('entraide','${e.id}',loadAdminEntraide))" class="text-red-400">Supprimer</button>
                             </div>
                         </div>
                         <p class="text-sm font-800 text-slate-800 mb-3">${e.titre}</p>
-                        <div class="bg-white p-3 rounded-xl border border-slate-100 flex justify-between items-center">
-                            <div><p class="text-[8px] font-800 text-slate-400 uppercase">Contact</p><p class="text-[10px] font-800">${e.contact_nom || 'Anonyme'}</p></div>
-                            <div class="text-right"><p class="text-[8px] font-800 text-amber-500 uppercase">Code</p>
-                            ${e.code_validation ? `<span class="text-sm font-black text-indigo-600">${e.code_validation}</span>` : `<button onclick="genererCode('${e.id}')" class="text-[8px] bg-amber-100 text-amber-600 px-2 py-1 rounded">GÉNÉRER</button>`}
+                        <div class="bg-white p-3 rounded-2xl border flex justify-between items-center text-[10px]">
+                            <div><p class="font-800">${e.contact_nom || 'Anonyme'}</p><p class="text-slate-400">${e.contact_info || '-'}</p></div>
+                            <div class="text-right"><p class="text-amber-500 font-800">CODE</p>
+                            ${e.code_validation ? `<span class="text-sm font-black text-indigo-600">${e.code_validation}</span>` : `<button onclick="genererCode('${e.id}')" class="bg-amber-100 text-amber-600 px-2 py-0.5 rounded">Générer</button>`}
                             </div>
                         </div>
-                    </div>
-                `).join('');
+                    </div>`).join('');
             }
         }
 
         async function genererCode(id) {
             const code = Math.floor(1000 + Math.random() * 9000).toString();
-            await sb.from('entraide').update({ code_validation: code }).eq('id', id);
-            loadAdminEntraide();
+            await sb.from('entraide').update({ code_validation: code }).eq('id', id); loadAdminEntraide();
         }
 
-        // --- INTENTIONS ---
         async function loadAdminPrières() {
             const { data } = await sb.from('intentions').select('*').order('valide', { ascending: true }).order('created_at', { ascending: false });
             if (data) {
                 document.getElementById('total-intentions').innerText = data.length;
                 document.getElementById('admin-list-prières').innerHTML = data.map(i => `
                     <div class="bg-slate-50 p-4 rounded-2xl border ${i.valide ? 'border-slate-100' : 'border-amber-200'}">
-                        <div class="flex justify-between items-center mb-2">
+                        <div class="flex justify-between mb-2">
                             <span class="text-[10px] font-800 text-indigo-600 uppercase">${i.prenom || 'Anonyme'}</span>
                             <div class="flex gap-3">
                                 ${!i.valide ? `<button onclick="updateField('intentions','${i.id}',{valide:true},loadAdminPrières)" class="text-[9px] font-800 text-emerald-600 uppercase">Valider</button>` : ''}
-                                <button onclick="confirmAction('Supprimer ?', () => deleteRow('intentions','${i.id}',loadAdminPrières))" class="text-slate-300 hover:text-red-500">✕</button>
+                                <button onclick="confirmAction('Supprimer ?',()=>deleteRow('intentions','${i.id}',loadAdminPrières))" class="text-slate-300 hover:text-red-500">✕</button>
                             </div>
                         </div>
-                        <p class="text-xs text-slate-600 italic leading-relaxed">"${i.texte}"</p>
-                    </div>
-                `).join('');
+                        <p class="text-xs text-slate-600 italic preserve-lines">"${i.texte}"</p>
+                    </div>`).join('');
             }
         }
 
-        async function anonymiserToutesIntentions() {
-            await sb.from('intentions').update({ prenom: 'Anonyme' });
-            loadAdminPrières();
-            showModal("Terminé", "Toutes les intentions sont anonymes.", "👥");
-        }
-
-        // --- TICKER & SYSTÈME ---
-        async function loadAdminTicker() {
-            const { data } = await sb.from('app_settings').select('value').eq('id', 'ticker_message').single();
-            if (data) document.getElementById('ticker-input').value = data.value;
-        }
-
-        async function updateTicker() {
-            await sb.from('app_settings').update({ value: document.getElementById('ticker-input').value }).eq('id', 'ticker_message');
-            showModal("Mise à jour", "Le bandeau défilant a été actualisé.", "📺");
-        }
-
+        async function anonymiserToutesIntentions() { await sb.from('intentions').update({ prenom: 'Anonyme' }); loadAdminPrières(); showModal("Anonymisé","Toutes les intentions sont privées.","👥"); }
+        async function loadAdminTicker() { const { data } = await sb.from('app_settings').select('value').eq('id', 'ticker_message').single(); if(data) document.getElementById('ticker-input').value = data.value; }
+        async function updateTicker() { await sb.from('app_settings').update({ value: document.getElementById('ticker-input').value }).eq('id', 'ticker_message'); showModal("Mis à jour","Bandeau actualisé.","📺"); }
         async function deleteRow(table, id, cb) { await sb.from(table).delete().eq('id', id); cb(); }
         async function updateField(table, id, obj, cb) { await sb.from(table).update(obj).eq('id', id); cb(); }
 
