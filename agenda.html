@@ -10,44 +10,11 @@
     <style>
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        
-        .month-pill {
-            background: var(--card-light, #ffffff);
-            border: 1px solid rgba(0,0,0,0.1);
-            color: #94a3b8;
-            transition: all 0.2s ease;
-        }
-        .month-pill.active {
-            background: #b91c1c !important;
-            color: white !important;
-            border-color: #b91c1c;
-        }
-        
-        .loader {
-            border: 3px solid rgba(148, 163, 184, 0.1);
-            border-top: 3px solid #b91c1c;
-            border-radius: 50%; width: 24px; height: 24px;
-            animation: spin 1s linear infinite;
-            display: inline-block;
-        }
+        .month-pill { background: var(--card-light, #fff); border: 1px solid rgba(0,0,0,0.05); color: #94a3b8; transition: all 0.2s; }
+        .month-pill.active { background: #b91c1c !important; color: white !important; }
+        .loader { border: 3px solid rgba(0,0,0,0.1); border-top: 3px solid #b91c1c; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; display: inline-block; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-        #scrollTop {
-            position: fixed;
-            bottom: 100px;
-            right: 20px;
-            background: #b91c1c;
-            color: white;
-            width: 45px;
-            height: 45px;
-            border-radius: 50%;
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 99;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-            border: none;
-        }
+        #scrollTop { position: fixed; bottom: 100px; right: 20px; background: #b91c1c; color: white; width: 45px; height: 45px; border-radius: 50%; display: none; justify-content: center; align-items: center; z-index: 99; border: none; }
     </style>
 </head>
 <body class="bg-slate-50">
@@ -61,18 +28,15 @@
         <section class="card shadow-xl -mt-12 relative z-10 mb-8">
             <h2 class="text-sm font-bold mb-4">Rechercher un office</h2>
             <div class="space-y-4">
-                <input type="text" id="searchInput" onkeyup="filterEvents()" 
-                    placeholder="Messe, Adoration, Confession..." 
-                    class="w-full bg-slate-50 p-4 rounded-xl border-none text-sm font-semibold outline-none focus:ring-2 focus:ring-red-100 transition-all">
-                
+                <input type="text" id="searchInput" onkeyup="filterEvents()" placeholder="Messe, Adoration, Confession..." class="w-full bg-slate-50 p-4 rounded-xl border-none text-sm font-semibold outline-none focus:ring-2 focus:ring-red-100 transition-all">
                 <div id="month-filters" class="flex gap-2 overflow-x-auto pb-2 no-scrollbar"></div>
             </div>
         </section>
 
-        <div id="agenda-container" class="space-y-8 mb-24 text-slate-800 dark:text-white">
-            <div id="loading-state" class="text-center py-20">
-                <div class="loader mb-4"></div>
-                <p class="text-slate-400 text-[10px] font-black uppercase tracking-widest">Chargement de l'année...</p>
+        <div id="agenda-container" class="space-y-8 mb-24">
+            <div id="loading-state" class="text-center py-10">
+                <div class="loader mb-2"></div>
+                <p class="text-slate-400 text-[10px] font-bold uppercase tracking-widest">Mise à jour...</p>
             </div>
         </div>
     </main>
@@ -86,32 +50,33 @@
         let allEvents = [];
         let selectedMonth = null;
 
+        // 1. SETUP IMMEDIAT
         function setupMonthFilters() {
             const container = document.getElementById('month-filters');
-            if (!container) return;
             const months = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'];
             const currentMonth = new Date().getMonth();
-            let html = `<button onclick="filterByMonth(null)" id="btn-all" class="month-pill active px-4 py-2 rounded-lg text-[9px] font-black uppercase shadow-sm">Tous</button>`;
+            let html = `<button onclick="filterByMonth(null)" id="btn-all" class="month-pill active px-4 py-2 rounded-lg text-[9px] font-black uppercase">Tous</button>`;
             for (let i = 0; i < 12; i++) {
                 const monthIdx = (currentMonth + i) % 12;
-                html += `<button onclick="filterByMonth(${monthIdx})" id="btn-${monthIdx}" class="month-pill px-4 py-2 rounded-lg text-[9px] font-black uppercase shadow-sm whitespace-nowrap">${months[monthIdx]}</button>`;
+                html += `<button onclick="filterByMonth(${monthIdx})" id="btn-${monthIdx}" class="month-pill px-4 py-2 rounded-lg text-[9px] font-black uppercase whitespace-nowrap">${months[monthIdx]}</button>`;
             }
             container.innerHTML = html;
         }
 
+        // 2. CHARGEMENT INTELLIGENT
         async function fetchCalendar() {
+            // Étape A : On affiche le cache TOUT DE SUITE
             const cached = localStorage.getItem('paroiss_agenda_cache');
             if (cached) {
                 allEvents = JSON.parse(cached);
-                hideLoading();
                 displayAgenda(allEvents);
             }
 
+            // Étape B : On télécharge les nouvelles données en arrière-plan
             const now = new Date();
             const timeMax = new Date();
             timeMax.setDate(now.getDate() + 365);
-
-            const url = `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(CALENDAR_ID)}/events?key=${API_KEY}&timeMin=${now.toISOString()}&timeMax=${timeMax.toISOString()}&singleEvents=true&orderBy=startTime&maxResults=2500`;
+            const url = `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(CALENDAR_ID)}/events?key=${API_KEY}&timeMin=${now.toISOString()}&timeMax=${timeMax.toISOString()}&singleEvents=true&orderBy=startTime&maxResults=1000`;
 
             try {
                 const response = await fetch(url);
@@ -119,96 +84,80 @@
                 if (data.items) {
                     allEvents = data.items;
                     localStorage.setItem('paroiss_agenda_cache', JSON.stringify(allEvents));
-                    hideLoading();
-                    displayAgenda(allEvents);
+                    displayAgenda(allEvents); // On rafraîchit avec les données neuves
                 }
-            } catch (e) {
-                console.error("Erreur API");
-                hideLoading();
-            }
-        }
-
-        function hideLoading() {
+            } catch (e) { console.error("Mode hors-ligne"); }
+            
             const loader = document.getElementById('loading-state');
             if(loader) loader.style.display = 'none';
         }
 
+        // 3. AFFICHAGE OPTIMISÉ (Grouping)
         function displayAgenda(events) {
             const container = document.getElementById('agenda-container');
-            const searchInput = document.getElementById('searchInput');
-            const query = searchInput ? searchInput.value.toLowerCase() : "";
+            const query = (document.getElementById('searchInput')?.value || "").toLowerCase();
             const now = new Date();
 
-            const filtered = events.filter(event => {
-                const title = (event.summary || "Office sans titre").toLowerCase(); // Sécurité ici
-                const date = new Date(event.start.dateTime || event.start.date);
-                const matchesMonth = selectedMonth === null || date.getMonth() === selectedMonth;
-                const matchesSearch = title.includes(query);
-                return matchesMonth && matchesSearch;
+            // Filtrage rapide
+            const filtered = events.filter(e => {
+                const d = new Date(e.start.dateTime || e.start.date);
+                return (selectedMonth === null || d.getMonth() === selectedMonth) &&
+                       (e.summary || "").toLowerCase().includes(query);
             });
 
-            container.innerHTML = "";
-            if (filtered.length === 0) {
-                container.innerHTML = "<p class='text-center text-slate-400 text-xs italic py-10'>Aucun événement trouvé.</p>";
-                return;
-            }
+            // On ne garde que les 50 premiers si on est sur "Tous" pour la performance au scroll
+            const itemsToShow = (selectedMonth === null && query === "") ? filtered.slice(0, 40) : filtered;
 
-            const groups = filtered.reduce((acc, event) => {
-                const dateRaw = event.start.dateTime || event.start.date;
-                const dateStr = new Date(dateRaw).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-                if (!acc[dateStr]) acc[dateStr] = [];
-                acc[dateStr].push(event);
+            let html = "";
+            const groups = itemsToShow.reduce((acc, e) => {
+                const d = new Date(e.start.dateTime || e.start.date).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+                if (!acc[d]) acc[d] = [];
+                acc[d].push(e);
                 return acc;
             }, {});
 
             for (const date in groups) {
-                let dayHtml = `<div class="animate-fade-in"><div class="flex items-center gap-2 mb-4"><div class="h-[1px] flex-1 bg-slate-300 opacity-20"></div><span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">${date}</span><div class="h-[1px] flex-1 bg-slate-300 opacity-20"></div></div><div class="space-y-4">`;
-
-                groups[date].forEach(event => {
-                    const title = event.summary || "Office sans titre";
-                    const start = new Date(event.start.dateTime);
-                    const end = new Date(event.end.dateTime);
-                    const isLive = event.start.dateTime && start <= now && end >= now;
-                    const time = event.start.dateTime ? start.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : "Journée";
-                    
-                    dayHtml += `
+                html += `<div class="animate-fade-in"><div class="flex items-center gap-2 mb-4"><div class="h-[1px] flex-1 bg-slate-300 opacity-20"></div><span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">${date}</span><div class="h-[1px] flex-1 bg-slate-300 opacity-20"></div></div><div class="space-y-3">`;
+                groups[date].forEach(e => {
+                    const start = new Date(e.start.dateTime);
+                    const isLive = e.start.dateTime && start <= now && new Date(e.end.dateTime) >= now;
+                    const time = e.start.dateTime ? start.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : "Journée";
+                    html += `
                         <div class="card ${isLive ? 'ring-2 ring-green-500/20' : ''}">
                             <div class="flex justify-between items-start">
-                                <span class="text-[10px] font-black ${isLive ? 'text-green-600 animate-pulse' : 'text-red-700'} uppercase tracking-widest">
-                                    ${isLive ? '● En direct' : time}
-                                </span>
-                                <button onclick="addToCalendar('${title.replace(/'/g, "\\'")}', '${event.start.dateTime || event.start.date}')" 
-                                    class="text-[8px] font-bold uppercase bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded-md text-slate-500">+ Ajouter</button>
+                                <span class="text-[10px] font-black ${isLive ? 'text-green-600 animate-pulse' : 'text-red-700'} uppercase">${isLive ? '● En direct' : time}</span>
+                                <button onclick="addToCalendar('${(e.summary||"").replace(/'/g, "\\'")}', '${e.start.dateTime || e.start.date}')" class="text-[8px] font-bold uppercase bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded text-slate-500">+ Ajouter</button>
                             </div>
-                            <p class="text-sm font-bold mt-2 leading-tight">${title}</p>
+                            <p class="text-sm font-bold mt-1 text-slate-800 dark:text-white">${e.summary || "Sans titre"}</p>
                         </div>`;
                 });
-                dayHtml += `</div></div>`;
-                container.innerHTML += dayHtml;
+                html += `</div></div>`;
             }
+            
+            if (filtered.length > 40 && selectedMonth === null && query === "") {
+                html += `<p class="text-center text-[10px] text-slate-400 py-4 italic">Utilisez les mois en haut pour voir la suite...</p>`;
+            }
+            
+            container.innerHTML = html || "<p class='text-center py-10 text-slate-400'>Aucun événement.</p>";
         }
 
-        function filterByMonth(monthIdx) {
-            selectedMonth = monthIdx;
-            document.querySelectorAll('.month-pill').forEach(btn => btn.classList.remove('active'));
-            const activeBtn = monthIdx === null ? document.getElementById('btn-all') : document.getElementById(`btn-${monthIdx}`);
-            if (activeBtn) activeBtn.classList.add('active');
+        function filterByMonth(m) {
+            selectedMonth = m;
+            document.querySelectorAll('.month-pill').forEach(b => b.classList.remove('active'));
+            (m === null ? document.getElementById('btn-all') : document.getElementById(`btn-${m}`)).classList.add('active');
             displayAgenda(allEvents);
+            window.scrollTo({top: 0, behavior: 'smooth'});
         }
 
         function filterEvents() { displayAgenda(allEvents); }
 
-        function addToCalendar(title, start) {
-            const s = new Date(start).toISOString().replace(/-|:|\.\d+/g, "");
-            const url = `https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${s}/${s}`;
-            window.open(url, '_blank');
+        function addToCalendar(t, s) {
+            const d = new Date(s).toISOString().replace(/-|:|\.\d+/g, "");
+            window.open(`https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(t)}&dates=${d}/${d}`, '_blank');
         }
 
-        window.onscroll = function() {
-            const btn = document.getElementById('scrollTop');
-            if (btn) btn.style.display = (window.scrollY > 400) ? "flex" : "none";
-        };
-
+        window.onscroll = () => { document.getElementById('scrollTop').style.display = (window.scrollY > 400 ? "flex" : "none"); };
+        
         setupMonthFilters();
         fetchCalendar();
     </script>
