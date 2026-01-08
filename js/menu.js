@@ -2,7 +2,7 @@ async function loadMenu() {
     const nav = document.querySelector('.bottom-nav');
     if (!nav) return;
 
-    // 1. STYLES VISUELS AJOUTÉS (Pulse, Badges, Indicateur)
+    // 1. STYLES VISUELS (Pulse, Badges, Indicateur)
     if (!document.getElementById('nav-enhanced-style')) {
         const style = document.createElement('style');
         style.id = 'nav-enhanced-style';
@@ -31,7 +31,6 @@ async function loadMenu() {
         document.head.appendChild(style);
     }
 
-    // 2. CONFIGURATION DU MENU (Identique à l'original)
     const menuItems = [
         { href: 'index.html', icon: '🏠', label: 'Accueil', id: 'home' },
         { href: 'annonces.html', icon: '📢', label: 'Annonces', id: 'annonces' },
@@ -45,11 +44,12 @@ async function loadMenu() {
 
     const currentPath = window.location.pathname.split('/').pop() || 'index.html';
     
-    // 3. AFFICHAGE DU MENU (Structure enrichie pour les badges)
     nav.innerHTML = menuItems.map(item => {
         const isActive = currentPath === item.href;
         return `
-            <a href="${item.href}" class="nav-item ${isActive ? 'active' : ''}" onclick="hapticFeedback()">
+            <a href="${item.href}" 
+               class="nav-item ${isActive ? 'active' : ''}" 
+               onclick="hapticFeedback(); markAsRead('${item.id}')">
                 <div class="relative">
                     <span style="font-size: 20px; margin-bottom: 2px; display: block;">${item.icon}</span>
                     <div id="dot-${item.id}" class="badge-dot"></div>
@@ -60,42 +60,52 @@ async function loadMenu() {
         `;
     }).join('');
 
-    // 4. CHARGEMENT DES FONCTIONNALITÉS LOGIQUES
-    updateBadges(); // Rétablit les témoins lumineux via Supabase
-    loadTicker();   // Bandeau Supabase
-    setupScrollTop(); // Bouton de retour en haut
+    updateBadges(); 
+    loadTicker();
+    setupScrollTop();
 }
 
-// FONCTIONNALITÉ RÉTABLIE : Témoins lumineux
+// GESTION DES ALERTES : Disparition au clic et stockage de la lecture
+function markAsRead(id) {
+    const dot = document.getElementById(`dot-${id}`);
+    if (dot) {
+        dot.style.display = 'none'; // Disparition visuelle immédiate
+    }
+    // On enregistre que l'utilisateur a consulté cette section à cet instant précis
+    localStorage.setItem(`last_visit_${id}`, new Date().toISOString());
+}
+
 async function updateBadges() {
     try {
-        const lastVisit = localStorage.getItem('last_visit') || new Date(Date.now() - 86400000).toISOString();
-        const checks = [
+        const categories = [
             { id: 'annonces', table: 'annonces' },
             { id: 'entraide', table: 'entraide' },
             { id: 'priere', table: 'prieres' }
         ];
 
-        checks.forEach(async (check) => {
+        categories.forEach(async (cat) => {
+            // On récupère la date propre à chaque catégorie (ou une date très ancienne par défaut)
+            const lastViewed = localStorage.getItem(`last_visit_${cat.id}`) || new Date(0).toISOString();
+
             const { count, error } = await sb
-                .from(check.table)
+                .from(cat.table)
                 .select('*', { count: 'exact', head: true })
-                .gt('created_at', lastVisit);
+                .gt('created_at', lastViewed);
 
             if (!error && count > 0) {
-                const dot = document.getElementById(`dot-${check.id}`);
+                const dot = document.getElementById(`dot-${cat.id}`);
                 if (dot) dot.style.display = 'block';
             }
         });
     } catch (e) { console.error("Erreur badges:", e); }
 }
 
-// FONCTIONNALITÉ CONSERVÉE : Bandeau défilant Supabase
+// --- Les autres fonctions (loadTicker, setupScrollTop, hapticFeedback) restent strictement identiques ---
+
 async function loadTicker() {
     try {
         if (sessionStorage.getItem('ticker_hidden')) return;
         const { data: tickerData } = await sb.from('app_settings').select('value').eq('id', 'ticker_message').single();
-        
         if (tickerData && tickerData.value.trim() !== "") {
             if (!document.getElementById('ticker-style')) {
                 const style = document.createElement('style');
@@ -115,7 +125,6 @@ async function loadTicker() {
                 `;
                 document.head.appendChild(style);
             }
-
             const ticker = document.createElement('div');
             ticker.id = 'ticker-bar';
             ticker.className = 'ticker-container';
@@ -128,7 +137,6 @@ async function loadTicker() {
     } catch (e) { console.error("Bandeau non disponible"); }
 }
 
-// FONCTIONNALITÉ CONSERVÉE : Scroll Top
 function setupScrollTop() {
     if (document.getElementById('scrollTop')) return;
     const scrollBtn = document.createElement('button');
@@ -136,7 +144,6 @@ function setupScrollTop() {
     scrollBtn.innerHTML = '⬆️';
     scrollBtn.className = 'fixed bottom-28 right-6 shadow-2xl rounded-full w-12 h-12 flex items-center justify-center z-50 transition-all duration-300 opacity-0 invisible scale-50 border border-gray-100 dark:border-slate-700';
     scrollBtn.style.backgroundColor = 'var(--card-light)';
-    
     document.body.appendChild(scrollBtn);
     window.addEventListener('scroll', () => {
         if (window.scrollY > 400) { 
@@ -150,7 +157,6 @@ function setupScrollTop() {
     scrollBtn.onclick = () => window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-// FONCTIONNALITÉ CONSERVÉE : Vibration
 function hapticFeedback() { if (window.navigator?.vibrate) window.navigator.vibrate(15); }
 
 document.addEventListener('DOMContentLoaded', loadMenu);
