@@ -24,6 +24,7 @@ const sbMesses = supabase.createClient(INT_URL, INT_KEY);
 let userName = localStorage.getItem('croix_glorieuse_user') || "";
 
 // --- SYSTÈME DE TRAÇAGE DES VISITES (STATS) ---
+// Modifié : Version non-bloquante pour garantir la fluidité
 async function trackUserPresence() {
     // 1. Créer ou récupérer un identifiant anonyme unique pour cet appareil
     let userHash = localStorage.getItem('user_presence_hash');
@@ -32,16 +33,19 @@ async function trackUserPresence() {
         localStorage.setItem('user_presence_hash', userHash);
     }
 
-    // 2. Mettre à jour la présence dans le projet principal (sb)
+    // 2. Mettre à jour la présence (On retire le await pour ne pas bloquer le chargement du site)
     try {
-        await sb.from('user_presence').upsert({ 
+        sb.from('user_presence').upsert({ 
             user_hash: userHash, 
             last_seen: new Date().toISOString() 
-        }, { onConflict: 'user_hash' });
+        }, { onConflict: 'user_hash' }).then(({ error }) => {
+            if (error) console.warn("Note: La table user_presence n'est pas accessible ou configurée (Stats ignorées).");
+        });
     } catch (error) {
+        // Erreur silencieuse pour ne pas perturber l'utilisateur
         console.error("Erreur de traçage:", error);
     }
 }
 
-// Lancement automatique du traçage
+// Lancement automatique du traçage (s'exécute en arrière-plan)
 trackUserPresence();
