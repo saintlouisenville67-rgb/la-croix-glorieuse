@@ -1,9 +1,68 @@
-<script>
-const _supabase = supabase.createClient('https://rixdjcjlepadtchctxnn.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJpeGRqY2psZXBhZHRjaGN0eG5uIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc2MTQ2MzMsImV4cCI6MjA4MzE5MDYzM30.0rcj8iFYw-kK7RbAAJ7ZbYqCTdHIWV1DmIQtKP_Ky4c');
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="stylesheet" href="style.css">
+    <title>Missel 1962 - Messes</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
+    <style>
+        .header-content { padding: 40px 20px 60px 20px; text-align: center; color: white; border-bottom-left-radius: 32px; border-bottom-right-radius: 32px; }
+        .nav-header { display: flex; justify-content: space-between; align-items: center; max-width: 500px; margin: 0 auto 15px auto; }
+        .date-badge { background: rgba(255,255,255,0.15); padding: 6px 16px; border-radius: 20px; font-size: 0.9rem; font-weight: 500; backdrop-filter: blur(5px); }
+        .btn-nav { background: none; border: none; color: white; font-size: 1.4rem; cursor: pointer; padding: 10px; }
+        .main-content { padding: 0 20px; margin-top: -35px; padding-bottom: 100px; max-width: 600px; margin-left: auto; margin-right: auto; }
+        .rank-tag { display: inline-block; font-size: 0.65rem; font-weight: 900; text-transform: uppercase; letter-spacing: 1.2px; padding: 5px 12px; border-radius: 10px; margin-bottom: 8px; }
+        .cl-I { background: #fee2e2; color: #b91c1c; }
+        .cl-II { background: #fef3c7; color: #92400e; }
+        .cl-III { background: #f1f5f9; color: #475569; }
+        .cl-IV { background: #f8fafc; color: #64748b; border: 1px solid #e2e8f0; }
+        .btn-open-readings { width: 100%; border: none; padding: 18px; border-radius: 20px; font-weight: 800; font-size: 1rem; cursor: pointer; margin-top: 15px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); background: white; color: #b91c1c; }
+        .reading-card { margin-top: 20px; display: none; animation: fadeInPage 0.4s ease-out; }
+        .reading-title { color: #b91c1c; font-size: 0.75rem; font-weight: 900; text-transform: uppercase; margin-bottom: 8px; border-bottom: 1px solid #fee2e2; padding-bottom: 4px; display: block; }
+        .reading-ref { font-weight: 700; font-size: 1.1rem; margin-bottom: 12px; display: block; }
+        .bible-text { font-family: 'Georgia', serif; line-height: 1.8; font-size: 1.15rem; color: #1e293b; text-align: justify; }
+        .verset-num { font-size: 0.7rem; font-weight: bold; color: #b91c1c; vertical-align: super; margin-right: 4px; opacity: 0.7; }
+    </style>
+</head>
+<body>
+
+    <header class="gradient-header header-content">
+        <div class="nav-header">
+            <button class="btn-nav" onclick="changeDate(-1)">❮</button>
+            <div class="date-badge" id="display-date">Chargement...</div>
+            <button class="btn-nav" onclick="changeDate(1)">❯</button>
+        </div>
+        <div id="display-rank" class="rank-tag"></div>
+        <h1 id="display-feast" style="margin: 5px 0 20px 0; font-size: 1.5rem; font-weight: 900;"></h1>
+        <button class="btn-open-readings" id="toggle-btn" onclick="toggleReadings()">📖 VOIR LES LECTURES</button>
+    </header>
+
+    <main class="main-content">
+        <div id="readings-panel" class="reading-card">
+            <div class="card" style="margin-bottom: 20px;">
+                <span class="reading-title">Épître</span>
+                <span class="reading-ref" id="ref-epitre"></span>
+                <div id="text-epitre" class="bible-text"></div>
+            </div>
+            <div class="card">
+                <span class="reading-title">Évangile</span>
+                <span class="reading-ref" id="ref-evangile"></span>
+                <div id="text-evangile" class="bible-text"></div>
+            </div>
+        </div>
+    </main>
+
+<script>
+// --- CONFIGURATION ---
+const SB_URL = 'https://rixdjcjlepadtchctxnn.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJpeGRqY2psZXBhZHRjaGN0eG5uIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc2MTQ2MzMsImV4cCI6MjA4MzE5MDYzM30.0rcj8iFYw-kK7RbAAJ7ZbYqCTdHIWV1DmIQtKP_Ky4c';
+let _supabase;
 let activeDate = new Date();
 
-// 1. CALCUL DE PÂQUES
+// --- 1. FONCTIONS DE CALCUL CALENDRIER ---
 function getEaster(y) {
     const a = y % 19, b = Math.floor(y / 100), c = y % 100,
           d = Math.floor(b / 4), e = b % 4, f = Math.floor((b + 8) / 25),
@@ -13,14 +72,13 @@ function getEaster(y) {
     return new Date(y, Math.floor((h + l - 7 * m + 114) / 31) - 1, ((h + l - 7 * m + 114) % 31) + 1);
 }
 
-// 2. TRADUCTEUR DE CODES (TEMPORAL)
-function getTemporalCode(date) {
+function calculateTemporalKey(date) {
     const y = date.getFullYear();
     const d = new Date(date); d.setHours(0,0,0,0);
     const easter = getEaster(y); easter.setHours(0,0,0,0);
     const diffEaster = Math.round((d - easter) / 86400000);
     
-    // Semaine Sainte et Octave de Pâques (Codes fixes)
+    // Semaine Sainte, Octave de Pâques, Cendres
     const special = {
         "-7": "rameaux", "-3": "jeudi_saint", "-2": "vendredi_saint", "-1": "samedi_saint",
         "0": "paques_0", "1": "paques_lun", "2": "paques_mar", "3": "paques_mer",
@@ -28,19 +86,16 @@ function getTemporalCode(date) {
     };
     if (special[diffEaster]) return special[diffEaster];
 
-    // Temps après la Pentecôte (Dimanches)
+    // Après Pentecôte (Dimanches)
     if (diffEaster >= 56 && date.getDay() === 0) {
-        const week = Math.floor((diffEaster - 49) / 7);
-        return `pentecote_${week}`;
+        return `pentecote_${Math.floor((diffEaster - 49) / 7)}`;
     }
 
-    // Temps après l'Épiphanie (Dimanches)
-    if (date.getMonth() === 0 || (date.getMonth() === 1 && diffEaster < -50)) {
-        if (date.getDay() === 0) {
-            const jan6 = new Date(y, 0, 6);
-            const week = Math.ceil((Math.round((d - jan6) / 86400000) + 1) / 7);
-            if (week > 0) return `epiphanie_${week}`;
-        }
+    // Après Epiphanie (Dimanches)
+    if (date.getMonth() === 0 && date.getDay() === 0) {
+        const jan6 = new Date(y, 0, 6);
+        const week = Math.ceil((Math.round((d - jan6) / 86400000) + 1) / 7);
+        if (week > 0) return `epiphanie_${week}`;
     }
 
     // Avent (Dimanches)
@@ -49,102 +104,82 @@ function getTemporalCode(date) {
     sundayBeforeNoel.setDate(dec25.getDate() - (dec25.getDay() || 7));
     const diffNoel = Math.round((d - sundayBeforeNoel) / 86400000);
     if (diffNoel <= 0 && diffNoel > -28 && date.getDay() === 0) {
-        const week = 4 + Math.floor(diffNoel / 7);
-        return `avent_${week}`;
+        return `avent_${4 + Math.floor(diffNoel / 7)}`;
     }
 
-    return null;
+    return diffEaster.toString(); 
 }
 
-// 3. MISE À JOUR UI ET RÉCUPÉRATION
+// --- 2. RÉCUPÉRATION DES DONNÉES ---
 async function updateLiturgie() {
     const mmdd = `${String(activeDate.getMonth()+1).padStart(2,'0')}-${String(activeDate.getDate()).padStart(2,'0')}`;
-    const tCode = getTemporalCode(activeDate);
+    const tKey = calculateTemporalKey(activeDate);
     
-    // On vide les anciens textes
-    document.getElementById('text-epitre').innerHTML = "";
-    document.getElementById('text-evangile').innerHTML = "";
+    // Tentative Temporal
+    const { data: temp } = await _supabase.from('temporal').select('*').eq('code_temporel', tKey).maybeSingle();
+    // Tentative Sanctoral
+    const { data: sanc } = await _supabase.from('sanctoral').select('*').eq('date_id', mmdd).maybeSingle();
 
-    // 1. Chercher dans Temporal
-    let day = null;
-    if (tCode) {
-        const { data } = await _supabase.from('temporal').select('*').eq('code_temporel', tCode).maybeSingle();
-        day = data;
-    }
-
-    // 2. Si non trouvé, chercher dans Sanctoral
-    if (!day) {
-        const { data } = await _supabase.from('sanctoral').select('*').eq('date_id', mmdd).maybeSingle();
-        day = data;
-    }
-
-    const final = day || { fete: "Férie", classe: "IV", epitre_ref: "---", evangile_ref: "---" };
+    // Règle de priorité
+    let day = temp || sanc || { fete: "Férie", classe: "IV", epitre_ref: "", evangile_ref: "" };
+    if (temp && sanc && sanc.classe === "I" && temp.classe !== "I") day = sanc;
 
     document.getElementById('display-date').innerText = activeDate.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
-    document.getElementById('display-feast').innerText = final.nom_jour || final.fete;
-    document.getElementById('display-rank').innerText = "Classe " + final.classe;
-    document.getElementById('display-rank').className = `rank-tag cl-${final.classe}`;
-    document.getElementById('ref-epitre').innerText = final.epitre_ref || "---";
-    document.getElementById('ref-evangile').innerText = final.evangile_ref || "---";
+    document.getElementById('display-feast').innerText = day.nom_jour || day.fete;
+    document.getElementById('display-rank').innerText = "Classe " + day.classe;
+    document.getElementById('display-rank').className = "rank-tag cl-" + day.classe;
+    document.getElementById('ref-epitre').innerText = day.epitre_ref || "---";
+    document.getElementById('ref-evangile').innerText = day.evangile_ref || "---";
     document.getElementById('readings-panel').style.display = 'none';
+    document.getElementById('toggle-btn').innerText = "📖 VOIR LES LECTURES";
 }
 
-// 4. DÉCOUPEUR DE RÉFÉRENCE (PARSER)
-function parseRef(ref) {
+// --- 3. PARSER ET LECTURE BIBLE ---
+function parseBibleRef(ref) {
     if (!ref || ref === "---") return null;
-    // Nettoyage des guillemets éventuels et espaces
     const cleanRef = ref.replace(/"/g, '').trim();
-    const m = cleanRef.match(/^(.+)\s(\d+),\s(\d+)(?:-(\d+))?$/);
-    if (!m) return null;
+    const match = cleanRef.match(/^(.+)\s(\d+),\s(\d+)(?:-(\d+))?$/);
+    if (!match) return null;
     return {
-        book: m[1].trim(),
-        chap: parseInt(m[2]),
-        start: parseInt(m[3]),
-        end: m[4] ? parseInt(m[4]) : parseInt(m[3])
+        book: match[1].trim(),
+        chap: parseInt(match[2]),
+        start: parseInt(match[3]),
+        end: match[4] ? parseInt(match[4]) : parseInt(match[3])
     };
 }
 
-// 5. CHARGEMENT DU TEXTE BIBLE
-async function loadBible(type) {
-    const refText = document.getElementById('ref-' + type).innerText;
-    const p = parseRef(refText);
+async function loadText(type) {
+    const ref = document.getElementById('ref-' + type).innerText;
+    const p = parseBibleRef(ref);
     const container = document.getElementById('text-' + type);
-    
-    if (!p) { container.innerHTML = "Pas de lecture propre aujourd'hui."; return; }
-    
-    container.innerHTML = "Chargement du texte...";
-    
-    const { data, error } = await _supabase
-        .from('bible_crampon')
-        .select('texte, verset')
-        .eq('livre', p.book)
-        .eq('chapitre', p.chap)
-        .gte('verset', p.start)
-        .lte('verset', p.end)
-        .order('verset', { ascending: true });
+    if (!p) { container.innerHTML = "Pas de lecture propre."; return; }
+
+    container.innerHTML = "Chargement...";
+    const { data, error } = await _supabase.from('bible_crampon').select('texte, verset')
+        .eq('livre', p.book).eq('chapitre', p.chap).gte('verset', p.start).lte('verset', p.end).order('verset');
 
     if (error || !data || data.length === 0) {
-        container.innerHTML = `<span style="color:red">Texte introuvable (${p.book} ${p.chap}, ${p.start}). Vérifiez l'orthographe dans votre base.</span>`;
+        container.innerHTML = `<span style="color:red">Texte introuvable (${p.book}).</span>`;
     } else {
         container.innerHTML = data.map(v => `<span class="verset-num">${v.verset}</span>${v.texte}`).join(' ');
     }
 }
 
+// --- 4. INITIALISATION ---
 function toggleReadings() {
     const panel = document.getElementById('readings-panel');
     const isVisible = panel.style.display === 'block';
     panel.style.display = isVisible ? 'none' : 'block';
     document.getElementById('toggle-btn').innerText = isVisible ? "📖 VOIR LES LECTURES" : "✖ FERMER";
-    if (!isVisible) {
-        loadBible('epitre');
-        loadBible('evangile');
-    }
+    if (!isVisible) { loadText('epitre'); loadText('evangile'); }
 }
 
-function changeDate(n) {
-    activeDate.setDate(activeDate.getDate() + n);
+function changeDate(n) { activeDate.setDate(activeDate.getDate() + n); updateLiturgie(); }
+
+window.onload = () => {
+    _supabase = supabase.createClient(SB_URL, SB_KEY);
     updateLiturgie();
-}
-
-updateLiturgie();
+};
 </script>
+</body>
+</html>
