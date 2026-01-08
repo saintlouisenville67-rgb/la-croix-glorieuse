@@ -8,24 +8,15 @@
     <style>
         :root { --prie-dieu: #630a0a; --fond: #fdfaf5; --or: #c5a059; }
         body { margin: 0; font-family: 'Segoe UI', serif; background-color: var(--fond); color: #1a1a1a; }
-        
         .header-content { background: var(--prie-dieu); padding: 35px 20px; text-align: center; border-bottom: 5px solid var(--or); color: white; }
         .nav-header { display: flex; justify-content: space-between; align-items: center; max-width: 500px; margin: 0 auto 20px; }
-        
         .date-badge { background: white; color: var(--prie-dieu); padding: 10px 25px; border-radius: 30px; font-weight: 900; font-size: 1.2rem; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
         #display-feast { font-size: 1.8rem; font-weight: 800; margin: 15px 0 5px; text-transform: uppercase; line-height: 1.2; }
         .rank-tag { display: inline-block; font-size: 0.85rem; font-weight: 900; padding: 6px 18px; border-radius: 10px; text-transform: uppercase; margin-top: 10px; }
-        
-        .cl-I { background: #ffd700; color: #000; } 
-        .cl-II { background: #e2e8f0; color: #1e293b; } 
-        .cl-III { background: #94a3b8; color: #fff; }
-        .cl-IV { background: none; border: 1px solid white; color: white; }
-
+        .cl-I { background: #ffd700; color: #000; } .cl-II { background: #e2e8f0; color: #1e293b; } .cl-III { background: #94a3b8; color: #fff; } .cl-IV { background: none; border: 1px solid white; color: white; }
         .btn-nav { background: none; border: none; color: white; font-size: 2.5rem; cursor: pointer; }
-        
         .main-content { padding: 20px; max-width: 650px; margin: 0 auto; }
         .btn-open-readings { width: 100%; border: 3px solid var(--prie-dieu); padding: 22px; border-radius: 18px; font-weight: 900; font-size: 1.2rem; cursor: pointer; background: white; color: var(--prie-dieu); box-shadow: 0 6px 15px rgba(0,0,0,0.1); }
-        
         .reading-card { margin-top: 25px; display: none; background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); border: 1px solid #e0d9cc; }
         .reading-title { color: var(--prie-dieu); font-weight: 900; text-transform: uppercase; font-size: 0.9rem; border-bottom: 2px solid #f0ede5; padding-bottom: 8px; margin-bottom: 20px; display: block; }
         .reading-ref { font-family: 'Georgia', serif; font-size: 1.4rem; font-weight: 700; color: #333; margin-bottom: 20px; display: block; font-style: italic; }
@@ -42,7 +33,7 @@
             <button class="btn-nav" onclick="changeDate(1)">›</button>
         </div>
         <div id="display-rank" class="rank-tag"></div>
-        <h1 id="display-feast">CHARGEMENT...</h1>
+        <h1 id="display-feast">...</h1>
         <button class="btn-open-readings" id="toggle-btn" onclick="toggleReadings()">📖 LIRE LA MESSE</button>
     </header>
 
@@ -83,6 +74,11 @@ function getTemporalCode(date) {
     const diff = Math.round((d - easter) / 86400000);
     const special = {"-7":"rameaux","-3":"jeudi_saint","-2":"vendredi_saint","-1":"samedi_saint","0":"paques_0","1":"paques_lun","2":"paques_mar","3":"paques_mer","4":"paques_jeu","5":"paques_ven","6":"paques_sam","-46":"cendres"};
     if(special[diff]) return special[diff];
+    // Pentecôte et après
+    if(diff>=49 && diff<56) {
+        const pDays = ["paques_0","paques_lun","paques_mar","paques_mer","paques_jeu","paques_ven","paques_sam"]; // Re-mapping
+        if(diff === 49) return "pentecote_0";
+    }
     if(diff>=56 && date.getDay()===0) return `pentecote_${Math.floor((diff-49)/7)}`;
     return diff.toString();
 }
@@ -95,7 +91,11 @@ async function updateLiturgie() {
         _supabase.from('sanctoral').select('*').eq('date_id', mmdd).maybeSingle()
     ]);
     let day = resTemp.data || resSanc.data || { fete: "Férie", classe: "IV", epitre_ref: "---", evangile_ref: "---" };
-    if (resTemp.data && resSanc.data && (resSanc.data.classe === "I") && resTemp.data.classe !== "I") day = resSanc.data;
+    // Règle de préséance 1962
+    if (resTemp.data && resSanc.data) {
+        if (parseInt(resSanc.data.classe) < parseInt(resTemp.data.classe)) day = resSanc.data;
+        else day = resTemp.data;
+    }
     const fmtRef = (r) => {
         if(!r || r === "---") return "---";
         let clean = r.replace(/"/g, '').trim();
@@ -111,7 +111,6 @@ async function updateLiturgie() {
     document.getElementById('ref-epitre').innerText = fmtRef(day.epitre_ref);
     document.getElementById('ref-evangile').innerText = fmtRef(day.evangile_ref);
     document.getElementById('readings-panel').style.display = 'none';
-    document.getElementById('toggle-btn').innerText = "📖 LIRE LA MESSE";
 }
 
 async function loadText(type) {
@@ -132,17 +131,9 @@ async function loadText(type) {
     if (!data || data.length === 0) {
         container.innerHTML = "Texte non trouvé.";
     } else {
-        // --- LOGIQUE DE PONCTUATION FINALE ---
         let fullContent = data.map(v => `<span class="verset-num">${v.verset}</span>${v.texte}`).join(' ');
-        
-        // On nettoie le texte pour vérifier le dernier caractère réel (hors balises HTML)
         let lastChar = data[data.length - 1].texte.trim().slice(-1);
-        
-        // Si le dernier caractère n'est pas un point (.), point d'exclamation (!) ou d'interrogation (?)
-        if (!['.', '!', '?'].includes(lastChar)) {
-            fullContent += "."; // On ajoute le point manquant
-        }
-        
+        if (!['.', '!', '?'].includes(lastChar)) fullContent += ".";
         container.innerHTML = fullContent;
     }
 }
