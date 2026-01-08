@@ -16,6 +16,10 @@
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
+        /* Style pour le gradient si non défini dans style.css */
+        .gradient-header {
+            background: linear-gradient(135deg, #b91c1c 0%, #7f1d1d 100%);
+        }
     </style>
 </head>
 <body class="bg-slate-50">
@@ -28,7 +32,8 @@
     <main class="p-6 space-y-8 mb-24">
         
         <section class="card shadow-xl -mt-12 relative z-10 bg-white p-6 rounded-[32px]">
-            <h2 class="text-sm font-800 mb-4 text-slate-800 font-bold">Confier une intention</h2>
+            <h2 class="text-sm font-black mb-4 text-red-700 uppercase tracking-widest">Confier une intention</h2>
+            
             <div class="space-y-4">
                 <input type="text" id="prenom" placeholder="Votre prénom (optionnel)" 
                     class="w-full bg-slate-50 p-3 rounded-xl border-none text-sm font-semibold outline-none focus:ring-2 focus:ring-red-100">
@@ -154,7 +159,6 @@
                 return;
             }
 
-            // État de chargement visuel
             btn.disabled = true;
             btn.innerText = "ENVOI EN COURS...";
             btn.style.opacity = "0.7";
@@ -163,7 +167,6 @@
                 { prenom: prenom || 'Anonyme', texte: texte }
             ]);
 
-            // Retour à l'état normal
             btn.disabled = false;
             btn.innerText = "ENVOYER MON INTENTION";
             btn.style.opacity = "1";
@@ -189,7 +192,6 @@
                 feedback.classList.add('bg-red-50', 'text-red-700', 'border-red-100');
             }
 
-            // Disparaît après 5 secondes
             setTimeout(() => {
                 feedback.classList.add('hidden');
             }, 5000);
@@ -202,7 +204,6 @@
 
         loadPrières();
 
-        // Temps réel Supabase
         sb.channel('intentions-channel')
           .on('postgres_changes', { event: '*', schema: 'public', table: 'intentions' }, payload => {
               loadPrières();
