@@ -8,12 +8,11 @@
     <link rel="stylesheet" href="css/style.css">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* Ajustements techniques pour les nouveaux composants */
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         
         .month-pill {
-            background: var(--card-light);
+            background: var(--card-light, #ffffff);
             border: 1px solid rgba(0,0,0,0.1);
             color: #94a3b8;
             transition: all 0.2s ease;
@@ -47,12 +46,8 @@
             align-items: center;
             z-index: 99;
             box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-            font-weight: bold;
             border: none;
         }
-
-        /* Protection contre le texte invisible */
-        .card p { color: inherit; }
     </style>
 </head>
 <body class="bg-slate-50">
@@ -63,7 +58,6 @@
     </header>
 
     <main class="p-6">
-        
         <section class="card shadow-xl -mt-12 relative z-10 mb-8">
             <h2 class="text-sm font-bold mb-4">Rechercher un office</h2>
             <div class="space-y-4">
@@ -71,24 +65,20 @@
                     placeholder="Messe, Adoration, Confession..." 
                     class="w-full bg-slate-50 p-4 rounded-xl border-none text-sm font-semibold outline-none focus:ring-2 focus:ring-red-100 transition-all">
                 
-                <div id="month-filters" class="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
-                    </div>
+                <div id="month-filters" class="flex gap-2 overflow-x-auto pb-2 no-scrollbar"></div>
             </div>
         </section>
 
-        <div id="agenda-container" class="space-y-8 mb-24">
+        <div id="agenda-container" class="space-y-8 mb-24 text-slate-800 dark:text-white">
             <div id="loading-state" class="text-center py-20">
                 <div class="loader mb-4"></div>
                 <p class="text-slate-400 text-[10px] font-black uppercase tracking-widest">Chargement de l'année...</p>
             </div>
         </div>
-
     </main>
 
     <button id="scrollTop" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">↑</button>
-
-    <nav class="bottom-nav">
-        </nav>
+    <nav class="bottom-nav"></nav>
 
     <script>
         const API_KEY = 'AIzaSyAI5N6lamviexKaPR-WoOP4006m5IClDoQ';
@@ -96,14 +86,12 @@
         let allEvents = [];
         let selectedMonth = null;
 
-        // 1. GÉNÉRATION DES FILTRES DE MOIS
         function setupMonthFilters() {
             const container = document.getElementById('month-filters');
+            if (!container) return;
             const months = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'];
             const currentMonth = new Date().getMonth();
-            
             let html = `<button onclick="filterByMonth(null)" id="btn-all" class="month-pill active px-4 py-2 rounded-lg text-[9px] font-black uppercase shadow-sm">Tous</button>`;
-            
             for (let i = 0; i < 12; i++) {
                 const monthIdx = (currentMonth + i) % 12;
                 html += `<button onclick="filterByMonth(${monthIdx})" id="btn-${monthIdx}" class="month-pill px-4 py-2 rounded-lg text-[9px] font-black uppercase shadow-sm whitespace-nowrap">${months[monthIdx]}</button>`;
@@ -111,7 +99,6 @@
             container.innerHTML = html;
         }
 
-        // 2. RÉCUPÉRATION AVEC CACHE
         async function fetchCalendar() {
             const cached = localStorage.getItem('paroiss_agenda_cache');
             if (cached) {
@@ -136,10 +123,8 @@
                     displayAgenda(allEvents);
                 }
             } catch (e) {
-                console.error("Erreur réseau, utilisation du cache.");
-                if(!allEvents.length) {
-                    document.getElementById('agenda-container').innerHTML = "<p class='text-center text-slate-400 py-10'>Connexion requise pour le premier chargement.</p>";
-                }
+                console.error("Erreur API");
+                hideLoading();
             }
         }
 
@@ -148,23 +133,23 @@
             if(loader) loader.style.display = 'none';
         }
 
-        // 3. AFFICHAGE ET FILTRAGE
         function displayAgenda(events) {
             const container = document.getElementById('agenda-container');
-            const query = document.getElementById('searchInput').value.toLowerCase();
+            const searchInput = document.getElementById('searchInput');
+            const query = searchInput ? searchInput.value.toLowerCase() : "";
             const now = new Date();
 
             const filtered = events.filter(event => {
+                const title = (event.summary || "Office sans titre").toLowerCase(); // Sécurité ici
                 const date = new Date(event.start.dateTime || event.start.date);
                 const matchesMonth = selectedMonth === null || date.getMonth() === selectedMonth;
-                const matchesSearch = event.summary.toLowerCase().includes(query);
+                const matchesSearch = title.includes(query);
                 return matchesMonth && matchesSearch;
             });
 
             container.innerHTML = "";
-
             if (filtered.length === 0) {
-                container.innerHTML = "<p class='text-center text-slate-400 text-xs italic py-10'>Aucun événement trouvé pour cette sélection.</p>";
+                container.innerHTML = "<p class='text-center text-slate-400 text-xs italic py-10'>Aucun événement trouvé.</p>";
                 return;
             }
 
@@ -177,17 +162,10 @@
             }, {});
 
             for (const date in groups) {
-                let dayHtml = `
-                    <div class="animate-fade-in">
-                        <div class="flex items-center gap-2 mb-4">
-                            <div class="h-[1px] flex-1 bg-slate-300 opacity-20"></div>
-                            <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">${date}</span>
-                            <div class="h-[1px] flex-1 bg-slate-300 opacity-20"></div>
-                        </div>
-                        <div class="space-y-4">
-                `;
+                let dayHtml = `<div class="animate-fade-in"><div class="flex items-center gap-2 mb-4"><div class="h-[1px] flex-1 bg-slate-300 opacity-20"></div><span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">${date}</span><div class="h-[1px] flex-1 bg-slate-300 opacity-20"></div></div><div class="space-y-4">`;
 
                 groups[date].forEach(event => {
+                    const title = event.summary || "Office sans titre";
                     const start = new Date(event.start.dateTime);
                     const end = new Date(event.end.dateTime);
                     const isLive = event.start.dateTime && start <= now && end >= now;
@@ -199,22 +177,17 @@
                                 <span class="text-[10px] font-black ${isLive ? 'text-green-600 animate-pulse' : 'text-red-700'} uppercase tracking-widest">
                                     ${isLive ? '● En direct' : time}
                                 </span>
-                                <button onclick="addToCalendar('${event.summary.replace(/'/g, "\\'")}', '${event.start.dateTime || event.start.date}')" 
-                                    class="text-[8px] font-bold uppercase bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded-md text-slate-500 shadow-sm active:scale-95 transition-transform">
-                                    + Ajouter
-                                </button>
+                                <button onclick="addToCalendar('${title.replace(/'/g, "\\'")}', '${event.start.dateTime || event.start.date}')" 
+                                    class="text-[8px] font-bold uppercase bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded-md text-slate-500">+ Ajouter</button>
                             </div>
-                            <p class="text-sm font-bold mt-2 leading-tight text-slate-800 dark:text-white">${event.summary}</p>
-                        </div>
-                    `;
+                            <p class="text-sm font-bold mt-2 leading-tight">${title}</p>
+                        </div>`;
                 });
-
                 dayHtml += `</div></div>`;
                 container.innerHTML += dayHtml;
             }
         }
 
-        // 4. LOGIQUE DES FILTRES
         function filterByMonth(monthIdx) {
             selectedMonth = monthIdx;
             document.querySelectorAll('.month-pill').forEach(btn => btn.classList.remove('active'));
@@ -223,9 +196,7 @@
             displayAgenda(allEvents);
         }
 
-        function filterEvents() {
-            displayAgenda(allEvents);
-        }
+        function filterEvents() { displayAgenda(allEvents); }
 
         function addToCalendar(title, start) {
             const s = new Date(start).toISOString().replace(/-|:|\.\d+/g, "");
@@ -233,14 +204,11 @@
             window.open(url, '_blank');
         }
 
-        // Gérer le bouton retour en haut
         window.onscroll = function() {
             const btn = document.getElementById('scrollTop');
-            if (window.scrollY > 400) { btn.style.display = "flex"; } 
-            else { btn.style.display = "none"; }
+            if (btn) btn.style.display = (window.scrollY > 400) ? "flex" : "none";
         };
 
-        // Initialisation
         setupMonthFilters();
         fetchCalendar();
     </script>
