@@ -14,6 +14,24 @@
         .gradient-header { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); }
         input, textarea { border: 1px solid #e2e8f0 !important; outline: none; transition: border-color 0.2s; }
         input:focus { border-color: #6366f1 !important; }
+        
+        /* Notifications dynamiques */
+        .notif-badge {
+            background-color: #ef4444;
+            color: white;
+            font-size: 10px;
+            font-weight: 900;
+            padding: 2px 7px;
+            border-radius: 99px;
+            margin-left: 8px;
+            display: none;
+            animation: pulse-notif 2s infinite;
+        }
+        @keyframes pulse-notif {
+            0% { transform: scale(1); shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+            70% { transform: scale(1.1); shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+            100% { transform: scale(1); shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
     </style>
 </head>
 <body class="bg-slate-50">
@@ -63,19 +81,19 @@
         <section class="card border-t-4 border-amber-500">
             <h2 class="text-[10px] font-black uppercase text-slate-400 mb-3">Bandeau défilant (Accueil)</h2>
             <div class="flex gap-2">
-                <input type="text" id="ticker-input" placeholder="Entrez le message..." class="flex-1 bg-slate-50 p-3 rounded-xl text-xs font-bold">
-                <button onclick="updateTicker()" class="bg-amber-500 text-white px-4 rounded-xl font-black text-[10px] uppercase">Mettre à jour</button>
+                <input type="text" id="ticker-input" placeholder="Message du bandeau..." class="flex-1 bg-slate-50 p-3 rounded-xl text-xs font-bold">
+                <button onclick="updateTicker()" class="bg-amber-500 text-white px-4 rounded-xl font-black text-[10px] uppercase">OK</button>
             </div>
         </section>
 
         <section class="card border-t-4 border-red-600">
             <h2 class="text-[10px] font-black uppercase text-slate-400 mb-4">Publier une Annonce</h2>
             <div class="space-y-3">
-                <input type="text" id="ann-titre" placeholder="Titre de l'annonce" class="w-full bg-slate-50 p-3 rounded-xl text-xs font-bold">
-                <textarea id="ann-texte" placeholder="Détails de l'annonce..." rows="2" class="w-full bg-slate-50 p-3 rounded-xl text-xs"></textarea>
+                <input type="text" id="ann-titre" placeholder="Titre" class="w-full bg-slate-50 p-3 rounded-xl text-xs font-bold">
+                <textarea id="ann-texte" placeholder="Message..." rows="2" class="w-full bg-slate-50 p-3 rounded-xl text-xs"></textarea>
                 <div class="flex items-center gap-2">
                     <input type="checkbox" id="ann-important" class="w-4 h-4 accent-red-600">
-                    <label class="text-[10px] font-black uppercase text-slate-500">Urgente (Bandeau rouge)</label>
+                    <label class="text-[10px] font-black uppercase text-slate-500">Urgente</label>
                     <button onclick="publierAnnonce()" class="ml-auto bg-red-600 text-white px-6 py-2 rounded-xl font-black text-[10px] uppercase">Publier</button>
                 </div>
             </div>
@@ -83,18 +101,24 @@
         </section>
 
         <section class="card border-t-4 border-emerald-600">
-            <h2 class="text-[10px] font-black uppercase text-slate-400 mb-4">Modération Entraide</h2>
+            <h2 class="flex items-center text-[10px] font-black uppercase text-slate-400 mb-4">
+                Modération Entraide <span id="badge-entraide" class="notif-badge">0</span>
+            </h2>
             <div id="admin-list-entraide" class="space-y-4"></div>
         </section>
 
         <section class="space-y-4">
-            <p class="text-[10px] font-black uppercase text-slate-400 px-2">Messages Reçus</p>
+            <h2 class="flex items-center text-[10px] font-black uppercase text-slate-400 px-2">
+                Messages Reçus <span id="badge-messages" class="notif-badge">0</span>
+            </h2>
             <div id="admin-list-messages" class="space-y-3"></div>
         </section>
 
         <section class="card border-t-4 border-indigo-600">
             <div class="flex justify-between items-center mb-4">
-                <h2 class="text-[10px] font-black uppercase text-slate-400">Intentions de Prière</h2>
+                <h2 class="flex items-center text-[10px] font-black uppercase text-slate-400">
+                    Intentions <span id="badge-intentions" class="notif-badge">0</span>
+                </h2>
                 <button onclick="anonymiserToutesIntentions()" class="text-[8px] font-black uppercase bg-slate-100 px-2 py-1 rounded hover:bg-slate-200">Anonymiser tout</button>
             </div>
             <div id="admin-list-prières" class="space-y-3"></div>
@@ -104,7 +128,10 @@
 
     <script src="js/config.js"></script>
     <script>
-        // --- AUTH ---
+        // Global pour les badges
+        window.counts = { entraide: 0, messages: 0, intentions: 0 };
+
+        // AUTH
         function checkPin() {
             const input = document.getElementById('pin-input').value;
             const correctPin = localStorage.getItem('admin_pin') || "5717";
@@ -114,19 +141,28 @@
             } else { alert("Code incorrect"); }
         }
 
-        // --- STATS ---
-        async function loadStats() {
-            try {
-                const fiveMins = new Date(Date.now() - 5*60000).toISOString();
-                const today = new Date().toISOString().split('T')[0];
-                const { count: online } = await sb.from('user_presence').select('*', { count: 'exact', head: true }).gt('last_seen', fiveMins);
-                const { count: daily } = await sb.from('user_presence').select('*', { count: 'exact', head: true }).gte('created_at', today);
-                document.getElementById('stat-online').innerText = online || 0;
-                document.getElementById('stat-today').innerText = daily || 0;
-            } catch (e) { console.error("Erreur Stats:", e); }
+        // BADGES
+        function updateBadges() {
+            ['entraide', 'messages', 'intentions'].forEach(s => {
+                const el = document.getElementById(`badge-${s}`);
+                if (window.counts[s] > 0) {
+                    el.innerText = window.counts[s];
+                    el.style.display = 'inline-block';
+                } else { el.style.display = 'none'; }
+            });
         }
 
-        // --- TICKER ---
+        // STATS
+        async function loadStats() {
+            const fiveMins = new Date(Date.now() - 5*60000).toISOString();
+            const today = new Date().toISOString().split('T')[0];
+            const { count: online } = await sb.from('user_presence').select('*', { count: 'exact', head: true }).gt('last_seen', fiveMins);
+            const { count: daily } = await sb.from('user_presence').select('*', { count: 'exact', head: true }).gte('created_at', today);
+            document.getElementById('stat-online').innerText = online || 0;
+            document.getElementById('stat-today').innerText = daily || 0;
+        }
+
+        // TICKER
         async function loadAdminTicker() {
             const { data } = await sb.from('app_settings').select('value').eq('id', 'ticker_message').single();
             if (data) document.getElementById('ticker-input').value = data.value;
@@ -137,7 +173,7 @@
             alert("Bandeau mis à jour !");
         }
 
-        // --- ANNONCES ---
+        // ANNONCES
         async function loadAdminAnnonces() {
             const { data } = await sb.from('annonces').select('*').order('created_at', { ascending: false });
             if (data) {
@@ -146,7 +182,7 @@
                         <span class="text-xs font-bold truncate ${a.est_importante ? 'text-red-600' : 'text-slate-600'}">
                             ${a.est_importante ? '★ ' : ''}${a.titre}
                         </span>
-                        <button onclick="deleteRow('annonces', '${a.id}', loadAdminAnnonces)" class="text-red-400 font-black px-2 hover:text-red-600">✕</button>
+                        <button onclick="deleteRow('annonces', '${a.id}', loadAdminAnnonces)" class="text-red-400 px-2">✕</button>
                     </div>
                 `).join('');
             }
@@ -155,22 +191,24 @@
             const titre = document.getElementById('ann-titre').value;
             const contenu = document.getElementById('ann-texte').value;
             const est_importante = document.getElementById('ann-important').checked;
-            if(!titre || !contenu) return alert("Remplissez les champs");
+            if(!titre || !contenu) return alert("Champs vides");
             await sb.from('annonces').insert([{ titre, contenu, est_importante }]);
             document.getElementById('ann-titre').value = '';
             document.getElementById('ann-texte').value = '';
             loadAdminAnnonces();
         }
 
-        // --- ENTRAIDE AVEC CODE ---
+        // ENTRAIDE
         async function loadAdminEntraide() {
             const { data } = await sb.from('entraide').select('*').order('valide', { ascending: true });
             if (data) {
+                window.counts.entraide = data.filter(x => !x.valide).length;
+                updateBadges();
                 document.getElementById('admin-list-entraide').innerHTML = data.map(e => `
                     <div class="bg-slate-50 p-4 rounded-xl border ${e.valide ? 'border-slate-100' : 'border-emerald-200 bg-emerald-50'}">
                         <div class="flex justify-between mb-2">
                             <span class="text-[8px] font-black uppercase ${e.valide ? 'text-slate-400' : 'text-emerald-600'}">
-                                ${e.valide ? 'En ligne' : 'À Valider'}
+                                ${e.valide ? 'Visible' : 'À Valider'}
                             </span>
                             <div class="flex gap-3">
                                 ${!e.valide ? `<button onclick="updateField('entraide','${e.id}',{valide:true},loadAdminEntraide)" class="text-emerald-700 text-[8px] font-black uppercase">Valider</button>` : ''}
@@ -180,14 +218,13 @@
                         <p class="text-xs font-bold text-slate-800">${e.titre}</p>
                         <div class="mt-3 flex justify-between items-end bg-white p-2 rounded-lg border border-slate-100">
                             <div>
-                                <p class="text-[8px] text-slate-400 uppercase font-black">Contact</p>
                                 <p class="text-[10px] font-bold text-slate-600">${e.contact_nom}</p>
-                                <p class="text-[9px] text-slate-400 italic">${e.contact_info}</p>
+                                <p class="text-[9px] text-slate-400">${e.contact_info}</p>
                             </div>
                             <div class="text-right">
                                 <p class="text-[8px] text-amber-500 uppercase font-black">Code Retrait</p>
                                 ${e.code_validation 
-                                    ? `<span class="text-xs font-black text-indigo-600 tracking-tighter">${e.code_validation}</span>`
+                                    ? `<span class="text-xs font-black text-indigo-600">${e.code_validation}</span>`
                                     : `<button onclick="genererCodeEntraide('${e.id}')" class="text-[8px] bg-amber-500 text-white px-2 py-1 rounded font-black uppercase">Générer</button>`
                                 }
                             </div>
@@ -202,37 +239,42 @@
             loadAdminEntraide();
         }
 
-        // --- MESSAGES ---
+        // MESSAGES
         async function loadMessages() {
             const { data } = await sb.from('contact_messages').select('*').order('lu', { ascending: true }).order('created_at', { ascending: false });
             if (data) {
+                window.counts.messages = data.filter(x => !x.lu).length;
+                updateBadges();
                 document.getElementById('admin-list-messages').innerHTML = data.map(m => `
                     <div class="card ${m.lu ? 'opacity-50' : 'border-indigo-100 shadow-md'}">
-                        <div class="flex justify-between items-start mb-2">
+                        <div class="flex justify-between items-start">
                             <p class="text-xs font-black uppercase">${m.prenom} ${m.nom}</p>
-                            <button onclick="deleteRow('contact_messages','${m.id}',loadMessages)" class="text-red-400 hover:text-red-600">✕</button>
+                            <button onclick="deleteRow('contact_messages','${m.id}',loadMessages)" class="text-red-400">✕</button>
                         </div>
-                        <p class="text-[9px] text-slate-500 mb-2">${m.email} • ${m.telephone || 'Non renseigné'}</p>
-                        <p class="text-xs italic bg-slate-50 p-2 rounded-lg border border-slate-100">"${m.message}"</p>
-                        <button onclick="updateField('contact_messages','${m.id}',{lu:${!m.lu}},loadMessages)" class="mt-3 text-[8px] font-black uppercase text-indigo-600 tracking-widest">
-                            ${m.lu ? 'Remettre en nouveau' : 'Archiver le message'}
+                        <p class="text-[9px] text-slate-500 mb-2">${m.email} | ${m.telephone || 'N/A'}</p>
+                        <p class="text-xs italic bg-slate-50 p-2 rounded-lg">"${m.message}"</p>
+                        <button onclick="updateField('contact_messages','${m.id}',{lu:${!m.lu}},loadMessages)" class="mt-2 text-[8px] font-black uppercase text-indigo-600">
+                            ${m.lu ? 'Marquer nouveau' : 'Archiver'}
                         </button>
                     </div>
                 `).join('');
             }
         }
 
-        // --- INTENTIONS ---
+        // INTENTIONS
         async function loadAdminPrières() {
             const { data } = await sb.from('intentions').select('*').order('valide', { ascending: true }).order('created_at', { ascending: false });
             if (data) {
+                window.counts.intentions = data.filter(x => !x.valide).length;
+                updateBadges();
                 document.getElementById('admin-list-prières').innerHTML = data.map(i => `
                     <div class="bg-slate-50 p-3 rounded-xl border ${i.valide ? 'border-slate-100' : 'border-amber-200 bg-amber-50'}">
                         <div class="flex justify-between items-start">
                             <p class="text-xs font-bold text-slate-800">${i.prenom || 'Anonyme'}</p>
                             <div class="flex gap-3">
+                                ${i.prenom !== 'Anonyme' ? `<button onclick="anonymiserUneIntention('${i.id}')" class="text-indigo-600 text-[8px] font-black uppercase">Anonymiser</button>` : ''}
                                 ${!i.valide ? `<button onclick="updateField('intentions','${i.id}',{valide:true},loadAdminPrières)" class="text-emerald-600 text-[8px] font-black uppercase">Valider</button>` : ''}
-                                <button onclick="deleteRow('intentions','${i.id}',loadAdminPrières)" class="text-red-400 font-black text-xs">✕</button>
+                                <button onclick="deleteRow('intentions','${i.id}',loadAdminPrières)" class="text-red-400 text-xs">✕</button>
                             </div>
                         </div>
                         <p class="text-xs italic text-slate-600 mt-1">"${i.texte}"</p>
@@ -240,37 +282,34 @@
                 `).join('');
             }
         }
+        async function anonymiserUneIntention(id) {
+            if(confirm("Anonymiser ?")) {
+                await sb.from('intentions').update({ prenom: 'Anonyme' }).eq('id', id);
+                loadAdminPrières();
+            }
+        }
         async function anonymiserToutesIntentions() {
-            if(confirm("Rendre toutes les intentions anonymes ?")) {
+            if(confirm("Anonymiser TOUT ?")) {
                 await sb.from('intentions').update({ prenom: 'Anonyme' });
                 loadAdminPrières();
             }
         }
 
-        // --- HELPERS GENERIQUES ---
-        async function deleteRow(table, id, callback) {
-            if(confirm("Confirmer la suppression ?")) {
-                await sb.from(table).delete().eq('id', id);
-                callback();
-            }
+        // HELPERS
+        async function deleteRow(table, id, cb) {
+            if(confirm("Supprimer ?")) { await sb.from(table).delete().eq('id', id); cb(); }
         }
-        async function updateField(table, id, obj, callback) {
-            await sb.from(table).update(obj).eq('id', id);
-            callback();
+        async function updateField(table, id, obj, cb) {
+            await sb.from(table).update(obj).eq('id', id); cb();
         }
 
-        // --- DASHBOARD REFRESH ---
         function refreshData() {
-            loadStats();
-            loadAdminTicker();
-            loadAdminAnnonces();
-            loadAdminEntraide();
-            loadMessages();
-            loadAdminPrières();
+            loadStats(); loadAdminTicker(); loadAdminAnnonces(); 
+            loadAdminEntraide(); loadMessages(); loadAdminPrières();
         }
 
-        // Auto-refresh stats (5m)
-        setInterval(loadStats, 300000);
+        // Rafraîchissement auto chaque minute pour les badges
+        setInterval(refreshData, 60000);
     </script>
 </body>
 </html>
