@@ -26,24 +26,23 @@ let userName = localStorage.getItem('croix_glorieuse_user') || "";
 // --- SYSTÈME DE TRAÇAGE DES VISITES (STATS) ---
 // Modifié : Version non-bloquante pour garantir la fluidité
 async function trackUserPresence() {
-    // 1. Créer ou récupérer un identifiant anonyme unique pour cet appareil
     let userHash = localStorage.getItem('user_presence_hash');
     if (!userHash) {
         userHash = 'u_' + Math.random().toString(36).substring(2, 15);
         localStorage.setItem('user_presence_hash', userHash);
     }
 
-    // 2. Mettre à jour la présence (On retire le await pour ne pas bloquer le chargement du site)
+    // On utilise un bloc try/catch isolé pour que cette fonction ne puisse JAMAIS bloquer le site
     try {
+        // Pas de "await" ici pour laisser filer le script
         sb.from('user_presence').upsert({ 
             user_hash: userHash, 
             last_seen: new Date().toISOString() 
-        }, { onConflict: 'user_hash' }).then(({ error }) => {
-            if (error) console.warn("Note: La table user_presence n'est pas accessible ou configurée (Stats ignorées).");
+        }, { onConflict: 'user_hash' }).then(({error}) => {
+            if(error) console.log("Stats en attente de configuration table.");
         });
-    } catch (error) {
-        // Erreur silencieuse pour ne pas perturber l'utilisateur
-        console.error("Erreur de traçage:", error);
+    } catch (e) {
+        // On ne fait rien, la priorité c'est l'affichage du menu
     }
 }
 
