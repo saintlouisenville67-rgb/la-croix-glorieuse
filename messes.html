@@ -1,46 +1,9 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <link rel="stylesheet" href="style.css">
-    <title>Missel 1962</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-</head>
-<body>
-
-    <header class="gradient-header header-content">
-        <div class="nav-header">
-            <button class="btn-nav" onclick="changeDate(-1)">❮</button>
-            <div id="display-date" class="date-badge"></div>
-            <button class="btn-nav" onclick="changeDate(1)">❯</button>
-        </div>
-        <div id="display-rank" class="rank-tag"></div>
-        <h1 id="display-feast" style="margin: 10px 0;">Chargement...</h1>
-        <button class="btn-open-readings" id="toggle-btn" onclick="toggleReadings()">📖 VOIR LES LECTURES</button>
-    </header>
-
-    <main class="main-content">
-        <div id="readings-panel" class="reading-card" style="display:none;">
-            <div class="card">
-                <span class="reading-title">Épître</span>
-                <span id="ref-epitre" class="reading-ref"></span>
-                <div id="text-epitre" class="bible-text"></div>
-            </div>
-            <div class="card" style="margin-top:20px;">
-                <span class="reading-title">Évangile</span>
-                <span id="ref-evangile" class="reading-ref"></span>
-                <div id="text-evangile" class="bible-text"></div>
-            </div>
-        </div>
-    </main>
-
 <script>
 const _supabase = supabase.createClient('https://rixdjcjlepadtchctxnn.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJpeGRqY2psZXBhZHRjaGN0eG5uIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc2MTQ2MzMsImV4cCI6MjA4MzE5MDYzM30.0rcj8iFYw-kK7RbAAJ7ZbYqCTdHIWV1DmIQtKP_Ky4c');
 
 let activeDate = new Date();
 
-// --- CALCULS LITURGIQUES ---
+// 1. CALCUL DE PÂQUES
 function getEaster(y) {
     const a = y % 19, b = Math.floor(y / 100), c = y % 100,
           d = Math.floor(b / 4), e = b % 4, f = Math.floor((b + 8) / 25),
@@ -50,47 +13,75 @@ function getEaster(y) {
     return new Date(y, Math.floor((h + l - 7 * m + 114) / 31) - 1, ((h + l - 7 * m + 114) % 31) + 1);
 }
 
+// 2. TRADUCTEUR DE CODES (TEMPORAL)
 function getTemporalCode(date) {
     const y = date.getFullYear();
-    const easter = getEaster(y);
-    const diff = Math.round((new Date(date).setHours(0,0,0,0) - easter.setHours(0,0,0,0)) / 86400000);
+    const d = new Date(date); d.setHours(0,0,0,0);
+    const easter = getEaster(y); easter.setHours(0,0,0,0);
+    const diffEaster = Math.round((d - easter) / 86400000);
     
-    // Semaine Sainte et Octave
-    const map = {"-7":"rameaux","-3":"jeudi_saint","-2":"vendredi_saint","-1":"samedi_saint","0":"paques_0","1":"paques_lun","2":"paques_mar","3":"paques_mer","4":"paques_jeu","5":"paques_ven","6":"paques_sam","-46":"cendres"};
-    if(map[diff]) return map[diff];
+    // Semaine Sainte et Octave de Pâques (Codes fixes)
+    const special = {
+        "-7": "rameaux", "-3": "jeudi_saint", "-2": "vendredi_saint", "-1": "samedi_saint",
+        "0": "paques_0", "1": "paques_lun", "2": "paques_mar", "3": "paques_mer",
+        "4": "paques_jeu", "5": "paques_ven", "6": "paques_sam", "-46": "cendres"
+    };
+    if (special[diffEaster]) return special[diffEaster];
 
-    // Dimanches après la Pentecôte
-    if(diff >= 7) {
-        const week = Math.floor(diff / 7);
-        if(date.getDay() === 0) return `pentecote_${week}`;
+    // Temps après la Pentecôte (Dimanches)
+    if (diffEaster >= 56 && date.getDay() === 0) {
+        const week = Math.floor((diffEaster - 49) / 7);
+        return `pentecote_${week}`;
     }
-    
-    // Dimanches de l'Avent (calculé à rebours de Noël)
-    const noel = new Date(y, 11, 25);
-    const diffNoel = Math.round((date - noel) / 86400000);
-    if(diffNoel < 0 && diffNoel > -30 && date.getDay() === 0) {
-        const aventWeek = 4 - Math.floor(Math.abs(diffNoel+1) / 7);
-        return `avent_${aventWeek}`;
+
+    // Temps après l'Épiphanie (Dimanches)
+    if (date.getMonth() === 0 || (date.getMonth() === 1 && diffEaster < -50)) {
+        if (date.getDay() === 0) {
+            const jan6 = new Date(y, 0, 6);
+            const week = Math.ceil((Math.round((d - jan6) / 86400000) + 1) / 7);
+            if (week > 0) return `epiphanie_${week}`;
+        }
+    }
+
+    // Avent (Dimanches)
+    const dec25 = new Date(y, 11, 25);
+    const sundayBeforeNoel = new Date(dec25);
+    sundayBeforeNoel.setDate(dec25.getDate() - (dec25.getDay() || 7));
+    const diffNoel = Math.round((d - sundayBeforeNoel) / 86400000);
+    if (diffNoel <= 0 && diffNoel > -28 && date.getDay() === 0) {
+        const week = 4 + Math.floor(diffNoel / 7);
+        return `avent_${week}`;
     }
 
     return null;
 }
 
-// --- MISE À JOUR DE L'INTERFACE ---
+// 3. MISE À JOUR UI ET RÉCUPÉRATION
 async function updateLiturgie() {
     const mmdd = `${String(activeDate.getMonth()+1).padStart(2,'0')}-${String(activeDate.getDate()).padStart(2,'0')}`;
     const tCode = getTemporalCode(activeDate);
     
-    let { data: day } = await _supabase.from('temporal').select('*').eq('code_temporel', tCode).single();
-    if (!day) {
-        let { data: sanc } = await _supabase.from('sanctoral').select('*').eq('date_id', mmdd).single();
-        day = sanc ? { fete: sanc.fete, classe: sanc.classe, epitre_ref: sanc.epitre_ref, evangile_ref: sanc.evangile_ref } : null;
+    // On vide les anciens textes
+    document.getElementById('text-epitre').innerHTML = "";
+    document.getElementById('text-evangile').innerHTML = "";
+
+    // 1. Chercher dans Temporal
+    let day = null;
+    if (tCode) {
+        const { data } = await _supabase.from('temporal').select('*').eq('code_temporel', tCode).maybeSingle();
+        day = data;
     }
 
-    const final = day || { fete: "Férie", classe: "IV", epitre_ref: "", evangile_ref: "" };
+    // 2. Si non trouvé, chercher dans Sanctoral
+    if (!day) {
+        const { data } = await _supabase.from('sanctoral').select('*').eq('date_id', mmdd).maybeSingle();
+        day = data;
+    }
+
+    const final = day || { fete: "Férie", classe: "IV", epitre_ref: "---", evangile_ref: "---" };
 
     document.getElementById('display-date').innerText = activeDate.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
-    document.getElementById('display-feast').innerText = final.fete || final.nom_jour;
+    document.getElementById('display-feast').innerText = final.nom_jour || final.fete;
     document.getElementById('display-rank').innerText = "Classe " + final.classe;
     document.getElementById('display-rank').className = `rank-tag cl-${final.classe}`;
     document.getElementById('ref-epitre').innerText = final.epitre_ref || "---";
@@ -98,34 +89,62 @@ async function updateLiturgie() {
     document.getElementById('readings-panel').style.display = 'none';
 }
 
-// --- PARSER BIBLE ---
+// 4. DÉCOUPEUR DE RÉFÉRENCE (PARSER)
 function parseRef(ref) {
-    if(!ref || ref === "---") return null;
-    const m = ref.match(/^(.+)\s(\d+),\s(\d+)(?:-(\d+))?$/);
-    return m ? { book: m[1].trim(), chap: parseInt(m[2]), start: parseInt(m[3]), end: m[4]?parseInt(m[4]):parseInt(m[3]) } : null;
+    if (!ref || ref === "---") return null;
+    // Nettoyage des guillemets éventuels et espaces
+    const cleanRef = ref.replace(/"/g, '').trim();
+    const m = cleanRef.match(/^(.+)\s(\d+),\s(\d+)(?:-(\d+))?$/);
+    if (!m) return null;
+    return {
+        book: m[1].trim(),
+        chap: parseInt(m[2]),
+        start: parseInt(m[3]),
+        end: m[4] ? parseInt(m[4]) : parseInt(m[3])
+    };
 }
 
+// 5. CHARGEMENT DU TEXTE BIBLE
 async function loadBible(type) {
-    const p = parseRef(document.getElementById('ref-'+type).innerText);
-    const container = document.getElementById('text-'+type);
-    if(!p) return container.innerHTML = "Pas de lecture.";
+    const refText = document.getElementById('ref-' + type).innerText;
+    const p = parseRef(refText);
+    const container = document.getElementById('text-' + type);
     
-    container.innerHTML = "Chargement...";
-    const { data } = await _supabase.from('bible_crampon').select('texte, verset')
-        .eq('livre', p.book).eq('chapitre', p.chap).gte('verset', p.start).lte('verset', p.end).order('verset');
+    if (!p) { container.innerHTML = "Pas de lecture propre aujourd'hui."; return; }
+    
+    container.innerHTML = "Chargement du texte...";
+    
+    const { data, error } = await _supabase
+        .from('bible_crampon')
+        .select('texte, verset')
+        .eq('livre', p.book)
+        .eq('chapitre', p.chap)
+        .gte('verset', p.start)
+        .lte('verset', p.end)
+        .order('verset', { ascending: true });
 
-    container.innerHTML = data ? data.map(v => `<small>${v.verset}</small> ${v.texte}`).join(' ') : "Erreur.";
+    if (error || !data || data.length === 0) {
+        container.innerHTML = `<span style="color:red">Texte introuvable (${p.book} ${p.chap}, ${p.start}). Vérifiez l'orthographe dans votre base.</span>`;
+    } else {
+        container.innerHTML = data.map(v => `<span class="verset-num">${v.verset}</span>${v.texte}`).join(' ');
+    }
 }
 
 function toggleReadings() {
-    const p = document.getElementById('readings-panel');
-    p.style.display = p.style.display === 'none' ? 'block' : 'none';
-    if(p.style.display === 'block') { loadBible('epitre'); loadBible('evangile'); }
+    const panel = document.getElementById('readings-panel');
+    const isVisible = panel.style.display === 'block';
+    panel.style.display = isVisible ? 'none' : 'block';
+    document.getElementById('toggle-btn').innerText = isVisible ? "📖 VOIR LES LECTURES" : "✖ FERMER";
+    if (!isVisible) {
+        loadBible('epitre');
+        loadBible('evangile');
+    }
 }
 
-function changeDate(n) { activeDate.setDate(activeDate.getDate()+n); updateLiturgie(); }
+function changeDate(n) {
+    activeDate.setDate(activeDate.getDate() + n);
+    updateLiturgie();
+}
 
 updateLiturgie();
 </script>
-</body>
-</html>
