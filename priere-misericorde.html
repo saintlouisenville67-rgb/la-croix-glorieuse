@@ -3,154 +3,128 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Dévotion Miséricorde Divine</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Miséricorde Divine - Neuvaine et Chapelet</title>
+    <link rel="icon" href="data:,">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
     <style>
-        :root { --m-red: #b91c1c; --m-gold: #b45309; }
+        :root { 
+            --m-red: #b91c1c; 
+            --m-bg: #f8fafc;
+            --m-card: #ffffff;
+            --text-main: #1e293b;
+            --text-light: #94a3b8;
+        }
         
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
         body { 
             font-family: 'Inter', sans-serif; 
-            background-color: #f1f5f9; margin: 0; padding: 0;
+            background-color: var(--m-bg); margin: 0; padding: 0;
             height: 100dvh; display: flex; flex-direction: column; overflow: hidden;
-            color: #1e293b;
+            color: var(--text-main);
         }
 
-        /* BARRE DE NAVIGATION ÉLÉGANTE (TOP) */
+        /* BARRE DE NAVIGATION SUPÉRIEURE */
         .nav-header { 
             position: fixed; top: 0; left: 0; right: 0;
-            height: 90px; 
-            background: rgba(255, 255, 255, 0.95);
+            height: 95px; background: rgba(255, 255, 255, 0.98);
             backdrop-filter: blur(10px);
             display: flex; justify-content: space-around; align-items: flex-end;
-            z-index: 10000; 
-            border-bottom: 1px solid rgba(226, 232, 240, 0.8);
-            padding-bottom: 8px;
-            padding-top: env(safe-area-inset-top);
+            z-index: 10000; border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 10px; padding-top: env(safe-area-inset-top);
         }
 
         .nav-btn { 
-            position: relative;
-            flex: 1; display: flex; flex-direction: column; align-items: center; 
-            border: none; background: none; color: #94a3b8; 
-            cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative; flex: 1; display: flex; flex-direction: column; 
+            align-items: center; border: none; background: none; 
+            color: var(--text-light); cursor: pointer; transition: 0.3s;
         }
 
-        .nav-btn.active { color: var(--m-red); transform: translateY(-2px); }
-        
-        /* Indicateur visuel élégant sous l'onglet actif */
+        .nav-btn.active { color: var(--m-red); }
         .nav-btn.active::after {
-            content: '';
-            position: absolute; bottom: -8px; width: 20px; height: 3px;
+            content: ''; position: absolute; bottom: -10px; width: 24px; height: 3px;
             background: var(--m-red); border-radius: 10px;
         }
 
-        .nav-btn svg { width: 24px; height: 24px; margin-bottom: 5px; stroke-width: 2; }
-        .nav-label { font-size: 10px; font-weight: 800; uppercase; letter-spacing: 0.05em; }
+        .nav-btn svg { width: 24px; height: 24px; margin-bottom: 4px; stroke: currentColor; fill: none; stroke-width: 2; }
+        .nav-label { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; }
 
         /* CONTENEUR PRINCIPAL */
         .app-viewport { 
-            flex: 1; 
-            display: flex; 
-            flex-direction: column; 
-            margin-top: 100px; /* Espace pour la nav-bar + marge */
-            overflow: hidden; 
+            flex: 1; display: flex; flex-direction: column; 
+            margin-top: 105px; overflow: hidden; 
         }
 
         .card-main { 
-            background: white; 
-            margin: 0 16px 16px 16px; 
-            border-radius: 32px; 
-            flex: 1; 
-            display: flex; 
-            flex-direction: column; 
-            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05), 0 8px 10px -6px rgba(0,0,0,0.05);
-            overflow: hidden;
-            border: 1px solid rgba(255,255,255,0.7);
+            background: var(--m-card); margin: 0 16px 16px 16px; 
+            border-radius: 30px; flex: 1; display: flex; flex-direction: column; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05); overflow: hidden;
         }
 
-        /* CONTENU DES ONGLETS */
-        .tab-content { display: none; height: 100%; flex-direction: column; padding: 24px; }
+        .tab-content { display: none; height: 100%; flex-direction: column; padding: 25px; }
         .tab-content.active { display: flex; }
-        .scroll-area { flex: 1; overflow-y: auto; padding-right: 4px; }
+        .scroll-area { flex: 1; overflow-y: auto; padding-bottom: 20px; }
 
-        /* STYLISATION DES TEXTES */
-        .jesus-box { 
-            border-left: 4px solid var(--m-red); 
-            padding: 18px; margin: 20px 0; 
-            background: #fff1f2; font-style: italic; color: #991b1b; 
-            border-radius: 4px 16px 16px 4px; font-size: 1rem; line-height: 1.6;
-        }
-        .poem { 
-            text-align: center; color: #475569; font-style: italic; 
-            margin: 30px 0; font-size: 0.95em; line-height: 1.7; 
-            border-top: 1px solid #f1f5f9; border-bottom: 1px solid #f1f5f9; padding: 20px 0; 
-        }
-        .p-eternelle { font-weight: 800; margin-top: 24px; display: block; color: #0f172a; text-transform: uppercase; font-size: 0.8em; letter-spacing: 1px; }
+        /* TEXTES */
+        h2.step-tag { font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.3em; color: var(--m-red); text-align: center; margin-bottom: 20px; }
+        .prayer-text { font-family: 'Playfair Display', serif; font-size: 1.35rem; font-style: italic; line-height: 1.5; text-align: center; color: #334155; margin: auto 0; }
+        
+        .jesus-box { border-left: 4px solid var(--m-red); padding: 15px; margin: 15px 0; background: #fff1f2; font-style: italic; color: #991b1b; border-radius: 0 15px 15px 0; font-size: 0.95rem; line-height: 1.6; }
+        .poem { text-align: center; color: #64748b; font-style: italic; margin: 20px 0; padding: 15px 0; border-top: 1px solid #f1f5f9; border-bottom: 1px solid #f1f5f9; line-height: 1.6; font-size: 0.9rem; }
+        .p-eternelle { font-weight: 800; margin-top: 20px; display: block; color: #0f172a; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 1px; }
 
-        /* NAVIGATION DE LA NEUVAINE */
-        .day-nav { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 15px; margin-bottom: 10px; scrollbar-width: none; }
+        /* NEUVAINE NAVIGATION */
+        .day-nav { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 15px; scrollbar-width: none; }
         .day-nav::-webkit-scrollbar { display: none; }
-        .day-btn { 
-            padding: 10px 20px; border-radius: 14px; border: 1.5px solid #e2e8f0; 
-            font-size: 12px; font-weight: 700; white-space: nowrap; background: white; 
-            transition: 0.2s; color: #64748b;
-        }
-        .day-btn.active { background: var(--m-red); color: white; border-color: var(--m-red); box-shadow: 0 4px 12px rgba(185, 28, 28, 0.2); }
+        .day-btn { padding: 8px 16px; border-radius: 12px; border: 1px solid #e2e8f0; font-size: 11px; font-weight: 700; white-space: nowrap; background: white; color: #64748b; }
+        .day-btn.active { background: var(--m-red); color: white; border-color: var(--m-red); }
 
-        /* INTERFACE CHAPELET */
+        /* BOUTONS CHAPELET */
         .bead-btn { 
-            width: 80px; height: 80px; border-radius: 50%; 
-            background: white; border: 1px solid #f1f5f9; 
-            box-shadow: 0 10px 20px rgba(0,0,0,0.08); 
-            display: flex; align-items: center; justify-content: center; 
-            margin: 20px auto; transition: transform 0.1s;
+            width: 75px; height: 75px; border-radius: 50%; background: white; 
+            border: 1px solid #f1f5f9; box-shadow: 0 8px 15px rgba(0,0,0,0.1); 
+            display: flex; align-items: center; justify-content: center; margin: 15px auto; 
         }
-        .bead-btn:active { transform: scale(0.92); }
-        .dot { width: 10px; height: 10px; border-radius: 50%; background: #e2e8f0; margin: 0 4px; transition: 0.4s; }
-        .dot.active { background: var(--m-red); transform: scale(1.4); box-shadow: 0 0 10px rgba(185, 28, 28, 0.3); }
+        .bead-btn:active { transform: scale(0.95); }
+        .dot { width: 8px; height: 8px; border-radius: 50%; background: #e2e8f0; margin: 0 4px; transition: 0.3s; }
+        .dot.active { background: var(--m-red); transform: scale(1.3); }
 
-        .fade-in { animation: fadeIn 0.5s ease-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+        .fade-in { animation: fadeIn 0.4s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
     <nav class="nav-header">
         <button onclick="switchTab('chapelet')" id="nav-chapelet" class="nav-btn active">
-            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707M12 7a5 5 0 100 10 5 5 0 000-10z"/></svg>
+            <svg viewBox="0 0 24 24"><path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707M12 7a5 5 0 100 10 5 5 0 000-10z"/></svg>
             <span class="nav-label">Chapelet</span>
         </button>
         <button onclick="switchTab('neuvaine')" id="nav-neuvaine" class="nav-btn">
-            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+            <svg viewBox="0 0 24 24"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
             <span class="nav-label">Neuvaine</span>
         </button>
         <button onclick="switchTab('heure')" id="nav-heure" class="nav-btn">
-            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <svg viewBox="0 0 24 24"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
             <span class="nav-label">15h00</span>
         </button>
     </nav>
 
     <div class="app-viewport">
         <div class="card-main">
-            
             <div id="tab-chapelet" class="tab-content active">
-                <span id="step-title" class="text-[10px] font-black uppercase tracking-[0.4em] text-red-700 text-center mb-6">Introduction</span>
-                <div class="flex-1 flex items-center justify-center overflow-hidden">
-                    <p id="prayer-content" class="text-xl md:text-2xl italic font-serif leading-relaxed text-center px-2 text-slate-800 transition-all duration-500"></p>
+                <h2 id="step-title" class="step-tag">Début</h2>
+                <div class="scroll-area" style="display:flex; align-items:center; justify-content:center;">
+                    <p id="prayer-content" class="prayer-text fade-in"></p>
                 </div>
-                <div class="mt-auto">
-                    <div id="progress-container" class="flex justify-center mb-6 hidden"></div>
-                    <p id="counter-text" class="text-[10px] font-bold text-slate-400 uppercase text-center mb-2 tracking-widest"></p>
-                    <div class="flex items-center justify-center gap-14 pb-4">
-                        <button onclick="prevStep()" id="prev-btn" class="text-slate-300 hover:text-slate-500 transition-colors">
-                            <svg width="32" height="32" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
-                        </button>
-                        <button onclick="nextStep()" class="bead-btn">
-                            <svg class="w-10 h-10 text-red-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                        </button>
-                        <div class="w-[32px]"></div>
-                    </div>
+                <div id="progress-container" style="display:flex; justify-content:center; margin-bottom:10px;"></div>
+                <p id="counter-text" style="font-size:10px; text-align:center; color:#94a3b8; font-weight:700; margin-bottom:5px;"></p>
+                <div style="display:flex; align-items:center; justify-content:center; gap:40px; padding-bottom:10px;">
+                    <button onclick="prevStep()" id="prev-btn" style="border:none; background:none; color:#cbd5e1;"><svg width="30" height="30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg></button>
+                    <button onclick="nextStep()" class="bead-btn">
+                        <svg width="35" height="35" style="color:var(--m-red); stroke:currentColor; fill:none; stroke-width:2;" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                    </button>
+                    <div style="width:30px;"></div>
                 </div>
             </div>
 
@@ -161,38 +135,36 @@
                     </script>
                 </div>
                 <div class="scroll-area" id="neu-area">
-                    <h3 id="neu-title" class="font-black text-red-800 uppercase text-[11px] mb-4 tracking-[0.2em]"></h3>
-                    <div id="neu-body" class="text-[16px] leading-relaxed font-serif text-slate-700 space-y-4"></div>
+                    <h3 id="neu-title" style="color:var(--m-red); font-size:11px; font-weight:900; text-transform:uppercase; letter-spacing:1px; margin-bottom:15px;"></h3>
+                    <div id="neu-body" class="fade-in"></div>
                 </div>
             </div>
 
             <div id="tab-heure" class="tab-content">
-                <span class="text-[10px] font-black uppercase tracking-[0.3em] text-red-700 text-center mb-10">L'Heure Sainte</span>
-                <div class="flex-1 flex flex-col justify-center space-y-10 text-center">
-                    <div class="p-8 bg-orange-50/50 rounded-3xl border-l-4 border-amber-600 italic text-sm text-slate-600 leading-relaxed shadow-sm">
-                        "À trois heures, implore Ma miséricorde, tout particulièrement pour les pécheurs..."
-                    </div>
-                    <p class="text-3xl font-serif font-bold text-red-900 leading-snug px-2">« Ô Sang et Eau, qui avez jailli du Cœur de Jésus comme source de Miséricorde pour nous, j'ai confiance en Vous. »</p>
-                    <p class="text-[11px] font-bold text-slate-400 uppercase tracking-widest mt-4">Prière enseignée par Jésus à Sœur Faustine</p>
+                <h2 class="step-tag">L'Heure de la Miséricorde</h2>
+                <div class="scroll-area" style="display:flex; flex-direction:column; justify-content:center; text-align:center; gap:30px;">
+                    <div class="jesus-box">"À trois heures, implore Ma miséricorde, tout particulièrement pour les pécheurs et, ne fût-ce que pour un bref instant, plonge-toi dans Ma Passion, en particulier dans Mon abandon au moment de l'agonie."</div>
+                    <p style="font-family:'Playfair Display'; font-size:1.8rem; font-weight:700; color:var(--m-red); line-height:1.3;">« Ô Sang et Eau, qui avez jailli du Cœur de Jésus comme source de Miséricorde pour nous, j'ai confiance en Vous. »</p>
+                    <p style="font-size:11px; color:#94a3b8; font-weight:700; text-transform:uppercase; letter-spacing:1px;">Amen.</p>
                 </div>
             </div>
-
         </div>
     </div>
 
     <script>
         const texts = {
-            1: `<div class='jesus-box'>« Aujourd’hui, amène-Moi l’humanité entière, particulièrement les pécheurs... »</div><p>Très miséricordieux Jésus, dont le propre est d’avoir pitié de nous et de nous pardonner...</p><div class='poem'>Ô Toute-puissante Miséricorde de Dieu,<br>Secours du pécheur...</div><p><span class='p-eternelle'>Père Éternel</span>, jetez un regard de Miséricorde sur toute l’humanité...</p>`,
-            2: `<div class='jesus-box'>« Aujourd’hui amène-Moi les âmes sacerdotales et religieuses... »</div><p>Très miséricordieux Jésus, de qui provient tout ce qui est bon...</p><div class='poem'>Jaillie de la mer de Miséricorde,<br>La fontaine de l’Amour divin...</div><p><span class='p-eternelle'>Père Éternel</span>, jetez un regard sur ce groupe d’élus...</p>`,
-            3: `<div class='jesus-box'>« Aujourd’hui, amène-moi toutes les âmes pieuses et fidèles... »</div><p>Très miséricordieux Jésus qui accordez surabondamment le trésor...</p><p><span class='p-eternelle'>Père Éternel</span>, jetez un regard de Miséricorde sur les âmes fidèles...</p>`,
-            4: `<div class='jesus-box'>« Aujourd’hui, amène-moi les païens et ceux qui ne Me connaissent pas encore... »</div><p>Très compatissant Jésus qui êtes la lumière du monde...</p>`,
-            5: `<div class='jesus-box'>« Aujourd’hui, amène-Moi les âmes des hérétiques et des apostats... »</div><p>Très Miséricordieux Jésus qui êtes la bonté même...</p>`,
-            6: `<div class='jesus-box'>« Aujourd’hui, amène-Moi les âmes douces et humbles... »</div><p>Très miséricordieux Jésus qui avez dit Vous-même : « Apprenez de Moi... »</p>`,
-            7: `<div class='jesus-box'>« Aujourd’hui, amène-Moi les âmes qui vénèrent et glorifient particulièrement ma Miséricorde... »</div><p>Très miséricordieux Jésus dont le Cœur n’est qu’amour...</p>`,
-            8: `<div class='jesus-box'>« Aujourd’hui, amène-Moi les âmes qui sont au Purgatoire... »</div><p>Très miséricordieux Jésus qui avez dit vouloir Vous-même la Miséricorde...</p>`,
-            9: `<div class='jesus-box'>« Aujourd’hui, amène-Moi les âmes indifférentes et froides... »</div><p>Très Compatissant Jésus qui n’êtes que pitié...</p>`
+            1: `<div class='jesus-box'>« Aujourd’hui, amène-Moi l’humanité entière, particulièrement les pécheurs. Immerge-les dans l’immensité de ma Miséricorde. Tu Me consoleras ainsi de cette amère tristesse dans laquelle Me plonge la perte des âmes ».</div><p>Très miséricordieux Jésus, dont le propre est d’avoir pitié de nous et de nous pardonner, ne regardez pas nos péchés, mais la confiance que nous avons en votre infinie bonté. Recevez-nous dans la demeure de votre Cœur très miséricordieux et ne permettez pas que nous en sortions pour l’éternité. Nous Vous en supplions par l’amour qui Vous unite au Père et au Saint-Esprit.</p><div class='poem'>Ô Toute-puissante Miséricorde de Dieu,<br>Secours du pécheur,<br>Océan d’amour infini et de pitié,<br>Vous venez en aide à ceux qui Vous prient avec humilité.</div><p><span class='p-eternelle'>Père Éternel</span>, jetez un regard de Miséricorde sur toute l’humanité, et particulièrement sur les pauvres pécheurs, enfermés dans le Cœur très miséricordieux de Jésus. Par sa douloureuse Passion, faites-nous Miséricorde afin que soit glorifiée votre toute-puissante Miséricorde dans les siècles des siècles. Amen.</p>`,
+            2: `<div class='jesus-box'>« Aujourd’hui amène-Moi les âmes sacerdotales et religieuses, et plonge-les dans mon insondable Miséricorde. Elles m’ont donné la force de supporter mon amère passion. Par elles comme par des canaux, ma Miséricorde s’écoule sur l’humanité. »</div><p>Très miséricordieux Jésus, de qui provient tout ce qui est bon, multipliez vos grâces en nous, afin que nous accomplissions dignement les actes de Miséricorde, et que notre prochain en glorifie le Père de Miséricorde qui est aux cieux.</p><div class='poem'>Jaillie de la mer de Miséricorde,<br>La fontaine de l’Amour divin habite les cœurs purs,<br>Scintillante comme l’étoile,<br>Limpide comme l’aurore.</div><p><span class='p-eternelle'>Père Éternel</span>, jetez un regard de Miséricorde sur ce groupe d’élus au cœur de votre vigne : les âmes sacerdotales et religieuses. Accordez-leur les bienfaits de votre bénédiction. Par amour pour le Cœur de votre Fils qui est leur demeure, concédez-leur le pouvoir de votre lumière, afin qu’elles puissent guider les autres sur le chemin du salut, et qu’elles puissent toutes ensemble rendre hommage à votre insondable Miséricorde pour l’éternité. Amen.</p>`,
+            3: `<div class='jesus-box'>« Aujourd’hui, amène-moi toutes les âmes pieuses et fidèles et plonge-les dans l’océan de ma Miséricorde. Ces âmes Me consolèrent sur le chemin du Calvaire. Elles furent cette goutte de consolation dans un océan d’amertume. »</div><p>Très miséricordieux Jésus qui accordez surabondamment le trésor de votre Miséricorde à tous, recevez-nous tous dans la demeure de votre Cœur très compatissant. Et ne nous en laissez pas sortir pour l’éternité, je Vous en supplie par cet inconcevable amour dont brûle votre Cœur pour le Père Céleste.</p><div class='poem'>Impénétrables merveilles de la Miséricorde,<br>Insondables au pécheur comme au juste,<br>Lorsque sur nous, vous jetez un regard de pitié,<br>Vous nous attirez tous vers votre Amour !</div><p><span class='p-eternelle'>Père Éternel</span>, jetez un regard de Miséricorde sur les âmes fidèles, héritage de votre Fils. Par sa douloureuse Passion, accordez-leur votre bénédiction et entourez-les de votre incessante protection afin qu’elles ne perdent l’amour ni le trésor de la sainte foi, mais qu’elles glorifient votre infinie Miséricorde avec le chœur des Anges et des Saints pour l’éternité. Amen.</p>`,
+            4: `<div class='jesus-box'>« Aujourd’hui, amène-moi les païens et ceux qui ne Me connaissent pas encore. Je pensais aussi à eux durant ma douloureuse Passion, et leur zèle futur consolait mon Cœur. Plonge-les dans l’immensité de ma Miséricorde. »</div><p>Très compatissant Jésus qui êtes la lumière du monde, recevez dans la demeure de votre Cœur très compatissant les âmes des païens et de ceux qui ne Vous connaissent pas encore. Que les rayons de votre grâce les illuminent, afin qu’elles aussi glorifient avec nous les merveilles de votre Miséricorde. Et ne les laissez pas sortir de la demeure de votre Cœur très compatissant.</p><div class='poem'>Faites que la lumière de votre amour, mon Dieu,<br>Illumine enfin toutes les âmes restées dans les ténèbres,<br>Et que n’hésitant plus à Vous reconnaître,<br>Elles chantent avec nous la gloire de votre Miséricorde !</div><p><span class='p-eternelle'>Père Éternel</span>, jetez un regard de Miséricorde sur les âmes des païens et de tous ceux qui ne Vous connaissent pas encore, mais qui sont enfermées dans le Cœur très compatissant de Jésus. Attirez-les vers la lumière de l’Evangile. Elles ne savent pas combien est grand le bonheur de Vous aimer. Faites donc qu’elles aussi puissent glorifier la munificence de votre Miséricorde dans les siècles des siècles. Amen.</p>`,
+            5: `<div class='jesus-box'>« Aujourd’hui, amène-Moi les âmes des hérétiques et des apostats. Plonge-les dans l’immensité de Ma Miséricorde. Dans mon amère Passion, elles Me déchiraient le Corps et le Cœur, c’est-à-dire mon Église. Lorsqu’elles reviendront à l’unité de l’Église alors se cicatriseront mes plaies. Et de cette façon elles Me soulageront dans ma Passion. »</div><p>Très Miséricordieux Jésus qui êtes la bonté même, Vous ne refusez pas la lumière à ceux qui Vous la demandent. Recevez dans la demeure de votre Cœur très compatissant les âmes des hérétiques et des apostats. Par votre lumière, ramenez-les à l’unité de l’Église. Ne les laissez pas sortir de la demeure de votre Cœur très compatissant, mais faites qu’elles aussi glorifient la munificence de votre Miséricorde.</p><div class='poem'>Même pour ceux qui mirent en pièces le manteau de l’unité,<br>Coule en votre Cœur une source de pitié.<br>Par la toute-puissance de votre Miséricorde, ô Dieu,<br>Vous pouvez aussi retirer ces âmes de l’erreur.</div><p><span class='p-eternelle'>Père Éternel</span>, jetez un regard miséricordieux sur les âmes des hérétiques et des apostats qui, persistant obstinément dans leurs erreurs, gaspillèrent vos bontés et abusèrent de vos grâces. Ne regardez pas leurs fautes, mais l’amour de votre Fils et son amère Passion qu’Il souffrit également pour elles, puisqu’elles aussi sont enfermées dans le Cœur très compatissant de Jésus. Faites qu’elles aussi glorifient votre immense Miséricorde dans les siècles des siècles. Amen.</p>`,
+            6: `<div class='jesus-box'>« Aujourd’hui, amène-Moi les âmes douces et humbles, ainsi que celles des petits enfants et plonge-les dans ma Miséricorde. Ce sont elles qui ressemblent le plus à mon Cœur. Elles m’ont réconforté dans mon amère agonie. Je les voyais veiller sur mes autels comme des anges terrestres. Sur elles Je verse des torrents de grâces. Ma grâce ne peut être reçue que par les âmes pleines d’humilité. Ce sont ces âmes-là en qui Je mets ma confiance. »</div><p>Très miséricordieux Jésus qui avez dit Vous-même : « Apprenez de Moi que Je suis doux et humble de Cœur », recevez dans la demeure de votre Cœur très compatissant les âmes douces et humbles, ainsi que celles des petits enfants. Ces âmes-là plongent dans le ravissement le ciel entier, et sont particulièrement aimées du Père des Cieux. Elles forment un bouquet de fleurs devant le trône divin dont Dieu seul respire le parfum. Ces âmes-là demeurent pour toujours dans le Cœur très compatissant de Jésus, chantant sans cesse l’hymne de l’amour et de la Miséricorde pour l’éternité.</p><div class='poem'>L’âme véritablement humble et douce,<br>Respire déjà le Paradis sur terre,<br>D’un parfum d’humilité son cœur<br>Grise le Créateur Lui-même.</div><p><span class='p-eternelle'>Père Éternel</span>, jetez un regard de Miséricorde sur les âmes douces et humbles, ainsi que sur celles des petits enfants demeurant dans le Cœur très compatissant de Jésus. Ce sont ces âmes-là qui ressemblent le plus à votre Fils. Le parfum de ces âmes monte de la terre et s’élève jusqu’à votre trône. Père de Miséricorde et de toute bonté, je Vous implore par l’amour et la prédilection que Vous avez pour ces âmes, de bien vouloir bénir le monde entier, afin que toutes les âmes puissent chanter ensemble la gloire de votre Miséricorde pour l’éternité. Amen.</p>`,
+            7: `<div class='jesus-box'>« Aujourd’hui, amène-Moi les âmes qui vénèrent et glorifient particulièrement ma Miséricorde et plonge-les en elles. Ces âmes-là ont le plus partagé les souffrances de ma Passion. Ce sont elles qui ont pénétré le plus profondément en mon âme. Elles sont le vivant reflet de mon Cœur compatissant. Ces âmes brilleront d’un éclat particulier dans la vie future. Aucune n’ira en enfer. Je défendrai chacune d’elles en particulier à l’heure de la mort. »</div><p>Très miséricordieux Jésus dont le Cœur n’est qu’amour, recevez dans la demeure de votre Cœur très compatissant les âmes qui vénèrent et glorifient plus particulièrement l’immensité de votre Miséricorde. Dotées de la puissance même de Dieu, elles avancent confiantes en votre Miséricorde au milieu de tous les tourments et contrariétés. Ces âmes sont unies à Jésus et portent le poids de l’humanité entière sur leurs épaules. Elles ne seront pas jugées sévèrement, mais votre Miséricorde les protègera au moment de l’agonie.</p><div class='poem'>L’âme qui célèbre la bonté du Seigneur<br>Est, de Lui, tout particulièrement chérie.<br>Près de la Source de vie, elle a trouvé demeure,<br>Et puise mille grâces en la Miséricorde de Dieu.</div><p><span class='p-eternelle'>Père Éternel</span>, daignez jeter un regard de Miséricorde sur les âmes qui célèbrent et vénèrent votre plus grand attribut : votre infinie Miséricorde. Enfermées dans le Cœur très compatissant de Jésus, elles sont un vivant Evangile. Leurs mains sont pleines d’actes de miséricorde. Comblées de joie elles chantent l’hymne de la Miséricorde du Très-Haut. Je Vous en supplie, manifestez-leur votre Miséricorde selon l’espoir et la confiance qu’elles ont mis en Vous. Que s’accomplisse en elles la promesse de Jésus qui a dit : « Je défendrai leur vie durant, comme Ma propre Gloire, les âmes qui vénéreront mon infinie Miséricorde. Je les défendrai tout particulièrement à l’heure de la mort ».</p>`,
+            8: `<div class='jesus-box'>« Aujourd’hui, amène-Moi les âmes qui sont au Purgatoire et plonge-les dans l’abîme de ma Miséricorde. Que les flots de mon Sang rafraîchissent leurs brûlures. Toutes ces âmes Me sont très chères, mais elles Me rendent Justice. Il est en ton pouvoir de leur apporter quelque soulagement. Puise dans le trésor de mon Église toutes les indulgences, et offre-les en leur nom. Oh ! Si tu connaissais leur souffrance, tu offrirais sans cesse en leur nom l’aumône de tes prières, et tu paierais leurs dettes à ma Justice. »</div><p>Très miséricordieux Jésus qui avez dit vouloir Vous-même la Miséricorde, voici que j’amène à la demeure de votre Cœur très compatissant, les âmes du Purgatoire, qui Vous sont très chères, mais qui pourtant doivent rendre des comptes à votre Justice. Que les flots de Sang et d’Eau jaillis de votre Cœur éteignent les flammes du feu purificateur afin que, là aussi, soit glorifiée la puissance de votre Miséricorde.</p><div class='poem'>De la terrible ardeur du feu purificateur,<br>Une plainte s’élève vers votre Miséricorde,<br>Demandant consolation, soulagement, fraîcheur,<br>Des seuls ruisseaux d’Eau à votre Sang mêlés.</div><p><span class='p-eternelle'>Père Éternel</span>, daignez jeter un regard de Miséricorde sur les âmes souffrant au Purgatoire, enfermées dans le Cœur très compatissant de Jésus. Je Vous implore par la douloureuse Passion de Jésus, votre Fils, et par toute l’amertume dont son âme très sainte fut inondée, de manifester votre Miséricorde aux âmes qui sont soumises à votre Justice sans défaut. Que votre regard ne tienne compte que des mérites des plaies de Jésus, votre très cher Fils, car nous croyons que votre bonté et votre pitié sont infinies.</p>`,
+            9: `<div class='jesus-box'>« Aujourd’hui, amène-Moi les âmes indifférentes et froides, et plonge-les dans l’abîme de ma Miséricorde. Ce sont ces âmes-là qui blessent le plus douloureusement mon Cœur. Ce sont elles, qui au Jardin des Oliviers, M’inspirèrent la plus grande aversion. C’est à cause d’elles que J’ai dit : « Mon Père, s’il est possible, que cette coupe passe loin de Moi ! » Pour elles, l’ultime planche de salut est de recourir à ma Miséricorde ».</div><p>Très Compatissant Jésus qui n’êtes que pitié, j’amène à la demeure de votre Cœur très compatissant les âmes indifférentes et froides. Que ces âmes, dont la froideur cadavérique Vous emplit de répulsion, retrouvent la flamme de la vie au feu de votre pur amour. Très compatissant Jésus, usez de la toute-puissance de votre Miséricorde : entraînez-les dans le brasier même de votre amour et communiquez-leur le feu de l'amour divin, car Vous pouvez tout.</p><div class='poem'>Feu et glace ensemble il ne faut mêler,<br>Car le feu s’éteindra ou la glace fondra.<br>Mais par votre infinie Miséricorde,<br>Mon Dieu, Vous pouvez suppléer de plus grandes déficiences.</div><p><span class='p-eternelle'>Père Éternel</span>, jetez un regard de Miséricorde sur les âmes indifférentes, qui sont cependant enfermées dans le Cœur très compatissant de Jésus. Père de Miséricorde, je Vous supplie par la Passion amère de votre Fils et par son agonie de trois heures sur la croix, permettez que ces âmes-là célèbrent aussi l’abîme de votre Miséricorde.</p>`
         };
 
+        // GESTION NAVIGATION
         function switchTab(id) {
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
             document.getElementById('tab-' + id).classList.add('active');
@@ -200,14 +172,15 @@
             document.getElementById('nav-' + id).classList.add('active');
         }
 
+        // LOGIQUE DU CHAPELET
         let sIdx = 0, bIdx = 0, dIdx = 1;
         const chap = [
             { t: "Signe de Croix", p: "Au nom du Père, et du Fils, et du Saint-Esprit. Amen." },
-            { t: "Ouverture", p: "Notre Père... Je vous salue Marie... Je crois en Dieu..." },
-            { t: "Sur le gros grain", p: "Père Éternel, je Vous offre le Corps et le Sang, l'Âme et la Divinité de Votre Fils Bien-Aimé, Notre Seigneur Jésus-Christ, en réparation de nos péchés et de ceux du monde entier." },
-            { t: "Sur les petits grains", p: "Par Sa douloureuse Passion, ayez pitié de nous et du monde entier." },
-            { t: "Action de grâce", p: "Dieu Saint, Dieu Fort, Dieu Éternel, ayez pitié de nous et du monde entier. (3 fois)" },
-            { t: "Invocation", p: "Jésus Miséricordieux, j'ai confiance en Vous !" }
+            { t: "Introduction", p: "Notre Père... Je vous salue Marie... Je crois en Dieu..." },
+            { t: "Gros Grain", p: "Père Éternel, je Vous offre le Corps et le Sang, l'Âme et la Divinité de Votre Fils Bien-Aimé, Notre Seigneur Jésus-Christ, en réparation de nos péchés et de ceux du monde entier." },
+            { t: "Petits Grains", p: "Par Sa douloureuse Passion, ayez pitié de nous et du monde entier." },
+            { t: "Conclusion", p: "Dieu Saint, Dieu Fort, Dieu Éternel, ayez pitié de nous et du monde entier. (3 fois)" },
+            { t: "Fin", p: "Jésus Miséricordieux, j'ai confiance en Vous ! Amen." }
         ];
 
         function upC() {
@@ -215,17 +188,23 @@
             p.classList.remove('fade-in'); void p.offsetWidth; p.classList.add('fade-in');
             p.innerText = chap[sIdx].p;
             document.getElementById('step-title').innerText = chap[sIdx].t;
+            
             const prog = document.getElementById('progress-container');
+            const cnt = document.getElementById('counter-text');
+            
             if(sIdx === 3) {
-                prog.classList.remove('hidden');
-                document.getElementById('counter-text').innerText = `Dizaine ${dIdx} • Grain ${bIdx+1} / 10`;
+                prog.style.display = 'flex';
+                cnt.innerText = `Dizaine ${dIdx} • Grain ${bIdx+1} / 10`;
                 prog.innerHTML = "";
-                for(let i=0;i<10;i++){
+                for(let i=0;i<10;i++) {
                     const d = document.createElement('div');
                     d.className = `dot ${i<=bIdx?'active':''}`;
                     prog.appendChild(d);
                 }
-            } else { prog.classList.add('hidden'); document.getElementById('counter-text').innerText = ""; }
+            } else { 
+                prog.style.display = 'none'; 
+                cnt.innerText = ""; 
+            }
             document.getElementById('prev-btn').style.opacity = sIdx === 0 ? "0" : "1";
         }
 
@@ -245,16 +224,17 @@
             upC();
         }
 
+        // LOGIQUE NEUVAINE
         function showNeuvaine(d) {
             document.querySelectorAll('.day-btn').forEach(b => b.classList.remove('active'));
             document.getElementById('nday-'+d).classList.add('active');
-            document.getElementById('neu-title').innerText = "Méditation du Jour " + d;
-            const body = document.getElementById('neu-body');
-            body.classList.remove('fade-in'); void body.offsetWidth; body.classList.add('fade-in');
-            body.innerHTML = texts[d];
+            document.getElementById('neu-title').innerText = "Jour " + d + " - Méditation";
+            const area = document.getElementById('neu-body');
+            area.innerHTML = texts[d];
             document.getElementById('neu-area').scrollTop = 0;
         }
 
+        // INITIALISATION
         upC();
         showNeuvaine(1);
     </script>
