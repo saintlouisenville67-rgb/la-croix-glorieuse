@@ -186,7 +186,7 @@
                     const estOfficeTexte = titre.toLowerCase().includes("laudes") || titre.toLowerCase().includes("vêpres") || titre.toLowerCase().includes("vepres");
 
                     if (status === "live") {
-                        badgeTexte.className = "badge-live";
+                        badgeTexte.className = "badge-live animate-soft-pulse";
                         badgeTexte.innerText = `● EN DIRECT : ${titre}`;
                     } else {
                         badgeTexte.className = "badge-upcoming";
