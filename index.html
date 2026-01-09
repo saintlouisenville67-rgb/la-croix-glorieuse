@@ -18,23 +18,51 @@
         .animate-soft-pulse {
             animation: soft-pulse 2s infinite ease-in-out;
         }
+
+        /* Badge VERT (En direct) */
         .badge-live {
             background: #22c55e;
             color: white;
-            padding: 3px 10px;
+            padding: 4px 12px;
             border-radius: 8px;
             font-size: 8px;
             font-weight: 900;
             text-transform: uppercase;
             letter-spacing: 0.05em;
-            cursor: pointer;
             box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7);
             animation: pulse-green 2s infinite;
+            display: inline-flex;
+            items-center: center;
+            gap: 4px;
         }
+
+        /* Badge ORANGE (Anticipation) */
+        .badge-upcoming {
+            background: #f59e0b;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 8px;
+            font-size: 8px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7);
+            animation: pulse-orange 2s infinite;
+            display: inline-flex;
+            items-center: center;
+            gap: 4px;
+        }
+
         @keyframes pulse-green {
             0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
             70% { box-shadow: 0 0 0 8px rgba(34, 197, 94, 0); }
             100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+        }
+
+        @keyframes pulse-orange {
+            0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7); }
+            70% { box-shadow: 0 0 0 8px rgba(245, 158, 11, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
         }
     </style>
 </head>
@@ -69,8 +97,10 @@
             <div class="flex justify-between items-center mt-2">
                 <p id="classe-liturgique" class="text-[10px] font-bold opacity-60 uppercase"></p>
                 <div class="flex items-center gap-2">
-                    <div id="live-indicator-home" class="hidden" onclick="showLiveInfo()">
-                        <span class="badge-live">● En direct</span>
+                    <div id="live-indicator-home" class="hidden">
+                        <button id="badge-btn" class="flex items-center">
+                            <span id="badge-texte"></span>
+                        </button>
                     </div>
                     <button id="btn-today" onclick="goToday()" class="hidden text-[8px] font-black uppercase bg-white/20 px-2 py-1 rounded-lg">Aujourd'hui</button>
                 </div>
@@ -91,8 +121,6 @@
             <p id="phrase-messe" class="text-[11px] font-black uppercase tracking-wider text-white"></p>
         </div>
     </header>
-
-    <div id="live-toast" class="fixed top-10 left-1/2 -translate-x-1/2 z-[100] bg-green-600 text-white px-6 py-3 rounded-2xl shadow-2xl text-[11px] font-black uppercase tracking-widest opacity-0 pointer-events-none transition-all duration-300 translate-y-[-20px]"></div>
 
     <main class="p-6 space-y-6 pb-24">
         <section id="bloc-annonce-importante" class="hidden">
@@ -131,11 +159,9 @@
     <script src="js/config.js"></script>
     <script>
         let currentDateDisplay = new Date();
-        let currentLiveOffice = "";
         const CALENDAR_API_KEY = 'AIzaSyAI5N6lamviexKaPR-WoOP4006m5IClDoQ';
         const CALENDAR_ID = 'saintlouisenville67@gmail.com';
 
-        // FILTRE DES OFFICES AUTORISÉS
         function isOfficeValide(titre) {
             const t = titre.toLowerCase();
             if (t.includes("paul vi") || t.includes("paul 6")) return false;
@@ -143,21 +169,7 @@
             return autorises.some(mot => t.includes(mot));
         }
 
-        function showLiveInfo() {
-            if (!currentLiveOffice) return;
-            const toast = document.getElementById('live-toast');
-            toast.innerText = `En cours : ${currentLiveOffice}`;
-            toast.classList.remove('opacity-0', 'translate-y-[-20px]');
-            toast.classList.add('opacity-100', 'translate-y-0');
-            setTimeout(() => {
-                toast.classList.add('opacity-0', 'translate-y-[-20px]');
-                toast.classList.remove('opacity-100', 'translate-y-0');
-            }, 3000);
-        }
-
-        function ouvrirLectures() {
-            window.location.href = 'lecturedujour.html';
-        }
+        function ouvrirLectures() { window.location.href = 'lecturedujour.html'; }
 
         async function initHome() {
             updateLiturgie();
@@ -168,14 +180,9 @@
 
         async function updateLiturgie() {
             const isToday = currentDateDisplay.toDateString() === new Date().toDateString();
-            
-            // GESTION DU BOUTON LECTURES (Seulement si Aujourd'hui)
             const blocLectures = document.getElementById('bloc-lectures');
-            if (isToday) {
-                blocLectures.classList.remove('hidden');
-            } else {
-                blocLectures.classList.add('hidden');
-            }
+            if (isToday) blocLectures.classList.remove('hidden');
+            else blocLectures.classList.add('hidden');
 
             document.getElementById('btn-today').classList.toggle('hidden', isToday);
             document.getElementById('date-du-jour').innerText = currentDateDisplay.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
@@ -202,22 +209,61 @@
                 const data = await response.json();
                 const events = data.items || [];
                 const now = new Date();
+                const dixMinMs = 10 * 60 * 1000;
 
-                // Gestion du LIVE
-                const ongoing = events.find(e => {
-                    if (!e.start.dateTime) return false;
-                    return now >= new Date(e.start.dateTime) && now <= new Date(e.end.dateTime) && dateCible.toDateString() === now.toDateString() && isOfficeValide(e.summary || "");
+                let activeEvent = null;
+                let status = ""; // "live" ou "upcoming"
+
+                events.forEach(e => {
+                    if (!e.start.dateTime || !isOfficeValide(e.summary || "")) return;
+                    const debut = new Date(e.start.dateTime);
+                    const fin = new Date(e.end.dateTime);
+
+                    // Cas EN DIRECT
+                    if (now >= debut && now <= fin && dateCible.toDateString() === now.toDateString()) {
+                        activeEvent = e;
+                        status = "live";
+                    } 
+                    // Cas ANTICIPATION (Uniquement Laudes/Vêpres)
+                    else if (now < debut && (debut - now) <= dixMinMs && dateCible.toDateString() === now.toDateString()) {
+                        const t = e.summary.toLowerCase();
+                        if (t.includes("laudes") || t.includes("vêpres") || t.includes("vepres")) {
+                            activeEvent = e;
+                            status = "upcoming";
+                        }
+                    }
                 });
 
-                const liveIndicator = document.getElementById('live-indicator-home');
-                if (ongoing) {
-                    currentLiveOffice = ongoing.summary;
-                    liveIndicator.classList.remove('hidden');
+                const container = document.getElementById('live-indicator-home');
+                const badgeBtn = document.getElementById('badge-btn');
+                const badgeTexte = document.getElementById('badge-texte');
+
+                if (activeEvent) {
+                    container.classList.remove('hidden');
+                    const titre = activeEvent.summary;
+                    const estOfficeTexte = titre.toLowerCase().includes("laudes") || titre.toLowerCase().includes("vêpres") || titre.toLowerCase().includes("vepres");
+
+                    if (status === "live") {
+                        badgeTexte.className = "badge-live";
+                        badgeTexte.innerText = `● EN DIRECT : ${titre}`;
+                    } else {
+                        badgeTexte.className = "badge-upcoming";
+                        badgeTexte.innerText = `● PROCHAINEMENT : ${titre}`;
+                    }
+
+                    // CLIQUABLE UNIQUEMENT POUR LAUDES/VEPRES
+                    if (estOfficeTexte) {
+                        badgeBtn.onclick = () => window.location.href = 'office.html';
+                        badgeBtn.classList.add('cursor-pointer', 'active:scale-95', 'transition-transform');
+                        badgeTexte.innerHTML += ' <span class="opacity-70 ml-1">›</span>';
+                    } else {
+                        badgeBtn.onclick = null;
+                        badgeBtn.classList.remove('cursor-pointer', 'active:scale-95');
+                    }
                 } else {
-                    liveIndicator.classList.add('hidden');
+                    container.classList.add('hidden');
                 }
 
-                // Affichage des Messes
                 const filteredMesses = events.filter(e => e.summary && e.summary.toLowerCase().includes('messe') && !e.summary.toLowerCase().includes('paul vi'));
                 const blocMesse = document.getElementById('bloc-messe');
                 if (filteredMesses.length > 0) {
