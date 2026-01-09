@@ -3,135 +3,164 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Breviarium</title>
+    <title>Breviarium Pro</title>
     <style>
+        :root {
+            --gold: #d4af37;
+            --bg-app: #ffffff;
+        }
+
         body, html {
             margin: 0; padding: 0; height: 100%; width: 100%;
-            overflow: hidden; background-color: #000;
+            overflow: hidden; background-color: #000; /* Fond pour la sortie */
         }
 
-        /* Animation d'entrée type "App" */
-        .app-wrapper {
-            opacity: 0;
-            transform: scale(0.98) translateY(10px);
-            animation: launchApp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-            height: 100vh; width: 100vw; background: #fff;
+        /* Conteneur principal avec animation d'entrée fluide */
+        #app-viewport {
+            height: 100vh;
+            width: 100vw;
+            background: var(--bg-app);
+            transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.5s ease;
+            animation: appIn 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            display: flex;
+            flex-direction: column;
         }
 
-        @keyframes launchApp {
-            to { opacity: 1; transform: scale(1) translateY(0); }
+        @keyframes appIn {
+            from { opacity: 0; transform: scale(1.05); }
+            to { opacity: 1; transform: scale(1); }
         }
 
-        iframe { border: none; width: 100%; height: 100%; display: block; }
+        /* Sortie pro */
+        .app-exit {
+            transform: scale(0.9) translateY(20px) !important;
+            opacity: 0 !important;
+            pointer-events: none;
+        }
 
-        /* Bouton flottant déplaçable */
-        #draggable-button {
+        iframe { border: none; width: 100%; height: 100%; flex-grow: 1; }
+
+        /* Bouton Flottant Premium */
+        #drag-btn {
             position: fixed;
-            top: 20px;
+            top: 30px;
             right: 20px;
-            z-index: 99999;
-            
-            width: 44px;
-            height: 44px;
-            background: rgba(255, 255, 255, 0.8);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border: 1px solid rgba(0, 0, 0, 0.1);
+            z-index: 9999;
+            width: 48px;
+            height: 48px;
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
             border-radius: 50%;
-            
             display: flex;
             align-items: center;
             justify-content: center;
-            text-decoration: none;
-            color: #333;
-            cursor: move; /* Indique qu'on peut le déplacer */
-            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
-            touch-action: none; /* Empêche le scroll pendant le drag sur mobile */
+            cursor: grab;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+            border: 1px solid rgba(255,255,255,0.3);
+            touch-action: none;
+            transition: opacity 0.3s ease, transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        #drag-btn:active { cursor: grabbing; transform: scale(0.9); }
+        
+        .btn-icon {
+            font-size: 28px;
+            font-weight: 200;
+            color: #1a1a1a;
+            pointer-events: none;
             user-select: none;
         }
 
-        .close-icon {
-            font-family: sans-serif;
-            font-size: 26px;
-            font-weight: 200;
-            pointer-events: none; /* L'icône ne gêne pas le clic sur le bouton */
+        /* Indicateur de chargement discret */
+        #loader {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 3px;
+            background: linear-gradient(90deg, transparent, var(--gold), transparent);
+            z-index: 10000;
+            animation: loading 2s infinite;
         }
 
-        #draggable-button:hover {
-            color: #d4af37;
-            background: #fff;
+        @keyframes loading {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
         }
     </style>
 </head>
 <body>
 
-    <div class="app-wrapper">
-        <a href="index.html" id="draggable-button" title="Retour à l'accueil">
-            <span class="close-icon">&times;</span>
-        </a>
+    <div id="loader"></div>
 
-        <iframe src="https://breviariumgregorianum.com/" allowfullscreen></iframe>
+    <div id="app-viewport">
+        <div id="drag-btn">
+            <span class="btn-icon">&times;</span>
+        </div>
+        <iframe src="https://breviariumgregorianum.com/" id="site-frame"></iframe>
     </div>
 
     <script>
-        const dragItem = document.querySelector("#draggable-button");
-        let active = false;
-        let currentX;
-        let currentY;
-        let initialX;
-        let initialY;
-        let xOffset = 0;
-        let yOffset = 0;
+        const btn = document.getElementById('drag-btn');
+        const viewport = document.getElementById('app-viewport');
+        const loader = document.getElementById('loader');
+        
+        // --- ANIMATION DE FERMETURE PRO ---
+        btn.onclick = (e) => {
+            // Empêche le clic si on était en train de draguer
+            if (isDragging) return;
+            
+            viewport.classList.add('app-exit');
+            setTimeout(() => {
+                window.location.href = 'index.html';
+            }, 500); // Délai pour laisser l'animation se finir
+        };
 
-        // Événements Tactiles (Mobile)
-        window.addEventListener("touchstart", dragStart, false);
-        window.addEventListener("touchend", dragEnd, false);
-        window.addEventListener("touchmove", drag, false);
+        // --- SYSTÈME DE DRAG & MAGNETISME ---
+        let isDragging = false;
+        let startX, startY;
 
-        // Événements Souris
-        window.addEventListener("mousedown", dragStart, false);
-        window.addEventListener("mouseup", dragEnd, false);
-        window.addEventListener("mousemove", drag, false);
+        btn.onpointerdown = (e) => {
+            isDragging = false;
+            startX = e.clientX - btn.offsetLeft;
+            startY = e.clientY - btn.offsetTop;
+            btn.setPointerCapture(e.pointerId);
+            
+            btn.onpointermove = (em) => {
+                isDragging = true;
+                let x = em.clientX - startX;
+                let y = em.clientY - startY;
+                
+                // Limites de l'écran
+                x = Math.max(10, Math.min(x, window.innerWidth - 58));
+                y = Math.max(10, Math.min(y, window.innerHeight - 58));
+                
+                btn.style.left = x + 'px';
+                btn.style.top = y + 'px';
+                btn.style.right = 'auto'; // Désactive le right initial
+            };
+        };
 
-        function dragStart(e) {
-            if (e.target === dragItem) {
-                if (e.type === "touchstart") {
-                    initialX = e.touches[0].clientX - xOffset;
-                    initialY = e.touches[0].clientY - yOffset;
+        btn.onpointerup = (e) => {
+            btn.onpointermove = null;
+            // Aimantage automatique au bord le plus proche
+            if (isDragging) {
+                const midX = window.innerWidth / 2;
+                const currentX = parseInt(btn.style.left);
+                btn.style.transition = "all 0.4s cubic-bezier(0.16, 1, 0.3, 1)";
+                
+                if (currentX < midX) {
+                    btn.style.left = '15px';
                 } else {
-                    initialX = e.clientX - xOffset;
-                    initialY = e.clientY - yOffset;
+                    btn.style.left = (window.innerWidth - 60) + 'px';
                 }
-                active = true;
+                
+                setTimeout(() => { btn.style.transition = "opacity 0.3s ease"; }, 400);
             }
-        }
+        };
 
-        function dragEnd(e) {
-            initialX = currentX;
-            initialY = currentY;
-            active = false;
-        }
-
-        function drag(e) {
-            if (active) {
-                e.preventDefault();
-                if (e.type === "touchmove") {
-                    currentX = e.touches[0].clientX - initialX;
-                    currentY = e.touches[0].clientY - initialY;
-                } else {
-                    currentX = e.clientX - initialX;
-                    currentY = e.clientY - initialY;
-                }
-                xOffset = currentX;
-                yOffset = currentY;
-                setTranslate(currentX, currentY, dragItem);
-            }
-        }
-
-        function setTranslate(xPos, yPos, el) {
-            el.style.transform = "translate3d(" + xPos + "px, " + yPos + "px, 0)";
-        }
+        // Cache le loader quand l'iframe est chargée
+        document.getElementById('site-frame').onload = () => {
+            loader.style.display = 'none';
+        };
     </script>
-
 </body>
 </html>
