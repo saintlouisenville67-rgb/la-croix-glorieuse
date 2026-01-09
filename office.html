@@ -2,96 +2,106 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#f4f4f4">
-    <title>Breviarium Gregorianum</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Breviarium</title>
     <style>
         body, html {
             margin: 0; padding: 0; height: 100%; width: 100%;
-            overflow: hidden; background-color: #f4f4f4;
-            -webkit-font-smoothing: antialiased;
+            overflow: hidden; background-color: #000;
         }
 
-        .iframe-wrapper {
+        /* Animation d'entrée type "App" */
+        .app-wrapper {
             opacity: 0;
-            transform: translateY(8px);
-            animation: fadeIn 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-            height: 100vh; width: 100vw;
-            display: flex; flex-direction: column;
+            transform: scale(0.98) translateY(10px);
+            animation: launchApp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            height: 100vh;
+            width: 100vw;
+            background: #fff;
         }
 
-        iframe { flex-grow: 1; border: none; width: 100%; height: 100%; }
-
-        @keyframes fadeIn { to { opacity: 1; transform: translateY(0); } }
-
-        /* Bouton fermer avec transition d'opacité */
-        .top-bar {
-            position: fixed;
-            top: 15px; right: 20px;
-            z-index: 9999;
-            transition: opacity 0.5s ease, visibility 0.5s, transform 0.5s ease;
+        @keyframes launchApp {
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
         }
 
-        .close-link {
-            text-decoration: none;
-            color: #999;
-            font-size: 35px;
-            font-family: sans-serif;
-            font-weight: 200;
+        /* L'iframe occupe tout l'écran */
+        iframe {
+            border: none;
+            width: 100%;
+            height: 100%;
             display: block;
-            width: 44px; height: 44px;
-            text-align: center;
-            background: rgba(255, 255, 255, 0.6); /* Un peu plus opaque pour la lisibilité */
-            border-radius: 50%;
-            line-height: 38px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            transition: all 0.3s;
         }
 
-        .close-link:hover { color: #d4af37; background: rgba(255, 255, 255, 1); transform: scale(1.1); }
+        /* Bouton flottant permanent et discret */
+        .floating-close {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 99999; /* Toujours au-dessus de l'iframe */
+            
+            /* Design du bouton */
+            width: 38px;
+            height: 38px;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(8px); /* Effet de verre dépoli moderne */
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            
+            /* Icone X */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            color: #333;
+            font-family: sans-serif;
+            font-size: 22px;
+            font-weight: 200;
+            
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
 
-        /* Classe pour masquer le bouton */
-        .ui-hidden { opacity: 0; visibility: hidden; transform: translateY(-10px); }
+        .floating-close:hover {
+            background: #fff;
+            transform: scale(1.1);
+            color: #d4af37; /* Teinte dorée au survol */
+        }
+
+        /* Petit label "Quitter" qui apparaît au survol (optionnel) */
+        .floating-close::before {
+            content: "QUITTER";
+            position: absolute;
+            right: 50px;
+            font-size: 10px;
+            letter-spacing: 1px;
+            font-weight: 600;
+            color: #666;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
+
+        .floating-close:hover::before {
+            opacity: 1;
+        }
     </style>
 </head>
 <body>
 
-    <div class="iframe-wrapper">
-        <div id="controls" class="top-bar">
-            <a href="javascript:history.back()" class="close-link" title="Fermer">&times;</a>
-        </div>
+    <div class="app-wrapper">
+        <a href="javascript:history.back()" class="floating-close" title="Quitter l'office">
+            &times;
+        </a>
 
-        <iframe id="breviarium-frame" src="https://breviariumgregorianum.com/" loading="eager"></iframe>
+        <iframe 
+            src="https://breviariumgregorianum.com/" 
+            allowfullscreen>
+        </iframe>
     </div>
-
-    <script>
-        const controls = document.getElementById('controls');
-        const frame = document.getElementById('breviarium-frame');
-        let timeout;
-
-        function hideControls() {
-            controls.classList.add('ui-hidden');
-        }
-
-        function resetTimer() {
-            controls.classList.remove('ui-hidden');
-            clearTimeout(timeout);
-            timeout = setTimeout(hideControls, 3000); 
-        }
-
-        // Détection sur la page parente
-        window.addEventListener('mousemove', resetTimer);
-        window.addEventListener('touchstart', resetTimer);
-
-        // ASTUCE pour l'iframe : 
-        // Comme on ne peut pas détecter le mouvement à l'intérieur de l'iframe (cross-domain),
-        // on réaffiche le bouton si la fenêtre regagne le focus ou si on survole la zone du bouton.
-        window.addEventListener('blur', resetTimer);
-        controls.addEventListener('mouseenter', resetTimer);
-
-        // Initialisation
-        resetTimer();
-    </script>
 
 </body>
 </html>
