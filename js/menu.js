@@ -1,55 +1,62 @@
-// 1. CHARGEMENT AUTO DE LA LIBRAIRIE D'ICÔNES
+// 1. CHARGEMENT AUTO DE LA LIBRAIRIE D'ICÔNES (LUCIDE)
 const scriptLucide = document.createElement('script');
 scriptLucide.src = 'https://unpkg.com/lucide@latest';
 scriptLucide.onload = () => { if (window.lucide) lucide.createIcons(); };
 document.head.appendChild(scriptLucide);
 
-// 2. STYLES (CORRESPONDANCE PARFAITE AVEC STYLE.CSS)
+// 2. STYLES COMPLETS (NAVIGATION + BANDEAU DÉFILANT + ANIMATIONS)
 const styleNav = document.createElement('style');
 styleNav.innerHTML = `
+    /* Animation de l'icône active */
     @keyframes activePulse { 0% { transform: scale(1); } 50% { transform: scale(1.12); } 100% { transform: scale(1); } }
-    
-    /* On anime l'enveloppe de l'icône pour un effet propre */
-    .nav-item.active .nav-icon-wrapper { 
-        animation: activePulse 2s infinite ease-in-out; 
-        display: inline-block; 
-    }
+    .nav-item.active .nav-icon-wrapper { animation: activePulse 2s infinite ease-in-out; display: inline-block; }
 
-    .nav-icon-wrapper {
-        position: relative;
+    /* Structure des icônes et badges */
+    .nav-icon-wrapper { position: relative; display: flex; align-items: center; justify-content: center; margin-bottom: 2px; }
+    .nav-indicator { position: absolute; bottom: -10px; width: 4px; height: 4px; background-color: #b91c1c; border-radius: 50%; }
+    .badge-dot { position: absolute; top: -2px; right: -4px; width: 10px; height: 10px; background-color: #ef4444; border-radius: 50%; border: 2px solid white; display: none; }
+    
+    @media (prefers-color-scheme: dark) { .badge-dot { border-color: #1e293b; } }
+
+    /* Style du Menu pour éviter le saut visuel */
+    .bottom-nav { min-height: 80px; display: flex; align-items: center; justify-content: space-around; }
+
+    /* --- STYLES DU BANDEAU DÉFILANT (TICKER) --- */
+    .ticker-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        background: #b91c1c;
+        color: white;
+        z-index: 1000;
+        height: 30px;
         display: flex;
         align-items: center;
-        justify-content: center;
-        margin-bottom: 2px;
+        overflow: hidden;
+        font-size: 13px;
+        font-weight: 500;
     }
-
-    .nav-indicator { 
-        position: absolute; 
-        bottom: -10px; 
-        width: 4px; 
-        height: 4px; 
-        background-color: #b91c1c; 
-        border-radius: 50%; 
+    .ticker-text {
+        white-space: nowrap;
+        display: inline-block;
+        padding-left: 100%;
+        animation: tickerMove 25s linear infinite;
     }
-
-    .badge-dot { 
-        position: absolute; 
-        top: -2px; 
-        right: -4px; 
-        width: 10px; 
-        height: 10px; 
-        background-color: #ef4444; 
-        border-radius: 50%; 
-        border: 2px solid white; 
-        display: none; 
+    @keyframes tickerMove {
+        0% { transform: translate3d(0, 0, 0); }
+        100% { transform: translate3d(-100%, 0, 0); }
     }
-
-    /* Harmonisation avec le mode sombre de style.css */
-    @media (prefers-color-scheme: dark) {
-        .badge-dot { border-color: #1e293b; }
+    .ticker-close {
+        position: absolute;
+        right: 10px;
+        background: none;
+        border: none;
+        color: white;
+        font-weight: bold;
+        cursor: pointer;
+        z-index: 1001;
     }
-
-    .bottom-nav { min-height: 80px; display: flex; align-items: center; justify-content: space-around; }
 `;
 document.head.appendChild(styleNav);
 
@@ -57,6 +64,7 @@ async function loadMenu() {
     const nav = document.querySelector('.bottom-nav');
     if (!nav) return;
 
+    // Configuration des icônes Lucide
     const menuItems = [
         { href: 'index.html', icon: 'home', label: 'Accueil', id: 'home' },
         { href: 'annonces.html', icon: 'megaphone', label: 'Annonces', id: 'annonces' },
@@ -70,7 +78,7 @@ async function loadMenu() {
 
     const currentPath = window.location.pathname.split('/').pop() || 'index.html';
     
-    // Injection du contenu (Structure préservée)
+    // Injection du HTML du menu
     nav.innerHTML = menuItems.map(item => {
         const isActive = (currentPath === item.href) || (currentPath === "" && item.href === "index.html");
         return `
@@ -87,23 +95,23 @@ async function loadMenu() {
         `;
     }).join('');
 
-    // Important : déclencher le rendu des icônes après injection
+    // Rendu des icônes Lucide
     if (window.lucide) lucide.createIcons();
 
-    // Lancement des fonctions satellites
+    // Lancement des fonctions satellites (Badges, Ticker, Scroll)
     updateBadges(); 
     loadTicker();
     setupScrollTop();
 }
 
-// Lancement automatique
+// Lancement automatique au chargement
 if (document.readyState === 'interactive' || document.readyState === 'complete') {
     loadMenu();
 } else {
     document.addEventListener('DOMContentLoaded', loadMenu);
 }
 
-// --- FONCTIONS DE GESTION (STRICTEMENT IDENTIQUES À TON ORIGINAL) ---
+// --- FONCTIONS DE GESTION (INTACTES) ---
 
 function markAsRead(id) {
     const dot = document.getElementById(`dot-${id}`);
