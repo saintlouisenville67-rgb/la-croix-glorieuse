@@ -18,7 +18,6 @@
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             background-color: var(--bg-light);
             margin: 0; padding: 20px; text-align: center;
-            overflow: hidden;
         }
         .prayer-card {
             background: var(--card-light);
@@ -26,29 +25,39 @@
             padding: 25px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.05);
             max-width: 500px; margin: auto;
-            min-height: 420px;
+            min-height: 480px;
             display: flex; flex-direction: column; justify-content: space-between;
         }
         .jesus-img {
-            width: 110px; height: 110px; border-radius: 50%;
-            margin: -55px auto 15px; border: 4px solid white;
+            width: 100px; height: 100px; border-radius: 50%;
+            margin: -50px auto 10px; border: 4px solid white;
             box-shadow: 0 8px 20px rgba(185, 28, 28, 0.2);
             object-fit: cover; background: white;
+        }
+        .faustine-quote {
+            background: #fef2f2;
+            border-radius: 20px;
+            padding: 12px 18px;
+            font-size: 0.85rem;
+            color: #991b1b;
+            margin-bottom: 15px;
+            border: 1px dashed #fecaca;
+            animation: fadeIn 0.5s ease-out;
+        }
+        @media (prefers-color-scheme: dark) {
+            .faustine-quote { background: #450a0a; color: #fecaca; border-color: #7f1d1d; }
         }
         .bead-btn {
             width: 60px; height: 60px; border-radius: 50%;
             background: var(--card-light);
             border: 1px solid #e2e8f0;
             display: flex; align-items: center; justify-content: center;
-            margin: 10px auto; cursor: pointer; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            margin: 10px auto; cursor: pointer; transition: all 0.2s;
             box-shadow: 0 4px 10px rgba(0,0,0,0.08);
-            -webkit-tap-highlight-color: transparent;
         }
-        .bead-btn:active { transform: scale(0.85); background: #fff1f2; border-color: #fecaca; }
-        
+        .bead-btn:active { transform: scale(0.9); }
         .progress-dot { width: 7px; height: 7px; border-radius: 50%; background: #e2e8f0; transition: all 0.3s; }
-        .progress-dot.active { background: var(--misericorde-red); transform: scale(1.4); box-shadow: 0 0 8px rgba(185, 28, 28, 0.4); }
-        
+        .progress-dot.active { background: var(--misericorde-red); transform: scale(1.4); }
         .text-fade { animation: fadeIn 0.3s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
     </style>
@@ -59,6 +68,8 @@
         <div>
             <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a8/Divine_Mercy.jpg/480px-Divine_Mercy.jpg" class="jesus-img" alt="Jésus Miséricordieux">
             
+            <div id="quote-box" class="faustine-quote hidden italic"></div>
+
             <h2 id="step-title" class="text-[10px] font-900 uppercase tracking-[0.3em] text-red-700">Début</h2>
             
             <div class="my-6 min-h-[140px] flex items-center justify-center px-2">
@@ -70,14 +81,11 @@
 
         <div>
             <div id="progress-container" class="flex justify-center gap-2.5 mb-4 hidden"></div>
-
             <p id="counter-text" class="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2"></p>
-
             <button id="next-btn" onclick="nextStep()" class="bead-btn">
                 <span id="bead-icon" class="text-2xl">📿</span>
             </button>
-
-            <p class="text-[9px] font-bold text-slate-300 uppercase mt-4 tracking-tighter">Touchez le grain pour avancer</p>
+            <p id="instruction" class="text-[9px] font-bold text-slate-300 uppercase mt-4 tracking-tighter">Touchez le grain pour avancer</p>
         </div>
     </div>
 
@@ -86,31 +94,43 @@
         let currentBead = 0;
         let currentDecade = 1;
 
+        const faustineQuotes = [
+            "« Plus la misère est grande, plus elle a droit à Ma miséricorde. » (PJ 1182)",
+            "« Je ne peux punir même le plus grand pécheur s'il invoque Ma pitié. » (PJ 1146)",
+            "« Dis à l'âme souffrante qu'elle se serre contre Mon Cœur miséricordieux. » (PJ 1486)",
+            "« Ma Miséricorde est plus grande que tes péchés et ceux du monde entier. » (PJ 1485)",
+            "« L'humanité n'aura pas de paix tant qu'elle ne s'adressera pas à Ma Miséricorde. » (PJ 300)"
+        ];
+
         const steps = [
             { title: "Début", text: "Au nom du Père, et du Fils, et du Saint-Esprit. Amen." },
             { title: "Introduction", text: "Notre Père... Je vous salue Marie... Je crois en Dieu..." },
             { title: "Gros Grain", text: "Père Éternel, je Vous offre le Corps et le Sang, l'Âme et la Divinité de Votre Fils Bien-Aimé, Notre Seigneur Jésus-Christ, en réparation de nos péchés et de ceux du monde entier." },
-            { title: "Dizaine", text: "Par Sa douloureuse Passion, ayez pitié de nous et du monde entier." }, // CORRECTION ICI
-            { title: "Conclusion (3 fois)", text: "Dieu Saint, Dieu Fort, Dieu Éternel, ayez pitié de nous et du monde entier." }, // CORRECTION ICI
-            { title: "Fin", text: "Jésus, j'ai confiance en Vous ! (Amen)" }
+            { title: "Dizaine", text: "Par Sa douloureuse Passion, ayez pitié de nous et du monde entier." },
+            { title: "Conclusion (3 fois)", text: "Dieu Saint, Dieu Fort, Dieu Éternel, ayez pitié de nous et du monde entier." },
+            { title: "Fin", text: "Jésus Miséricorideux, j'ai confiance en Vous !" }
         ];
 
         function updateUI() {
             const step = steps[currentStep];
             const contentEl = document.getElementById('prayer-content');
+            const quoteBox = document.getElementById('quote-box');
             
-            // Animation de changement de texte
-            contentEl.classList.remove('text-fade');
-            void contentEl.offsetWidth; // Trigger reflow
-            contentEl.classList.add('text-fade');
-
-            document.getElementById('step-title').innerText = step.title;
             contentEl.innerText = step.text;
-            
+            document.getElementById('step-title').innerText = step.title;
+
+            // Afficher citation Faustine seulement sur le Gros Grain de chaque dizaine
+            if (currentStep === 2) {
+                quoteBox.innerText = faustineQuotes[currentDecade - 1];
+                quoteBox.classList.remove('hidden');
+            } else {
+                quoteBox.classList.add('hidden');
+            }
+
             const progress = document.getElementById('progress-container');
             const counter = document.getElementById('counter-text');
             const icon = document.getElementById('bead-icon');
-            
+
             if (currentStep === 3) {
                 progress.classList.remove('hidden');
                 counter.innerText = `Dizaine ${currentDecade} • Grain ${currentBead + 1}/10`;
@@ -119,7 +139,16 @@
             } else {
                 progress.classList.add('hidden');
                 counter.innerText = "";
-                icon.innerText = (currentStep === 2) ? "⚪" : "📿";
+                icon.innerText = (currentStep === 2) ? "⚪" : (currentStep === 5 ? "✨" : "📿");
+            }
+
+            // FERMETURE AUTOMATIQUE À LA FIN
+            if (currentStep === 5) {
+                document.getElementById('instruction').innerText = "Fin de la prière. Retour auto...";
+                setTimeout(() => {
+                    // On ferme l'iframe en changeant l'URL de la page parente
+                    window.parent.location.href = 'priere.html';
+                }, 3500);
             }
         }
 
@@ -134,28 +163,22 @@
         }
 
         function nextStep() {
-            // Vibration légère sur mobile si supporté
-            if (window.navigator.vibrate) window.navigator.vibrate(10);
+            if (currentStep === 5) return; // Bloquer si c'est fini
 
-            if (currentStep === 3) { // Gestion des 10 grains
+            if (currentStep === 3) {
                 if (currentBead < 9) {
                     currentBead++;
                 } else {
                     currentBead = 0;
                     if (currentDecade < 5) {
                         currentDecade++;
-                        currentStep = 2; // Repasse par le Gros Grain avant la dizaine suivante
+                        currentStep = 2;
                     } else {
-                        currentStep = 4; // Fin du chapelet
+                        currentStep = 4;
                     }
                 }
             } else {
-                if (currentStep < steps.length - 1) {
-                    currentStep++;
-                } else {
-                    currentStep = 0;
-                    currentDecade = 1;
-                }
+                currentStep++;
             }
             updateUI();
         }
