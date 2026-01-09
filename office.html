@@ -15,93 +15,123 @@
             opacity: 0;
             transform: scale(0.98) translateY(10px);
             animation: launchApp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-            height: 100vh;
-            width: 100vw;
-            background: #fff;
+            height: 100vh; width: 100vw; background: #fff;
         }
 
         @keyframes launchApp {
-            to {
-                opacity: 1;
-                transform: scale(1) translateY(0);
-            }
+            to { opacity: 1; transform: scale(1) translateY(0); }
         }
 
-        /* L'iframe occupe tout l'écran */
-        iframe {
-            border: none;
-            width: 100%;
-            height: 100%;
-            display: block;
-        }
+        iframe { border: none; width: 100%; height: 100%; display: block; }
 
-        /* Bouton flottant permanent et discret */
-        .floating-close {
+        /* Bouton flottant déplaçable */
+        #draggable-button {
             position: fixed;
             top: 20px;
             right: 20px;
-            z-index: 99999; /* Toujours au-dessus de l'iframe */
+            z-index: 99999;
             
-            /* Design du bouton */
-            width: 38px;
-            height: 38px;
-            background: rgba(255, 255, 255, 0.7);
-            backdrop-filter: blur(8px); /* Effet de verre dépoli moderne */
-            -webkit-backdrop-filter: blur(8px);
+            width: 44px;
+            height: 44px;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
             border: 1px solid rgba(0, 0, 0, 0.1);
             border-radius: 50%;
             
-            /* Icone X */
             display: flex;
             align-items: center;
             justify-content: center;
             text-decoration: none;
             color: #333;
+            cursor: move; /* Indique qu'on peut le déplacer */
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            touch-action: none; /* Empêche le scroll pendant le drag sur mobile */
+            user-select: none;
+        }
+
+        .close-icon {
             font-family: sans-serif;
-            font-size: 22px;
+            font-size: 26px;
             font-weight: 200;
-            
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            transition: all 0.3s ease;
+            pointer-events: none; /* L'icône ne gêne pas le clic sur le bouton */
         }
 
-        .floating-close:hover {
+        #draggable-button:hover {
+            color: #d4af37;
             background: #fff;
-            transform: scale(1.1);
-            color: #d4af37; /* Teinte dorée au survol */
-        }
-
-        /* Petit label "Quitter" qui apparaît au survol (optionnel) */
-        .floating-close::before {
-            content: "QUITTER";
-            position: absolute;
-            right: 50px;
-            font-size: 10px;
-            letter-spacing: 1px;
-            font-weight: 600;
-            color: #666;
-            opacity: 0;
-            transition: opacity 0.3s;
-            pointer-events: none;
-        }
-
-        .floating-close:hover::before {
-            opacity: 1;
         }
     </style>
 </head>
 <body>
 
     <div class="app-wrapper">
-        <a href="javascript:history.back()" class="floating-close" title="Quitter l'office">
-            &times;
+        <a href="index.html" id="draggable-button" title="Retour à l'accueil">
+            <span class="close-icon">&times;</span>
         </a>
 
-        <iframe 
-            src="https://breviariumgregorianum.com/" 
-            allowfullscreen>
-        </iframe>
+        <iframe src="https://breviariumgregorianum.com/" allowfullscreen></iframe>
     </div>
+
+    <script>
+        const dragItem = document.querySelector("#draggable-button");
+        let active = false;
+        let currentX;
+        let currentY;
+        let initialX;
+        let initialY;
+        let xOffset = 0;
+        let yOffset = 0;
+
+        // Événements Tactiles (Mobile)
+        window.addEventListener("touchstart", dragStart, false);
+        window.addEventListener("touchend", dragEnd, false);
+        window.addEventListener("touchmove", drag, false);
+
+        // Événements Souris
+        window.addEventListener("mousedown", dragStart, false);
+        window.addEventListener("mouseup", dragEnd, false);
+        window.addEventListener("mousemove", drag, false);
+
+        function dragStart(e) {
+            if (e.target === dragItem) {
+                if (e.type === "touchstart") {
+                    initialX = e.touches[0].clientX - xOffset;
+                    initialY = e.touches[0].clientY - yOffset;
+                } else {
+                    initialX = e.clientX - xOffset;
+                    initialY = e.clientY - yOffset;
+                }
+                active = true;
+            }
+        }
+
+        function dragEnd(e) {
+            initialX = currentX;
+            initialY = currentY;
+            active = false;
+        }
+
+        function drag(e) {
+            if (active) {
+                e.preventDefault();
+                if (e.type === "touchmove") {
+                    currentX = e.touches[0].clientX - initialX;
+                    currentY = e.touches[0].clientY - initialY;
+                } else {
+                    currentX = e.clientX - initialX;
+                    currentY = e.clientY - initialY;
+                }
+                xOffset = currentX;
+                yOffset = currentY;
+                setTranslate(currentX, currentY, dragItem);
+            }
+        }
+
+        function setTranslate(xPos, yPos, el) {
+            el.style.transform = "translate3d(" + xPos + "px, " + yPos + "px, 0)";
+        }
+    </script>
 
 </body>
 </html>
