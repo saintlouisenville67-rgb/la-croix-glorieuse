@@ -17,18 +17,19 @@
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
+        /* Style pour le gradient si non défini dans style.css */
         .gradient-header {
             background: linear-gradient(135deg, #b91c1c 0%, #7f1d1d 100%);
         }
 
-        /* --- NOUVEAUX STYLES MES PRIÈRES (ADAPTÉS GAUCHE & DRAG) --- */
+        /* --- NOUVEAUX STYLES MES PRIÈRES (FIXÉ À GAUCHE) --- */
         .prayer-option-row {
             position: fixed;
-            left: 24px; /* Positionné à gauche */
+            left: 24px; /* Bouton à gauche */
             display: flex;
-            flex-direction: row; /* Texte à droite de l'icône */
             align-items: center;
             gap: 12px;
+            /* Animation sortant de la gauche */
             transform: scale(0) translateX(-20px);
             opacity: 0;
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -62,8 +63,6 @@
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
             white-space: nowrap;
         }
-        
-        /* Positions par défaut */
         .row-1 { bottom: 160px; transition-delay: 0.05s; }
         .row-2 { bottom: 220px; transition-delay: 0.1s; }
         .row-3 { bottom: 280px; transition-delay: 0.15s; }
@@ -80,14 +79,6 @@
             z-index: 50;
             opacity: 0;
             transition: opacity 0.3s ease;
-        }
-
-        #main-fab {
-            cursor: grab;
-            touch-action: none; /* Important pour le drag sur mobile */
-        }
-        #main-fab:active {
-            cursor: grabbing;
         }
     </style>
 </head>
@@ -163,8 +154,8 @@
 
     <div id="fab-blur-overlay" onclick="togglePrayerFab()"></div>
 
-    <button id="main-fab" class="fixed bottom-24 left-6 w-14 h-14 bg-slate-900 rounded-full shadow-2xl flex items-center justify-center text-white z-[60] border-2 border-white/20 transition-all active:scale-90">
-        <span id="fab-icon-container"><i data-lucide="sparkles" class="w-6 h-6 text-white"></i></span>
+    <button id="main-fab" onclick="togglePrayerFab()" class="fixed bottom-24 left-6 w-14 h-14 bg-slate-900 rounded-full shadow-2xl flex items-center justify-center text-white z-[60] border-2 border-white/20 transition-all active:scale-90">
+        <span id="fab-icon-container"><i data-lucide="sparkles" class="w-6 h-6"></i></span>
     </button>
 
     <div onclick="goToPrayer('matin')" class="prayer-option-row row-1">
@@ -195,72 +186,32 @@
         // Initialisation des icônes Lucide
         lucide.createIcons();
 
-        // --- LOGIQUE MES PRIÈRES AVEC DRAG & DROP ---
+        // --- LOGIQUE MES PRIÈRES ---
         let isFabOpen = false;
-        let isDragging = false;
-        const fab = document.getElementById('main-fab');
-        const rows = document.querySelectorAll('.prayer-option-row');
-        const overlay = document.getElementById('fab-blur-overlay');
-
-        // Variables pour le mouvement
-        let startY, startBottom;
-
-        fab.addEventListener('touchstart', (e) => {
-            isDragging = false;
-            startY = e.touches[0].clientY;
-            startBottom = parseInt(window.getComputedStyle(fab).bottom);
-        });
-
-        fab.addEventListener('touchmove', (e) => {
-            const deltaY = startY - e.touches[0].clientY;
-            if (Math.abs(deltaY) > 10) { // Seuil pour différencier clic et drag
-                isDragging = true;
-                let newBottom = startBottom + deltaY;
-                
-                // Limites de l'écran
-                newBottom = Math.max(80, Math.min(newBottom, window.innerHeight - 100));
-                
-                fab.style.bottom = newBottom + 'px';
-                
-                // On met à jour la position des bulles dynamiquement
-                rows.forEach((row, index) => {
-                    row.style.bottom = (newBottom + 60 + (index * 60)) + 'px';
-                });
-            }
-        });
-
-        fab.addEventListener('touchend', (e) => {
-            if (!isDragging) {
-                togglePrayerFab();
-            }
-        });
-
-        // Fallback pour clic souris sur ordi
-        fab.addEventListener('click', () => {
-            if (!isDragging) togglePrayerFab();
-        });
 
         function togglePrayerFab() {
             isFabOpen = !isFabOpen;
+            const rows = document.querySelectorAll('.prayer-option-row');
+            const overlay = document.getElementById('fab-blur-overlay');
             const iconContainer = document.getElementById('fab-icon-container');
+            const btn = document.getElementById('main-fab');
 
             if (isFabOpen) {
                 overlay.style.display = 'block';
                 setTimeout(() => overlay.style.opacity = '1', 10);
                 iconContainer.innerHTML = '<i data-lucide="x" class="w-6 h-6"></i>';
-                fab.style.backgroundColor = '#b91c1c';
+                btn.style.backgroundColor = '#b91c1c';
             } else {
                 overlay.style.opacity = '0';
                 setTimeout(() => overlay.style.display = 'none', 300);
-                iconContainer.innerHTML = '<i data-lucide="sparkles" class="w-6 h-6 text-white"></i>';
-                fab.style.backgroundColor = '#0f172a';
+                iconContainer.innerHTML = '<i data-lucide="sparkles" class="w-6 h-6"></i>';
+                btn.style.backgroundColor = '#0f172a';
             }
-            lucide.createIcons();
+            lucide.createIcons(); // Pour rafraîchir l'icône X ou Sparkles
             rows.forEach(r => r.classList.toggle('show', isFabOpen));
         }
 
         function goToPrayer(type) {
-            if (isDragging) return;
             togglePrayerFab();
             setTimeout(() => {
                 window.location.href = `mesprieres.html?type=${type}`;
@@ -373,8 +324,10 @@
             if (!error) loadPrières();
         }
 
+        // Initialisation au chargement
         loadPrières();
 
+        // Temps réel Supabase
         sb.channel('intentions-channel')
           .on('postgres_changes', { event: '*', schema: 'public', table: 'intentions' }, payload => {
               loadPrières();
