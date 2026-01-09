@@ -11,9 +11,9 @@
         .header h1 { margin: 0; font-size: 1.3rem; text-transform: uppercase; letter-spacing: 1px; }
         .content { padding: 30px; line-height: 1.8; text-align: justify; }
         h2 { color: #8b0000; font-size: 1.1rem; border-bottom: 1px solid #eee; padding-bottom: 8px; margin-top: 30px; text-transform: uppercase; }
-        .text-area { white-space: pre-wrap; font-size: 1.05rem; margin-top: 15px; font-variant-ligatures: common-ligatures; }
+        .text-area { white-space: pre-wrap; font-size: 1.05rem; margin-top: 15px; }
         #loader { text-align: center; padding: 40px; font-style: italic; color: #8b0000; }
-        .error { color: #c0392b; text-align: center; padding: 20px; border: 1px solid #c0392b; margin: 20px; border-radius: 5px; }
+        .error { color: #c0392b; text-align: center; padding: 20px; border: 1px solid #c0392b; margin: 20px; border-radius: 5px; background: #fff5f5; }
     </style>
 </head>
 <body>
@@ -37,11 +37,9 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
-    // Configuration
     const URL_PROJET = "https://rixdjcjlepadtchctxnn.supabase.co";
     const KEY_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJpeGRqY2psZXBhZHRjaGN0eG5uIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc2MTQ2MzMsImV4cCI6MjA4MzE5MDYzM30.0rcj8iFYw-kK7RbAAJ7ZbYqCTdHIWV1DmIQtKP_Ky4c";
     
-    // On utilise un nom différent pour éviter le conflit avec le SDK
     const clientSupabase = supabase.createClient(URL_PROJET, KEY_ANON);
 
     async function chargerLectures() {
@@ -49,30 +47,27 @@
         const mainContent = document.getElementById('main-content');
 
         try {
-            // Appel de votre fonction Edge "lecturesdujour"
-            const { data, error } = await clientSupabase.functions.invoke('lecturesdujour');
+            // CORRECTION ICI : Nom de la fonction = 'dynamic-endpoint'
+            const { data, error } = await clientSupabase.functions.invoke('dynamic-endpoint');
 
             if (error) throw error;
 
             if (data) {
-                // Injection des textes reçus
-                document.getElementById('epitre').innerText = data.epitre || "Texte de l'épître non disponible pour aujourd'hui.";
-                document.getElementById('evangile').innerText = data.evangile || "Texte de l'évangile non disponible pour aujourd'hui.";
+                document.getElementById('epitre').innerText = data.epitre || "Non disponible.";
+                document.getElementById('evangile').innerText = data.evangile || "Non disponible.";
                 
-                // Basculement de l'affichage
                 loader.style.display = 'none';
                 mainContent.style.display = 'block';
             }
         } catch (err) {
-            console.error("Erreur Supabase:", err);
+            console.error("Erreur détaillée:", err);
             loader.innerHTML = `<div class="error">
-                <strong>Erreur de chargement</strong><br>
-                ${err.message || "Impossible de joindre la fonction Edge."}
+                <strong>Erreur de connexion</strong><br>
+                Vérifiez que la fonction 'dynamic-endpoint' est bien déployée avec --no-verify-jwt.
             </div>`;
         }
     }
 
-    // Lancement automatique
     document.addEventListener('DOMContentLoaded', chargerLectures);
 </script>
 
