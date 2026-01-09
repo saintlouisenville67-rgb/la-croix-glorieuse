@@ -6,6 +6,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         :root {
+            --primary-gradient: linear-gradient(135deg, #b91c1c 0%, #7f1d1d 100%);
             --bg-light: #f8fafc;
             --card-light: #ffffff;
         }
@@ -22,124 +23,36 @@
         @keyframes fadeInPage { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
         .iframe-container {
-            width: 100%; height: 100vh;
+            width: 100%; height: calc(100vh - 70px);
             border: none; background: var(--bg-light);
         }
-
-        /* Bouton Flottant Déplaçable */
-        #floating-back {
-            position: fixed;
-            left: 20px;
-            top: 30px;
-            z-index: 9999;
-            cursor: move;
-            touch-action: none; /* Empêche le scroll pendant le déplacement */
-            background: var(--card-light);
-            padding: 10px 15px;
-            border-radius: 50px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            border: 1px solid rgba(0,0,0,0.05);
+        .header-app {
+            height: 70px; display: flex; align-items: center; padding: 0 20px;
+            background: var(--card-light); border-bottom: 1px solid rgba(0,0,0,0.05);
         }
-
-        /* Titre de navigation en haut */
-        .nav-header {
-            position: fixed;
-            top: 0; left: 0; width: 100%;
-            height: 50px;
-            display: flex; align-items: center; justify-content: center;
-            pointer-events: none; /* Laisse cliquer à travers */
-            z-index: 9998;
+        @media (prefers-color-scheme: dark) {
+            .header-app { border-bottom-color: rgba(255,255,255,0.1); }
         }
     </style>
 </head>
 <body>
-
-    <div class="nav-header">
-        <span id="nav-title" class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 opacity-80">Prière</span>
-    </div>
-
-    <div id="floating-back">
+    <div class="header-app justify-between">
         <button onclick="window.location.href='priere.html'" class="flex items-center gap-2 text-red-700 font-black uppercase text-[10px] tracking-widest active:scale-90 transition-transform">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
             Retour
         </button>
-    </div>
+        <span id="nav-title" class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Prière</span>
+        <div class="w-10"></div> </div>
 
     <iframe id="prayer-frame" class="iframe-container" src=""></iframe>
 
     <script>
         const urlParams = new URLSearchParams(window.location.search);
         const type = urlParams.get('type') || 'matin';
-        
-        // Mise à jour du titre demandé
-        const titles = { 
-            'matin': 'Matin', 
-            'soir': 'Soir', 
-            'usuelles': 'Prières Usuelles et Confession', 
-            'chapelet': 'Chapelet', 
-            'misericorde': 'Miséricorde' 
-        };
+        const titles = { 'matin': 'Matin', 'soir': 'Soir', 'usuelles': 'Usuelles', 'chapelet': 'Chapelet', 'misericorde': 'Miséricorde' };
         
         document.getElementById('nav-title').innerText = titles[type] || 'Prière';
         document.getElementById('prayer-frame').src = `priere-${type}.html`;
-
-        // --- LOGIQUE DE DÉPLACEMENT (DRAG) ---
-        const dragItem = document.querySelector("#floating-back");
-        let active = false;
-        let currentX;
-        let currentY;
-        let initialX;
-        let initialY;
-        let xOffset = 0;
-        let yOffset = 0;
-
-        function dragStart(e) {
-            if (e.type === "touchstart") {
-                initialX = e.touches[0].clientX - xOffset;
-                initialY = e.touches[0].clientY - yOffset;
-            } else {
-                initialX = e.clientX - xOffset;
-                initialY = e.clientY - yOffset;
-            }
-            if (e.target === dragItem || dragItem.contains(e.target)) active = true;
-        }
-
-        function dragEnd() {
-            initialX = currentX;
-            initialY = currentY;
-            active = false;
-        }
-
-        function drag(e) {
-            if (active) {
-                e.preventDefault();
-                if (e.type === "touchmove") {
-                    currentX = e.touches[0].clientX - initialX;
-                    currentY = e.touches[0].clientY - initialY;
-                } else {
-                    currentX = e.clientX - initialX;
-                    currentY = e.clientY - initialY;
-                }
-                xOffset = currentX;
-                yOffset = currentY;
-                setTranslate(currentX, currentY, dragItem);
-            }
-        }
-
-        function setTranslate(xPos, yPos, el) {
-            el.style.transform = "translate3d(" + xPos + "px, " + yPos + "px, 0)";
-        }
-
-        document.addEventListener("touchstart", dragStart, false);
-        document.addEventListener("touchend", dragEnd, false);
-        document.addEventListener("touchmove", drag, false);
-
-        document.addEventListener("mousedown", dragStart, false);
-        document.addEventListener("mouseup", dragEnd, false);
-        document.addEventListener("mousemove", drag, false);
     </script>
 </body>
 </html>
