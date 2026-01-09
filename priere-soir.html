@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            --bg-light: #f8fafc;
+            --card-light: #ffffff;
+        }
+        @media (prefers-color-scheme: dark) {
+            :root { --bg-light: #0f172a; --card-light: #1e293b; }
+            body { color: #f1f5f9; }
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-light);
+            margin: 0; padding: 20px;
+            line-height: 1.6;
+        }
+        .prayer-card {
+            background: var(--card-light);
+            border-radius: 32px;
+            padding: 35px 25px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+            max-width: 600px;
+            margin: 10px auto 40px auto;
+        }
+        .section-title {
+            font-size: 10px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #b91c1c;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        .prayer-text {
+            font-family: "Georgia", serif;
+            font-style: italic;
+            font-size: 1.05rem;
+            color: inherit;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .meditation-box {
+            background: #f1f5f9;
+            border-radius: 16px;
+            padding: 15px;
+            font-size: 0.9rem;
+            color: #475569;
+            margin: 20px 0;
+            border-left: 4px solid #b91c1c;
+        }
+        @media (prefers-color-scheme: dark) {
+            .meditation-box { background: #334155; color: #cbd5e1; }
+        }
+        .red-cross { color: #b91c1c; font-weight: bold; }
+        .divider { width: 30px; height: 1px; background: #e2e8f0; margin: 25px auto; }
+        @media (prefers-color-scheme: dark) { .divider { background: #334155; } }
+    </style>
+</head>
+<body>
+
+    <div class="prayer-card">
+        <div class="text-center mb-8">
+            <span class="text-3xl">🌙</span>
+            <p class="mt-4 font-bold text-slate-800 dark:text-white">
+                <span class="red-cross">†</span> Au nom du Père, et du Fils, et du Saint-Esprit. Amen.
+            </p>
+        </div>
+
+        <div class="divider"></div>
+
+        <h2 class="section-title">Action de Grâce et Examen</h2>
+        <div class="prayer-text">
+            <p class="mb-4">Mon Dieu, je vous remercie de toutes les grâces que vous m'avez faites aujourd'hui. Je vous adore et je vous aime de tout mon cœur.</p>
+            <p class="mb-4">Éclairez-moi, je vous en prie, par votre Saint-Esprit, pour me faire connaître mes péchés et m'en donner une véritable douleur.</p>
+            
+            <div class="meditation-box not-italic">
+                <strong>Instant de recueillement</strong><br>
+                Repensez doucement à votre journée : vos actions, vos paroles et vos pensées à la lumière de l'amour de Dieu.
+            </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <h2 class="section-title">L'Acte de Contrition</h2>
+        <div class="prayer-text">
+            <p>Mon Dieu, j'ai un très grand regret de Vous avoir offensé, parce que Vous êtes infiniment bon, infiniment aimable et que le péché Vous déplaît. Je prends la ferme résolution, avec le secours de Votre sainte grâce, de ne plus Vous offenser et de faire pénitence.</p>
+        </div>
+
+        <div class="divider"></div>
+
+        <h2 class="section-title">Protection pour la Nuit</h2>
+        <div class="prayer-text">
+            <p class="mb-4">Seigneur, veillez sur moi pendant cette nuit. Que vos saints anges m'entourent et me gardent en paix. Bénissez aussi mes parents, mes amis et tous ceux que j'aime. Protégez les malheureux, les malades et ceux qui souffrent.</p>
+            <p>Je m'endors entre vos bras, ô mon Dieu. Que mon dernier soupir soit un acte de pur amour pour vous. Amen.</p>
+        </div>
+
+        <div class="divider"></div>
+
+        <h2 class="section-title">Prière à la Sainte Vierge</h2>
+        <div class="prayer-text">
+            <p class="mb-4"><strong class="not-italic text-xs uppercase tracking-widest block mb-2 opacity-50">Le Memorare</strong>
+            Souvenez-vous, ô très miséricordieuse Vierge Marie, qu’on n’a jamais entendu dire qu’aucun de ceux qui ont eu recours à votre protection, imploré votre assistance ou réclamé votre intercession, ait été abandonné.</p>
+            <p class="mb-4">Animé d’une pareille confiance, ô Vierge des vierges, ô ma Mère, je accours vers vous et, gémissant sous le poids de mes péchés, je me prosterne à vos pieds.</p>
+            <p>Ô Mère du Verbe incarné, ne méprisez pas mes prières, mais écoutez-les favorablement et daignez les exaucer. Amen.</p>
+        </div>
+    </div>
+
+</body>
+</html>
