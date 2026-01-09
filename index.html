@@ -9,62 +9,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="manifest" href="manifest.json">
-    <style>
-        @keyframes soft-pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.7; }
-            100% { opacity: 1; }
-        }
-        .animate-soft-pulse {
-            animation: soft-pulse 2s infinite ease-in-out;
-        }
-
-        /* Badge VERT (En direct) */
-        .badge-live {
-            background: #22c55e;
-            color: white;
-            padding: 4px 12px;
-            border-radius: 8px;
-            font-size: 8px;
-            font-weight: 900;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7);
-            animation: pulse-green 2s infinite;
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-        /* Badge ORANGE (Anticipation) */
-        .badge-upcoming {
-            background: #f59e0b;
-            color: white;
-            padding: 4px 12px;
-            border-radius: 8px;
-            font-size: 8px;
-            font-weight: 900;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7);
-            animation: pulse-orange 2s infinite;
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-        @keyframes pulse-green {
-            0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
-            70% { box-shadow: 0 0 0 8px rgba(34, 197, 94, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
-        }
-
-        @keyframes pulse-orange {
-            0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7); }
-            70% { box-shadow: 0 0 0 8px rgba(245, 158, 11, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
-        }
-    </style>
 </head>
 <body class="bg-slate-50">
 
