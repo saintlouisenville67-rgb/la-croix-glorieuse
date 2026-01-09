@@ -29,7 +29,7 @@
             position: fixed;
             top: 15px; right: 20px;
             z-index: 9999;
-            transition: opacity 0.5s ease, visibility 0.5s;
+            transition: opacity 0.5s ease, visibility 0.5s, transform 0.5s ease;
         }
 
         .close-link {
@@ -41,16 +41,17 @@
             display: block;
             width: 44px; height: 44px;
             text-align: center;
-            background: rgba(255, 255, 255, 0.4);
+            background: rgba(255, 255, 255, 0.6); /* Un peu plus opaque pour la lisibilité */
             border-radius: 50%;
             line-height: 38px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
             transition: all 0.3s;
         }
 
-        .close-link:hover { color: #d4af37; background: rgba(255, 255, 255, 0.9); }
+        .close-link:hover { color: #d4af37; background: rgba(255, 255, 255, 1); transform: scale(1.1); }
 
         /* Classe pour masquer le bouton */
-        .ui-hidden { opacity: 0; visibility: hidden; }
+        .ui-hidden { opacity: 0; visibility: hidden; transform: translateY(-10px); }
     </style>
 </head>
 <body>
@@ -60,29 +61,33 @@
             <a href="javascript:history.back()" class="close-link" title="Fermer">&times;</a>
         </div>
 
-        <iframe src="https://breviariumgregorianum.com/" loading="eager"></iframe>
+        <iframe id="breviarium-frame" src="https://breviariumgregorianum.com/" loading="eager"></iframe>
     </div>
 
     <script>
         const controls = document.getElementById('controls');
+        const frame = document.getElementById('breviarium-frame');
         let timeout;
 
-        // Fonction pour masquer le bouton
         function hideControls() {
             controls.classList.add('ui-hidden');
         }
 
-        // Fonction pour réinitialiser le minuteur à chaque mouvement
         function resetTimer() {
             controls.classList.remove('ui-hidden');
             clearTimeout(timeout);
-            timeout = setTimeout(hideControls, 3000); // 3 secondes d'inactivité
+            timeout = setTimeout(hideControls, 3000); 
         }
 
-        // Écouteurs d'événements (souris et tactile)
+        // Détection sur la page parente
         window.addEventListener('mousemove', resetTimer);
-        window.addEventListener('mousedown', resetTimer);
         window.addEventListener('touchstart', resetTimer);
+
+        // ASTUCE pour l'iframe : 
+        // Comme on ne peut pas détecter le mouvement à l'intérieur de l'iframe (cross-domain),
+        // on réaffiche le bouton si la fenêtre regagne le focus ou si on survole la zone du bouton.
+        window.addEventListener('blur', resetTimer);
+        controls.addEventListener('mouseenter', resetTimer);
 
         // Initialisation
         resetTimer();
