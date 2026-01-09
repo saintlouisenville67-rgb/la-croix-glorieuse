@@ -6,7 +6,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         :root {
-            --primary-gradient: linear-gradient(135deg, #b91c1c 0%, #7f1d1d 100%);
+            --primary-red: #b91c1c;
             --bg-light: #f8fafc;
             --card-light: #ffffff;
         }
@@ -28,39 +28,56 @@
         }
         .prayer-title {
             font-size: 10px; font-weight: 900; text-transform: uppercase;
-            letter-spacing: 2px; color: #b91c1c; margin-bottom: 15px; text-align: center;
+            letter-spacing: 2px; color: var(--primary-red); margin-bottom: 15px; text-align: center;
         }
-        .text-body { font-family: "Georgia", serif; font-style: italic; line-height: 1.7; font-size: 1.05rem; margin-bottom: 1.5rem; }
+        .text-body { font-family: "Georgia", serif; font-style: italic; line-height: 1.7; font-size: 1.05rem; margin-bottom: 1rem; }
         .instruction-box {
             background: #f1f5f9; border-radius: 12px; padding: 12px;
-            font-size: 0.85rem; color: #475569; margin: 10px 0; border-left: 3px solid #b91c1c;
+            font-size: 0.85rem; color: #475569; margin: 10px 0; border-left: 3px solid var(--primary-red);
         }
         @media (prefers-color-scheme: dark) {
             .instruction-box { background: #334155; color: #cbd5e1; }
         }
-        .dialog { display: flex; flex-direction: column; gap: 8px; margin: 15px 0; }
-        .penitent { color: #b91c1c; font-weight: bold; font-size: 0.8rem; text-transform: uppercase; }
-        .pretre { color: #64748b; font-weight: bold; font-size: 0.8rem; text-transform: uppercase; }
+        .lang-toggle {
+            display: flex; justify-content: center; gap: 10px; margin-bottom: 20px;
+        }
+        .lang-btn {
+            padding: 5px 15px; border-radius: 20px; font-size: 10px; font-weight: bold;
+            border: 1px solid var(--primary-red); color: var(--primary-red); transition: 0.3s;
+        }
+        .lang-btn.active { background: var(--primary-red); color: white; }
+        .dialog { display: flex; flex-direction: column; gap: 4px; margin: 12px 0; }
+        .penitent { color: var(--primary-red); font-weight: bold; font-size: 0.75rem; text-transform: uppercase; }
+        .pretre { color: #64748b; font-weight: bold; font-size: 0.75rem; text-transform: uppercase; }
+        .hidden { display: none; }
     </style>
 </head>
 <body>
+
+    <div class="lang-toggle">
+        <button onclick="setLang('fr')" id="btn-fr" class="lang-btn active">FRANÇAIS</button>
+        <button onclick="setLang('la')" id="btn-la" class="lang-btn">LATIN</button>
+    </div>
 
     <div class="section-card">
         <h2 class="prayer-title">Les Fondamentales</h2>
         
         <details class="mb-4">
-            <summary class="font-bold text-slate-700 dark:text-white cursor-pointer">Symboles des Apôtres (Credo)</summary>
-            <p class="text-body mt-2">Je crois en Dieu, le Père tout-puissant, Créateur du ciel et de la terre. Et en Jésus-Christ, son Fils unique, notre Seigneur ; qui a été conçu du Saint-Esprit, est né de la Vierge Marie, a souffert sous Ponce Pilate, a été crucifié, est mort et a été enseveli, est descendu aux enfers ; le troisième jour est ressuscité des morts, est monté aux cieux, est assis à la droite de Dieu le Père tout-puissant, d’où il viendra juger les vivants et les morts. Je crois en l'Esprit-Saint, à la sainte Eglise catholique, à la communion des saints, à la résurrection de la chair, à la vie éternelle. Amen.</p>
+            <summary class="font-bold text-slate-700 dark:text-white cursor-pointer">Credo</summary>
+            <p class="text-body mt-2 lang-fr">Je crois en Dieu, le Père tout-puissant...</p>
+            <p class="text-body mt-2 lang-la hidden">Credo in Deum, Patrem omnipoténtem, Creatórem cæli et terræ...</p>
         </details>
 
         <details class="mb-4">
             <summary class="font-bold text-slate-700 dark:text-white cursor-pointer">Notre Père</summary>
-            <p class="text-body mt-2">Notre Père, qui êtes aux cieux, que votre nom soit sanctifié, que votre règne vienne, que votre volonté soit faite sur la terre comme au ciel. Donnez-nous aujourd’hui notre pain de ce jour. Pardonnez-nous nos offenses, comme nous pardonnons aussi à ceux qui nous ont offensés. Et ne nous laissez pas succomber à la tentation, mais délivrez-nous du mal. Amen.</p>
+            <p class="text-body mt-2 lang-fr">Notre Père, qui êtes aux cieux...</p>
+            <p class="text-body mt-2 lang-la hidden">Pater noster, qui es in cælis...</p>
         </details>
 
         <details>
             <summary class="font-bold text-slate-700 dark:text-white cursor-pointer">Je vous salue Marie</summary>
-            <p class="text-body mt-2">Je vous salue, Marie, pleine de grâce ; le Seigneur est avec vous. Vous êtes bénie entre toutes les femmes et Jésus, le fruit de vos entrailles, est béni. Sainte Marie, Mère de Dieu, priez pour nous pauvres pécheurs, maintenant et à l’heure de notre mort. Amen.</p>
+            <p class="text-body mt-2 lang-fr">Je vous salue, Marie, pleine de grâce...</p>
+            <p class="text-body mt-2 lang-la hidden">Ave María, grátia plena, Dóminus tecum...</p>
         </details>
     </div>
 
@@ -68,30 +85,24 @@
         </div>
 
     <div class="section-card">
-        <h2 class="prayer-title">Sacrement de Pénitence</h2>
+        <h2 class="prayer-title">La Confession</h2>
         
-        <div class="instruction-box">Avant d’entrer, préparez votre cœur et priez :</div>
-        <p class="text-body text-sm">Je confesse à Dieu tout-puissant, à la bienheureuse Marie toujours Vierge, à saint Michel Archange, à saint Jean-Baptiste, aux saints Apôtres Pierre et Paul, et à tous les saints, (et à vous, mon Père) que j’ai beaucoup péché, par pensées, par paroles et par actions. C’est ma faute, c’est ma faute, c’est ma très grande faute. C’est pourquoi je supplie la bienheureuse Marie toujours Vierge, saint Michel Archange, saint Jean-Baptiste, les saints Apôtres Pierre et Paul, et tous les saints, (et vous, mon Père) de prier pour moi le Seigneur notre Dieu.</p>
-
-        <div class="divider my-4 h-px bg-slate-100"></div>
+        <div class="instruction-box">Avant d’entrer dans le confessional :</div>
+        <p class="text-body text-sm">Je confesse à Dieu tout-puissant... C’est ma très grande faute. C’est pourquoi je supplie la bienheureuse Marie toujours Vierge... de prier pour moi le Seigneur notre Dieu.</p>
 
         <div class="dialog">
             <span class="penitent">Pénitent :</span>
-            <p class="text-body text-base">Bénissez-moi, mon Père, parce que j'ai péché.</p>
-            <span class="pretre">Le Prêtre :</span>
-            <p class="text-body text-sm opacity-70">(Donne sa bénédiction)</p>
-            <span class="penitent">Pénitent :</span>
-            <p class="text-body text-base italic">Ma dernière confession remonte à... J'ai reçu l'absolution et j'ai accompli ma pénitence. Mon Père, je m'accuse...</p>
+            <p class="text-body text-base italic">Bénissez-moi, mon Père, parce que j'ai péché.</p>
         </div>
 
-        <div class="instruction-box text-xs">Accusez vos péchés clairement (nombre et circonstances). Puis terminez par :</div>
-        
-        <p class="text-body text-sm">Je m'accuse aussi de tous les autres péchés dont je ne me souviens plus, ainsi que de ceux de ma vie passée. J'en demande pardon à Dieu ; et à vous, mon Père, pénitence et absolution si vous m’en jugez digne.</p>
+        <div class="instruction-box text-xs">Après la bénédiction du prêtre :</div>
+        <p class="text-body text-sm italic">Ma dernière confession remonte à... J'ai reçu l'absolution et j'ai accompli ma pénitence. Mon Père, je m'accuse...</p>
 
-        <div class="instruction-box text-xs">Écoutez l'exhortation et la pénitence, puis récitez :</div>
-        
-        <h3 class="text-center font-bold text-xs uppercase mb-2">Acte de Contrition</h3>
-        <p class="text-body text-base">Mon Dieu, j'ai un très grand regret de vous avoir offensé, parce que vous êtes infiniment bon et infiniment aimable, et que le péché vous déplaît ; je prends la ferme résolution, avec le secours de votre sainte grâce, de ne plus vous offenser et de faire pénitence.</p>
+        <div class="instruction-box text-xs">Après l'accusation, terminez par :</div>
+        <p class="text-body text-sm">Je m'accuse aussi de tous les autres péchés... J'en demande pardon à Dieu ; et à vous, mon Père, pénitence et absolution si vous m’en jugez digne.</p>
+
+        <h3 class="text-center font-bold text-[10px] uppercase text-slate-400 my-4">Acte de Contrition</h3>
+        <p class="text-body text-base">Mon Dieu, j'ai un très grand regret de vous avoir offensé...</p>
 
         <div class="dialog">
             <span class="pretre">Le Prêtre :</span>
@@ -102,40 +113,47 @@
     </div>
 
     <script>
-        // Détection Temps Pascal (Simple approximation ou fixe pour démonstration)
-        // Note: Pour une vraie app, il faudrait un calcul précis de Pâques.
-        function isEasterTime() {
-            const today = new Date();
-            const month = today.getMonth(); // 0-11
-            const day = today.getDate();
-            // Approximation : Avril et Mai (généralement temps pascal)
-            return (month === 3 || month === 4); 
+        let currentLang = 'fr';
+
+        function setLang(lang) {
+            currentLang = lang;
+            document.querySelectorAll('.lang-fr').forEach(el => el.classList.toggle('hidden', lang !== 'fr'));
+            document.querySelectorAll('.lang-la').forEach(el => el.classList.toggle('hidden', lang !== 'la'));
+            document.getElementById('btn-fr').classList.toggle('active', lang === 'fr');
+            document.getElementById('btn-la').classList.toggle('active', lang === 'la');
+            renderSeasonal();
         }
 
-        const seasonalBox = document.getElementById('seasonal-prayer');
-        if (isEasterTime()) {
-            seasonalBox.innerHTML = `<h2 class="prayer-title">Regina Caeli</h2>
-                <p class="text-body text-center text-sm">
-                Reine du ciel, réjouissez-vous, alléluia.<br>
-                Car celui que vous avez mérité de porter, alléluia.<br>
-                Est ressuscité comme il l'a dit, alléluia.<br>
-                Priez Dieu pour nous, alléluia.<br><br>
-                V. Soyez dans la joie et l'allégresse, Vierge Marie, alléluia.<br>
-                R. Parce que le Seigneur est vraiment ressuscité, alléluia.
-                </p>`;
-        } else {
-            seasonalBox.innerHTML = `<h2 class="prayer-title">L'Angélus</h2>
-                <p class="text-body text-center text-sm">
-                V. L’Ange du Seigneur apporta l’annonce à Marie.<br>
-                R. Et elle conçut de l’Esprit Saint.<br><br>
-                V. Voici la servante du Seigneur.<br>
-                R. Qu’il me soit fait selon votre parole.<br><br>
-                V. Et le Verbe s'est fait chair.<br>
-                R. Et il a habité parmi nous.<br><br>
-                V. Priez pour nous, sainte Mère de Dieu.<br>
-                R. Afin que nous devenions dignes des promesses du Christ.
-                </p>`;
+        function renderSeasonal() {
+            const isEaster = (new Date().getMonth() === 3 || new Date().getMonth() === 4);
+            const box = document.getElementById('seasonal-prayer');
+            
+            if (isEaster) {
+                box.innerHTML = `
+                    <h2 class="prayer-title">Regina Caeli</h2>
+                    <div class="${currentLang === 'fr' ? '' : 'hidden'} lang-fr">
+                        <p class="text-body text-sm text-center">Reine du ciel, réjouissez-vous, alléluia...<br>V. Soyez dans la joie, Vierge Marie, alléluia.<br>R. Parce que le Seigneur est vraiment ressuscité, alléluia.</p>
+                        <div class="instruction-box">Prions : Dieu, qui avez daigné réjouir le monde par la résurrection de votre Fils... faites que par sa Mère la Vierge Marie, nous parvenions aux joies de la vie éternelle.</div>
+                    </div>
+                    <div class="${currentLang === 'la' ? '' : 'hidden'} lang-la">
+                        <p class="text-body text-sm text-center">Regína cæli, lætáre, allelúia...<br>V. Gáude et lætáre, Virgo María, allelúia.<br>R. Quia surréxit Dóminus vere, allelúia.</p>
+                        <div class="instruction-box">Orémus : Deus, qui per resurrectiónem Fílii tui... præsta, quǽsumus ; ut per eíus Genetrícem Vírginem Maríam, perpétuæ capiámus gáudia vitæ.</div>
+                    </div>`;
+            } else {
+                box.innerHTML = `
+                    <h2 class="prayer-title">L'Angélus</h2>
+                    <div class="${currentLang === 'fr' ? '' : 'hidden'} lang-fr">
+                        <p class="text-body text-sm text-center">V. L’Ange du Seigneur... R. Et elle conçut...<br>V. Voici la servante... R. Qu’il me soit fait...</p>
+                        <div class="instruction-box">Prions : Répandez, Seigneur, votre grâce dans nos âmes... afin que par sa Passion et par sa Croix, nous soyons conduits à la gloire de sa Résurrection.</div>
+                    </div>
+                    <div class="${currentLang === 'la' ? '' : 'hidden'} lang-la">
+                        <p class="text-body text-sm text-center">V. Ángelus Dómini nuntiávit Maríæ.<br>R. Et concépit de Spíritu Sancto...<br>V. Ecce ancílla Dómini...</p>
+                        <div class="instruction-box">Orémus : Grátiam tuam, quǽsumus, Dómine, méntibus nostris infúnde... ut qui, Ángelo nuntiánte, Christi Fílii tui incarnatiónem cognóvimus, per passiónem eius et crucem, ad resurrectiónis glóriam perducámur.</div>
+                    </div>`;
+            }
         }
+        
+        renderSeasonal();
     </script>
 </body>
 </html>
