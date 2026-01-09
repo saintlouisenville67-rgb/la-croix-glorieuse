@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --misericorde-red: #b91c1c;
+            --bg-light: #f8fafc;
+            --card-light: #ffffff;
+        }
+        @media (prefers-color-scheme: dark) {
+            :root { --bg-light: #0f172a; --card-light: #1e293b; }
+            body { color: #f1f5f9; }
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-light);
+            margin: 0; padding: 20px; text-align: center;
+            overflow: hidden;
+        }
+        .prayer-card {
+            background: var(--card-light);
+            border-radius: 32px;
+            padding: 25px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            max-width: 500px; margin: auto;
+            min-height: 420px;
+            display: flex; flex-direction: column; justify-content: space-between;
+        }
+        .jesus-img {
+            width: 110px; height: 110px; border-radius: 50%;
+            margin: -55px auto 15px; border: 4px solid white;
+            box-shadow: 0 8px 20px rgba(185, 28, 28, 0.2);
+            object-fit: cover; background: white;
+        }
+        .bead-btn {
+            width: 60px; height: 60px; border-radius: 50%;
+            background: var(--card-light);
+            border: 1px solid #e2e8f0;
+            display: flex; align-items: center; justify-content: center;
+            margin: 10px auto; cursor: pointer; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+            -webkit-tap-highlight-color: transparent;
+        }
+        .bead-btn:active { transform: scale(0.85); background: #fff1f2; border-color: #fecaca; }
+        
+        .progress-dot { width: 7px; height: 7px; border-radius: 50%; background: #e2e8f0; transition: all 0.3s; }
+        .progress-dot.active { background: var(--misericorde-red); transform: scale(1.4); box-shadow: 0 0 8px rgba(185, 28, 28, 0.4); }
+        
+        .text-fade { animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+    <div class="prayer-card mt-16">
+        <div>
+            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a8/Divine_Mercy.jpg/480px-Divine_Mercy.jpg" class="jesus-img" alt="Jésus Miséricordieux">
+            
+            <h2 id="step-title" class="text-[10px] font-900 uppercase tracking-[0.3em] text-red-700">Début</h2>
+            
+            <div class="my-6 min-h-[140px] flex items-center justify-center px-2">
+                <p id="prayer-content" class="text-lg italic font-serif leading-relaxed text-slate-700 dark:text-slate-200 text-fade">
+                    Au nom du Père, et du Fils, et du Saint-Esprit. Amen.
+                </p>
+            </div>
+        </div>
+
+        <div>
+            <div id="progress-container" class="flex justify-center gap-2.5 mb-4 hidden"></div>
+
+            <p id="counter-text" class="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2"></p>
+
+            <button id="next-btn" onclick="nextStep()" class="bead-btn">
+                <span id="bead-icon" class="text-2xl">📿</span>
+            </button>
+
+            <p class="text-[9px] font-bold text-slate-300 uppercase mt-4 tracking-tighter">Touchez le grain pour avancer</p>
+        </div>
+    </div>
+
+    <script>
+        let currentStep = 0;
+        let currentBead = 0;
+        let currentDecade = 1;
+
+        const steps = [
+            { title: "Début", text: "Au nom du Père, et du Fils, et du Saint-Esprit. Amen." },
+            { title: "Introduction", text: "Notre Père... Je vous salue Marie... Je crois en Dieu..." },
+            { title: "Gros Grain", text: "Père Éternel, je Vous offre le Corps et le Sang, l'Âme et la Divinité de Votre Fils Bien-Aimé, Notre Seigneur Jésus-Christ, en réparation de nos péchés et de ceux du monde entier." },
+            { title: "Dizaine", text: "Par Sa douloureuse Passion, ayez pitié de nous et du monde entier." }, // CORRECTION ICI
+            { title: "Conclusion (3 fois)", text: "Dieu Saint, Dieu Fort, Dieu Éternel, ayez pitié de nous et du monde entier." }, // CORRECTION ICI
+            { title: "Fin", text: "Jésus, j'ai confiance en Vous ! (Amen)" }
+        ];
+
+        function updateUI() {
+            const step = steps[currentStep];
+            const contentEl = document.getElementById('prayer-content');
+            
+            // Animation de changement de texte
+            contentEl.classList.remove('text-fade');
+            void contentEl.offsetWidth; // Trigger reflow
+            contentEl.classList.add('text-fade');
+
+            document.getElementById('step-title').innerText = step.title;
+            contentEl.innerText = step.text;
+            
+            const progress = document.getElementById('progress-container');
+            const counter = document.getElementById('counter-text');
+            const icon = document.getElementById('bead-icon');
+            
+            if (currentStep === 3) {
+                progress.classList.remove('hidden');
+                counter.innerText = `Dizaine ${currentDecade} • Grain ${currentBead + 1}/10`;
+                icon.innerText = "🔸";
+                renderDots();
+            } else {
+                progress.classList.add('hidden');
+                counter.innerText = "";
+                icon.innerText = (currentStep === 2) ? "⚪" : "📿";
+            }
+        }
+
+        function renderDots() {
+            const container = document.getElementById('progress-container');
+            container.innerHTML = "";
+            for (let i = 0; i < 10; i++) {
+                const dot = document.createElement('div');
+                dot.className = `progress-dot ${i <= currentBead ? 'active' : ''}`;
+                container.appendChild(dot);
+            }
+        }
+
+        function nextStep() {
+            // Vibration légère sur mobile si supporté
+            if (window.navigator.vibrate) window.navigator.vibrate(10);
+
+            if (currentStep === 3) { // Gestion des 10 grains
+                if (currentBead < 9) {
+                    currentBead++;
+                } else {
+                    currentBead = 0;
+                    if (currentDecade < 5) {
+                        currentDecade++;
+                        currentStep = 2; // Repasse par le Gros Grain avant la dizaine suivante
+                    } else {
+                        currentStep = 4; // Fin du chapelet
+                    }
+                }
+            } else {
+                if (currentStep < steps.length - 1) {
+                    currentStep++;
+                } else {
+                    currentStep = 0;
+                    currentDecade = 1;
+                }
+            }
+            updateUI();
+        }
+
+        updateUI();
+    </script>
+</body>
+</html>
