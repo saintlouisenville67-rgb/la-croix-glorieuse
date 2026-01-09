@@ -32,7 +32,7 @@
             box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7);
             animation: pulse-green 2s infinite;
             display: inline-flex;
-            items-center: center;
+            align-items: center;
             gap: 4px;
         }
 
@@ -49,7 +49,7 @@
             box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7);
             animation: pulse-orange 2s infinite;
             display: inline-flex;
-            items-center: center;
+            align-items: center;
             gap: 4px;
         }
 
@@ -212,19 +212,17 @@
                 const dixMinMs = 10 * 60 * 1000;
 
                 let activeEvent = null;
-                let status = ""; // "live" ou "upcoming"
+                let status = "";
 
                 events.forEach(e => {
                     if (!e.start.dateTime || !isOfficeValide(e.summary || "")) return;
                     const debut = new Date(e.start.dateTime);
                     const fin = new Date(e.end.dateTime);
 
-                    // Cas EN DIRECT
                     if (now >= debut && now <= fin && dateCible.toDateString() === now.toDateString()) {
                         activeEvent = e;
                         status = "live";
                     } 
-                    // Cas ANTICIPATION (Uniquement Laudes/Vêpres)
                     else if (now < debut && (debut - now) <= dixMinMs && dateCible.toDateString() === now.toDateString()) {
                         const t = e.summary.toLowerCase();
                         if (t.includes("laudes") || t.includes("vêpres") || t.includes("vepres")) {
@@ -251,7 +249,6 @@
                         badgeTexte.innerText = `● PROCHAINEMENT : ${titre}`;
                     }
 
-                    // CLIQUABLE UNIQUEMENT POUR LAUDES/VEPRES
                     if (estOfficeTexte) {
                         badgeBtn.onclick = () => window.location.href = 'office.html';
                         badgeBtn.classList.add('cursor-pointer', 'active:scale-95', 'transition-transform');
@@ -305,6 +302,11 @@
         function goToday() { currentDateDisplay = new Date(); updateLiturgie(); loadIntention(); }
 
         initHome();
+
+        // RAFRAÎCHISSEMENT AUTOMATIQUE DU DIRECT (Toutes les 60 secondes)
+        setInterval(() => {
+            fetchMesseDuJour(currentDateDisplay);
+        }, 60000);
     </script>
     <script src="js/menu.js"></script>
 </body>
