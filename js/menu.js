@@ -1,13 +1,55 @@
-// 1. DÉMARRAGE ULTRA-RAPIDE
-// On n'attend pas la fin du chargement de la page pour préparer les styles
+// 1. CHARGEMENT AUTO DE LA LIBRAIRIE D'ICÔNES
+const scriptLucide = document.createElement('script');
+scriptLucide.src = 'https://unpkg.com/lucide@latest';
+scriptLucide.onload = () => { if (window.lucide) lucide.createIcons(); };
+document.head.appendChild(scriptLucide);
+
+// 2. STYLES (CORRESPONDANCE PARFAITE AVEC STYLE.CSS)
 const styleNav = document.createElement('style');
 styleNav.innerHTML = `
     @keyframes activePulse { 0% { transform: scale(1); } 50% { transform: scale(1.12); } 100% { transform: scale(1); } }
-    .nav-item.active span:first-child { animation: activePulse 2s infinite ease-in-out; display: inline-block; }
-    .nav-indicator { position: absolute; bottom: 8px; width: 4px; height: 4px; background-color: #b91c1c; border-radius: 50%; }
-    .badge-dot { position: absolute; top: -2px; right: -4px; width: 10px; height: 10px; background-color: #ef4444; border-radius: 50%; border: 2px solid white; display: none; }
-    /* Empêcher le saut visuel : on force la hauteur du nav même s'il est vide */
-    .bottom-nav { min-height: 80px; display: flex; align-items: center; justify-content: space-around; background: white; }
+    
+    /* On anime l'enveloppe de l'icône pour un effet propre */
+    .nav-item.active .nav-icon-wrapper { 
+        animation: activePulse 2s infinite ease-in-out; 
+        display: inline-block; 
+    }
+
+    .nav-icon-wrapper {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 2px;
+    }
+
+    .nav-indicator { 
+        position: absolute; 
+        bottom: -10px; 
+        width: 4px; 
+        height: 4px; 
+        background-color: #b91c1c; 
+        border-radius: 50%; 
+    }
+
+    .badge-dot { 
+        position: absolute; 
+        top: -2px; 
+        right: -4px; 
+        width: 10px; 
+        height: 10px; 
+        background-color: #ef4444; 
+        border-radius: 50%; 
+        border: 2px solid white; 
+        display: none; 
+    }
+
+    /* Harmonisation avec le mode sombre de style.css */
+    @media (prefers-color-scheme: dark) {
+        .badge-dot { border-color: #1e293b; }
+    }
+
+    .bottom-nav { min-height: 80px; display: flex; align-items: center; justify-content: space-around; }
 `;
 document.head.appendChild(styleNav);
 
@@ -16,50 +58,52 @@ async function loadMenu() {
     if (!nav) return;
 
     const menuItems = [
-        { href: 'index.html', icon: '🏠', label: 'Accueil', id: 'home' },
-        { href: 'annonces.html', icon: '📢', label: 'Annonces', id: 'annonces' },
-        { href: 'entraide.html', icon: '🤝', label: 'Entraide', id: 'entraide' },
-        { href: 'agenda.html', icon: '📅', label: 'Agenda', id: 'agenda' },
-        { href: 'priere.html', icon: '🕯️', label: 'Prières', id: 'priere' },
-        { href: 'groupes.html', icon: '👥', label: 'Groupes', id: 'groupes' },
-        { href: 'don.html', icon: '❤️', label: 'Don', id: 'don' },
-        { href: 'contact.html', icon: '✉️', label: 'Contact', id: 'contact' }
+        { href: 'index.html', icon: 'home', label: 'Accueil', id: 'home' },
+        { href: 'annonces.html', icon: 'megaphone', label: 'Annonces', id: 'annonces' },
+        { href: 'entraide.html', icon: 'hand-helping', label: 'Entraide', id: 'entraide' },
+        { href: 'agenda.html', icon: 'calendar', label: 'Agenda', id: 'agenda' },
+        { href: 'priere.html', icon: 'sparkles', label: 'Prières', id: 'priere' },
+        { href: 'groupes.html', icon: 'users', label: 'Groupes', id: 'groupes' },
+        { href: 'don.html', icon: 'heart', label: 'Don', id: 'don' },
+        { href: 'contact.html', icon: 'mail', label: 'Contact', id: 'contact' }
     ];
 
     const currentPath = window.location.pathname.split('/').pop() || 'index.html';
     
-    // Injection immédiate du contenu
+    // Injection du contenu (Structure préservée)
     nav.innerHTML = menuItems.map(item => {
         const isActive = (currentPath === item.href) || (currentPath === "" && item.href === "index.html");
         return `
             <a href="${item.href}" 
                class="nav-item ${isActive ? 'active' : ''}" 
                onclick="hapticFeedback(); markAsRead('${item.id}')">
-                <div class="relative">
-                    <span style="font-size: 20px; margin-bottom: 2px; display: block;">${item.icon}</span>
+                <div class="nav-icon-wrapper">
+                    <i data-lucide="${item.icon}" style="width: 20px; height: 20px;"></i>
                     <div id="dot-${item.id}" class="badge-dot"></div>
+                    ${isActive ? '<div class="nav-indicator"></div>' : ''}
                 </div>
                 ${item.label}
-                ${isActive ? '<div class="nav-indicator"></div>' : ''}
             </a>
         `;
     }).join('');
 
-    // Fonctions secondaires lancées juste après
+    // Important : déclencher le rendu des icônes après injection
+    if (window.lucide) lucide.createIcons();
+
+    // Lancement des fonctions satellites
     updateBadges(); 
     loadTicker();
     setupScrollTop();
 }
 
-// 2. L'ASTUCE : Lancer la fonction le plus tôt possible
-// On n'attend pas 'DOMContentLoaded' si le document est déjà prêt ou presque
+// Lancement automatique
 if (document.readyState === 'interactive' || document.readyState === 'complete') {
     loadMenu();
 } else {
     document.addEventListener('DOMContentLoaded', loadMenu);
 }
 
-// --- Tes fonctions de gestion (Gardées intactes) ---
+// --- FONCTIONS DE GESTION (STRICTEMENT IDENTIQUES À TON ORIGINAL) ---
 
 function markAsRead(id) {
     const dot = document.getElementById(`dot-${id}`);
