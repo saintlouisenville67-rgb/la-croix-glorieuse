@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #b91c1c 0%, #7f1d1d 100%);
+            --bg-light: #f8fafc;
+            --card-light: #ffffff;
+        }
+        @media (prefers-color-scheme: dark) {
+            :root { --bg-light: #0f172a; --card-light: #1e293b; }
+            body { color: #f1f5f9; }
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-light);
+            margin: 0; padding: 20px;
+            line-height: 1.6;
+        }
+        .prayer-card {
+            background: var(--card-light);
+            border-radius: 32px;
+            padding: 35px 25px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+            max-width: 600px;
+            margin: 10px auto 40px auto;
+        }
+        .section-title {
+            font-size: 10px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #b91c1c;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        .prayer-text {
+            font-family: "Georgia", serif;
+            font-style: italic;
+            font-size: 1.05rem;
+            color: inherit;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .red-cross { color: #b91c1c; font-weight: bold; }
+        .divider { width: 30px; height: 1px; background: #e2e8f0; margin: 25px auto; }
+        @media (prefers-color-scheme: dark) { .divider { background: #334155; } }
+    </style>
+</head>
+<body>
+
+    <div class="prayer-card">
+        <div class="text-center mb-8">
+            <span class="text-3xl">🌅</span>
+            <p class="mt-4 font-bold text-slate-800 dark:text-white">
+                <span class="red-cross">†</span> Au nom du Père, et du Fils, et du Saint-Esprit. Amen.
+            </p>
+        </div>
+
+        <div class="divider"></div>
+
+        <h2 class="section-title">Prière d'Adoration et d'Offrande</h2>
+        <div class="prayer-text">
+            <p class="mb-4">Seigneur, Dieu tout-puissant, qui m'avez fait parvenir au commencement de ce jour, gardez-moi par votre puissance, pour que, dans cette journée, je ne tombe dans aucun péché, mais que mes paroles, mes pensées et mes actes soient dirigés pour accomplir ce qui est juste à vos yeux.</p>
+            
+            <p class="mb-4">Je vous adore, mon Dieu, et je vous aime de tout mon cœur. Je vous rends grâce de m'avoir créé, fait chrétien et gardé pendant cette nuit. Je vous offre toutes les actions de ma journée ; faites qu'elles soient toutes conformes à votre sainte volonté et pour votre plus grande gloire.</p>
+            
+            <p class="mb-4">Préservez-moi du péché et de tout mal. Que votre grâce soit toujours avec moi et avec tous ceux qui me sont chers.</p>
+            
+            <p class="mb-4">Seigneur, dans le silence de ce jour naissant, je viens vous demander la paix, la sagesse, la force. Je veux regarder aujourd'hui le monde avec des yeux tout remplis d'amour ; être patient, compréhensif, doux et sage ; voir au-delà des apparences vos enfants comme vous les voyez vous-même, et ainsi ne voir que le bien en chacun.</p>
+            
+            <p>Fermez mes oreilles à toute calomnie, gardez ma langue de toute malveillance, que seules les pensées qui bénissent demeurent dans mon esprit. Que je sois si bienveillant et si joyeux que tous ceux qui m'approchent sentent votre présence. Revêtez-moi de votre beauté, Seigneur, et qu'au long de ce jour, je vous révèle. Amen.</p>
+        </div>
+
+        <div class="divider"></div>
+
+        <h2 class="section-title">Invocations</h2>
+        <div class="prayer-text">
+            <p class="mb-4"><strong class="not-italic text-sm">À la Sainte Vierge :</strong><br>
+            Sous votre protection nous nous réfugions, sainte Mère de Dieu : ne méprisez pas nos prières quand nous sommes dans l'épreuve, mais délivrez-nous de tous les dangers, ô Vierge glorieuse et bénie. Amen.</p>
+            
+            <p><strong class="not-italic text-sm">À l'Ange Gardien :</strong><br>
+            Ange de Dieu, qui êtes mon gardien, et à qui la bonté divine m'a confié, éclairez-moi, protégez-moi, guidez-moi et gouvernez-moi. Amen.</p>
+        </div>
+
+        <div class="divider"></div>
+
+        <h2 class="section-title">Oraisons Dominicales</h2>
+        <div class="prayer-text">
+            <p class="mb-6"><strong class="not-italic text-xs uppercase tracking-widest block mb-2 opacity-50">Notre Père</strong>
+            Notre Père, qui êtes aux cieux, que votre nom soit sanctifié, que votre règne vienne, que votre volonté soit faite sur la terre comme au ciel. Donnez-nous aujourd’hui notre pain de ce jour. Pardonnez-nous nos offenses, comme nous pardonnons aussi à ceux qui nous ont offensés. Et ne nous laissez pas succomber à la tentation, mais délivrez-nous du mal. Amen.</p>
+            
+            <p class="mb-6"><strong class="not-italic text-xs uppercase tracking-widest block mb-2 opacity-50">Je vous salue Marie</strong>
+            Je vous salue, Marie, pleine de grâce ; le Seigneur est avec vous. Vous êtes bénie entre toutes les femmes et Jésus, le fruit de vos entrailles, est béni. Sainte Marie, Mère de Dieu, priez pour nous pauvres pécheurs, maintenant et à l’heure de notre mort. Amen.</p>
+            
+            <p><strong class="not-italic text-xs uppercase tracking-widest block mb-2 opacity-50">Credo</strong>
+            Je crois en Dieu, le Père tout-puissant, Créateur du ciel et de la terre. Et en Jésus-Christ, son Fils unique, notre Seigneur ; qui a été conçu du Saint-Esprit, est né de la Vierge Marie, a souffert sous Ponce Pilate, a été crucifié, est mort et a été enseveli, est descendu aux enfers ; le troisième jour est ressuscité des morts, est monté aux cieux, est assis à la droite de Dieu le Père tout-puissant, d’où il viendra juger les vivants et les morts. Je crois en l'Esprit-Saint, à la sainte Eglise catholique, à la communion des saints, à la résurrection de la chair, à la vie éternelle. Amen.</p>
+        </div>
+    </div>
+
+</body>
+</html>
