@@ -3,34 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Mon Rosaire Quotidien</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         :root {
-            --rosaire-blue: #1e40af;
-            --bg-light: #f8fafc;
-            --card-light: #ffffff;
+            --rosaire-blue: #1e40af; /* Bleu profond */
+            --rosaire-blue-light: #3b82f6; /* Bleu plus clair pour le contraste */
+            --bg-light: #f8fafc; /* Gris très clair */
+            --card-light: #ffffff; /* Blanc carte */
+            --text-color-light: #1f2937; /* Gris foncé */
+            --text-color-light-soft: #64748b; /* Gris doux */
         }
         @media (prefers-color-scheme: dark) {
-            :root { --bg-light: #0f172a; --card-light: #1e293b; }
-            body { color: #f1f5f9; }
+            :root {
+                --bg-light: #0f172a; /* Bleu marine très foncé */
+                --card-light: #1e293b; /* Bleu marine foncé */
+                --text-color-light: #f1f5f9; /* Blanc cassé */
+                --text-color-light-soft: #94a3b8; /* Gris bleuté */
+            }
+            body { color: var(--text-color-light); }
         }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             background-color: var(--bg-light);
             margin: 0; padding: 20px; text-align: center;
+            display: flex; justify-content: center; align-items: center;
+            min-height: 100vh;
         }
-        .prayer-card {
+        .container {
+            max-width: 500px;
+            width: 100%;
+            margin: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .card {
             background: var(--card-light);
             border-radius: 32px;
             padding: 25px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.05);
-            max-width: 500px; margin: auto;
-            min-height: 520px;
+            min-height: 200px; /* Ajusté pour l'accueil */
             display: flex; flex-direction: column; justify-content: space-between;
         }
+        .prayer-card {
+            min-height: 580px; /* Plus grand pour le mode prière */
+        }
         .mystery-badge {
-            background: #eff6ff;
-            color: #1e40af;
+            background: #eff6ff; /* Couleurs Tailwind par défaut pour badge */
+            color: var(--rosaire-blue);
             padding: 6px 12px;
             border-radius: 12px;
             font-size: 10px;
@@ -45,52 +66,197 @@
         }
         .fruit-box {
             font-size: 0.8rem;
-            color: #64748b;
+            color: var(--text-color-light-soft);
             font-style: italic;
             margin-top: 5px;
             display: block;
         }
         .bead-btn {
-            width: 60px; height: 60px; border-radius: 50%;
-            background: var(--card-light);
-            border: 1px solid #e2e8f0;
+            width: 70px; height: 70px; border-radius: 50%;
+            background: var(--rosaire-blue); /* Couleur primaire pour le bouton */
+            color: white;
+            border: none; /* Supprimer la bordure */
             display: flex; align-items: center; justify-content: center;
-            margin: 10px auto; cursor: pointer; transition: all 0.2s;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+            margin: 15px auto; cursor: pointer; transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            position: relative;
         }
-        .bead-btn:active { transform: scale(0.9); }
+        .bead-btn:active { transform: scale(0.95); }
+
+        /* Animation Glow */
+        @keyframes pulse-blue {
+            0% { box-shadow: 0 0 0 0 rgba(30, 64, 175, 0.4); }
+            70% { box-shadow: 0 0 0 20px rgba(30, 64, 175, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(30, 64, 175, 0); }
+        }
+        .bead-btn.glowing {
+            animation: pulse-blue 2s infinite;
+        }
+        @media (prefers-color-scheme: dark) {
+             @keyframes pulse-blue {
+                0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.3); }
+                70% { box-shadow: 0 0 0 20px rgba(59, 130, 246, 0); }
+                100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+            }
+            .bead-btn.glowing {
+                animation: pulse-blue 2s infinite;
+            }
+        }
+
+
         .progress-dot { width: 6px; height: 6px; border-radius: 50%; background: #e2e8f0; transition: all 0.3s; }
         .progress-dot.active { background: var(--rosaire-blue); transform: scale(1.4); }
+
+        /* Nouvelle barre de progression globale */
+        .global-progress-bar {
+            width: 100%;
+            height: 8px;
+            background-color: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+        .global-progress-fill {
+            height: 100%;
+            width: 0%;
+            background-color: var(--rosaire-blue-light);
+            border-radius: 4px;
+            transition: width 0.3s ease-out;
+        }
+         @media (prefers-color-scheme: dark) {
+            .global-progress-bar { background-color: #334155; }
+            .global-progress-fill { background-color: var(--rosaire-blue-light); }
+        }
+
         .text-fade { animation: fadeIn 0.3s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Styles pour l'accueil */
+        .home-screen {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            justify-content: center;
+            align-items: center;
+            padding: 30px;
+        }
+        .home-screen button {
+            background-color: var(--rosaire-blue);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 16px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 300px;
+        }
+        .home-screen button:hover {
+            background-color: var(--rosaire-blue-light);
+            transform: translateY(-2px);
+        }
+        .home-screen button:active {
+            transform: translateY(0);
+        }
+
+        /* Styles pour la vue d'ensemble */
+        .overview-screen {
+            padding: 20px;
+            text-align: left;
+        }
+        .overview-screen h3 {
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: var(--rosaire-blue);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .mystery-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 20px;
+            gap: 15px;
+            padding: 15px;
+            background-color: var(--bg-light);
+            border-radius: 16px;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
+            transition: transform 0.2s ease-in-out;
+        }
+        .mystery-item:last-child {
+            margin-bottom: 0;
+        }
+        .mystery-item-icon {
+            font-size: 1.8rem;
+            line-height: 1;
+            flex-shrink: 0;
+            color: var(--rosaire-blue-light);
+        }
+        .mystery-item-content {
+            flex-grow: 1;
+        }
+        .mystery-item h4 {
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+            color: var(--text-color-light);
+        }
+        .mystery-item p {
+            font-size: 0.9rem;
+            color: var(--text-color-light-soft);
+            line-height: 1.4;
+        }
+
     </style>
 </head>
 <body>
 
-    <div class="prayer-card mt-8">
-        <div>
-            <div id="mystery-type" class="mystery-badge">Chargement...</div>
-            
-            <h2 id="step-title" class="text-[10px] font-900 uppercase tracking-[0.3em] text-blue-800 dark:text-blue-400">Début</h2>
-            
-            <div class="my-6 min-h-[220px] flex flex-col items-center justify-center px-2">
-                <p id="prayer-content" class="text-base italic font-serif leading-relaxed text-slate-700 dark:text-slate-200 text-fade">
-                    Au nom du Père...
-                </p>
-                <span id="mystery-fruit" class="fruit-box hidden"></span>
+    <div class="container">
+
+        <div id="home-screen" class="card home-screen">
+            <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-6">Prier le Rosaire</h1>
+            <div id="mystery-type-home" class="mystery-badge mb-8">Chargement...</div>
+            <button onclick="startRosary()">Commencer le Rosaire</button>
+            <button onclick="showOverview()" class="bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-100 mt-3">Voir les mystères du jour</button>
+        </div>
+
+        <div id="rosary-screen" class="card prayer-card mt-8 hidden">
+            <div>
+                <div id="mystery-type" class="mystery-badge">Chargement...</div>
+
+                <div class="global-progress-bar">
+                    <div id="global-progress-fill" class="global-progress-fill"></div>
+                </div>
+
+                <h2 id="step-title" class="text-[10px] font-900 uppercase tracking-[0.3em] text-blue-800 dark:text-blue-400">Début</h2>
+
+                <div class="my-6 min-h-[220px] flex flex-col items-center justify-center px-2">
+                    <p id="prayer-content" class="text-base italic font-serif leading-relaxed text-slate-700 dark:text-slate-200 text-fade">
+                        Au nom du Père...
+                    </p>
+                    <span id="mystery-fruit" class="fruit-box hidden"></span>
+                </div>
+            </div>
+
+            <div>
+                <div id="progress-container" class="flex justify-center gap-1.5 mb-4 hidden"></div>
+                <p id="counter-text" class="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2"></p>
+
+                <button id="next-btn" onclick="nextStep()" class="bead-btn glowing">
+                    <span id="bead-icon" class="text-2xl">📿</span>
+                </button>
+
+                <p id="instruction" class="text-[9px] font-bold text-slate-300 uppercase mt-4">Touchez le grain pour avancer</p>
             </div>
         </div>
 
-        <div>
-            <div id="progress-container" class="flex justify-center gap-1.5 mb-4 hidden"></div>
-            <p id="counter-text" class="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2"></p>
-            
-            <button id="next-btn" onclick="nextStep()" class="bead-btn">
-                <span id="bead-icon" class="text-2xl">📿</span>
-            </button>
-            
-            <p id="instruction" class="text-[9px] font-bold text-slate-300 uppercase mt-4">Touchez le grain pour avancer</p>
+        <div id="overview-screen" class="card overview-screen hidden">
+            <h3>Les Mystères <span id="overview-mystery-type" class="font-normal text-blue-600 dark:text-blue-300"></span> du jour</h3>
+            <div id="mysteries-list">
+                </div>
+            <button onclick="backToHome()" class="bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-100 mt-6 w-full max-w-none">Retour à l'accueil</button>
         </div>
+
     </div>
 
     <script>
@@ -106,53 +272,103 @@
         // --- MYSTÈRES ---
         const MYSTERIES = {
             joyeux: [
-                { t: "L'Annonciation", f: "L'humilité" },
-                { t: "La Visitation", f: "La charité fraternelle" },
-                { t: "La Nativité", f: "L'esprit de pauvreté" },
-                { t: "La Présentation", f: "L'obéissance et la pureté" },
-                { t: "Le Recouvrement", f: "La recherche de Dieu" }
+                { t: "L'Annonciation", f: "L'humilité", icon: "🕊️" },
+                { t: "La Visitation", f: "La charité fraternelle", icon: "🤝" },
+                { t: "La Nativité", f: "L'esprit de pauvreté", icon: "🌟" },
+                { t: "La Présentation", f: "L'obéissance et la pureté", icon: "🕯️" },
+                { t: "Le Recouvrement", f: "La recherche de Dieu", icon: "🔎" }
             ],
             lumineux: [
-                { t: "Le Baptême de Jésus", f: "L'état de grâce" },
-                { t: "Les Noces de Cana", f: "La confiance en Marie" },
-                { t: "L'Annonce du Royaume", f: "La conversion" },
-                { t: "La Transfiguration", f: "La prière" },
-                { t: "L'Institution de l'Eucharistie", f: "La ferveur" }
+                { t: "Le Baptême de Jésus", f: "L'état de grâce", icon: "💧" },
+                { t: "Les Noces de Cana", f: "La confiance en Marie", icon: "🥂" },
+                { t: "L'Annonce du Royaume", f: "La conversion", icon: "📢" },
+                { t: "La Transfiguration", f: "La prière", icon: "✨" },
+                { t: "L'Institution de l'Eucharistie", f: "La ferveur", icon: "🍞" }
             ],
             douloureux: [
-                { t: "L'Agonie", f: "La contrition" },
-                { t: "La Flagellation", f: "La mortification des sens" },
-                { t: "Le Couronnement d'épines", f: "La mortification de l'esprit" },
-                { t: "Le Portement de Croix", f: "La patience" },
-                { t: "La Crucifixion", f: "L'amour de Dieu et des âmes" }
+                { t: "L'Agonie", f: "La contrition", icon: "🩸" },
+                { t: "La Flagellation", f: "La mortification des sens", icon: "⛓️" },
+                { t: "Le Couronnement d'épines", f: "La mortification de l'esprit", icon: "👑" },
+                { t: "Le Portement de Croix", f: "La patience", icon: "🎚️" },
+                { t: "La Crucifixion", f: "L'amour de Dieu et des âmes", icon: "✝️" }
             ],
             glorieux: [
-                { t: "La Résurrection", f: "La foi" },
-                { t: "L'Ascension", f: "L'espérance" },
-                { t: "La Pentecôte", f: "Le zèle" },
-                { t: "L'Assomption", f: "La dévotion à Marie" },
-                { t: "Le Couronnement de Marie", f: "La persévérance finale" }
+                { t: "La Résurrection", f: "La foi", icon: "☀️" },
+                { t: "L'Ascension", f: "L'espérance", icon: "☁️" },
+                { t: "La Pentecôte", f: "Le zèle", icon: "🔥" },
+                { t: "L'Assomption", f: "La dévotion à Marie", icon: "💖" },
+                { t: "Le Couronnement de Marie", f: "La persévérance finale", icon: "👑" }
             ]
         };
 
-        // --- LOGIQUE DE DÉTECTION ---
+        // --- LOGIQUE DE DÉTECTION DES MYSTÈRES DU JOUR ---
         let day = new Date().getDay(); // 0=Dim, 1=Lun...
         let currentMysteries = [];
         let typeLabel = "";
 
-        if (day === 1 || day === 6) { currentMysteries = MYSTERIES.joyeux; typeLabel = "Mystères Joyeux"; }
-        else if (day === 2 || day === 5) { currentMysteries = MYSTERIES.douloureux; typeLabel = "Mystères Douloureux"; }
-        else if (day === 4) { currentMysteries = MYSTERIES.lumineux; typeLabel = "Mystères Lumineux"; }
-        else { currentMysteries = MYSTERIES.glorieux; typeLabel = "Mystères Glorieux"; }
+        // Détermination des mystères en fonction du jour
+        if (day === 1 || day === 6) { currentMysteries = MYSTERIES.joyeux; typeLabel = "Joyeux"; }
+        else if (day === 2 || day === 5) { currentMysteries = MYSTERIES.douloureux; typeLabel = "Douloureux"; }
+        else if (day === 4) { currentMysteries = MYSTERIES.lumineux; typeLabel = "Lumineux"; }
+        else { currentMysteries = MYSTERIES.glorieux; typeLabel = "Glorieux"; }
 
-        document.getElementById('mystery-type').innerText = typeLabel;
+        // Mettre à jour les badges sur l'écran d'accueil et de prière
+        document.getElementById('mystery-type-home').innerText = `Mystères ${typeLabel}`;
+        document.getElementById('mystery-type').innerText = `Mystères ${typeLabel}`; // Pour l'écran de prière
+        document.getElementById('overview-mystery-type').innerText = typeLabel; // Pour l'écran d'aperçu
 
-        // --- ÉTATS ---
-        let step = 0; // 0:Signe, 1:Credo, 2:Pater, 3:3xAve, 4:Gloria
-        let decade = 0; // 0 à 4
+        // --- ÉTATS GLOBAUX DU ROSAIRE ---
+        let step = 0; // 0:Signe, 1:Credo, 2:Pater, 3:3xAve, 4:Gloria (ouverture)
+        let decade = 0; // 0 à 4 (pour les 5 dizaines)
         let bead = -1; // -1:Pater de la dizaine, 0-9: Ave, 10:Gloria/Fatima
-        let isStarted = false;
+        let isStarted = false; // Vrai une fois les prières d'ouverture passées
 
+        // --- GESTION DES ÉCRANS ---
+        const homeScreen = document.getElementById('home-screen');
+        const rosaryScreen = document.getElementById('rosary-screen');
+        const overviewScreen = document.getElementById('overview-screen');
+
+        function showScreen(screenId) {
+            homeScreen.classList.add('hidden');
+            rosaryScreen.classList.add('hidden');
+            overviewScreen.classList.add('hidden');
+            document.getElementById(screenId).classList.remove('hidden');
+        }
+
+        function startRosary() {
+            showScreen('rosary-screen');
+            updateUI();
+        }
+
+        function showOverview() {
+            renderOverview(); // Génère la liste des mystères
+            showScreen('overview-screen');
+        }
+
+        function backToHome() {
+            showScreen('home-screen');
+        }
+
+        // --- RENDU DE LA VUE D'ENSEMBLE ---
+        function renderOverview() {
+            const listContainer = document.getElementById('mysteries-list');
+            listContainer.innerHTML = ""; // Nettoyer avant d'ajouter
+
+            currentMysteries.forEach((mystery, index) => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'mystery-item';
+                itemDiv.innerHTML = `
+                    <span class="mystery-item-icon">${mystery.icon || '📖'}</span>
+                    <div class="mystery-item-content">
+                        <h4>${index + 1}. ${mystery.t}</h4>
+                        <p>Fruit : ${mystery.f}</p>
+                    </div>
+                `;
+                listContainer.appendChild(itemDiv);
+            });
+        }
+
+        // --- MISE À JOUR DE L'INTERFACE DE PRIÈRE ---
         function updateUI() {
             const content = document.getElementById('prayer-content');
             const fruit = document.getElementById('mystery-fruit');
@@ -160,10 +376,32 @@
             const progress = document.getElementById('progress-container');
             const counter = document.getElementById('counter-text');
             const icon = document.getElementById('bead-icon');
+            const globalProgressFill = document.getElementById('global-progress-fill');
+            const nextBtn = document.getElementById('next-btn');
 
             fruit.classList.add('hidden');
             progress.classList.add('hidden');
             counter.innerText = "";
+            nextBtn.classList.add('glowing'); // Le bouton brille par défaut
+
+            content.classList.remove('text-fade'); // Reset animation
+            void content.offsetWidth; // Trigger reflow
+            content.classList.add('text-fade'); // Re-apply animation
+
+            // --- Logique de progression globale (pour la barre) ---
+            let globalProgress = 0;
+            if (!isStarted) {
+                globalProgress = (step / 5) * 10; // L'ouverture représente ~10% de la prière totale
+            } else {
+                // Chaque dizaine représente 1/5ème du rosaire principal
+                // On ajoute la progression de la dizaine en cours (bead)
+                globalProgress = 10 + (decade * 18) + (bead === -1 ? 0 : (bead === 10 ? 1.5 : (bead + 1) / 10 * 16.5));
+                // 10% pour l'ouverture, puis 5 dizaines de 18% chacune (10+5*18 = 100)
+                // Le Pater (-1) est 0, les Ave (0-9) sont 16.5% de la dizaine, Gloria (10) est 1.5% restant
+                if (globalProgress > 100) globalProgress = 100; // S'assurer de ne pas dépasser
+            }
+            globalProgressFill.style.width = `${globalProgress}%`;
+
 
             if (!isStarted) {
                 title.innerText = "Ouverture";
@@ -181,16 +419,16 @@
 
                 if (bead === -1) {
                     content.innerText = PRAYERS.pater;
-                    icon.innerText = "⚪";
+                    icon.innerText = "⚪"; // Grosse perle
                 } else if (bead >= 0 && bead <= 9) {
                     content.innerText = PRAYERS.ave;
                     progress.classList.remove('hidden');
                     counter.innerText = `Dizaine ${decade+1} • Grain ${bead+1}/10`;
-                    icon.innerText = "🔹";
+                    icon.innerText = "🔹"; // Petite perle
                     renderDots();
-                } else {
+                } else { // bead === 10 (Gloria + Fatima)
                     content.innerText = PRAYERS.gloria + "\n\n---\n\n" + PRAYERS.fatima;
-                    icon.innerText = "✨";
+                    icon.innerText = "✨"; // Étoile
                 }
             }
         }
@@ -206,21 +444,36 @@
         }
 
         function nextStep() {
+            const nextBtn = document.getElementById('next-btn');
+            nextBtn.classList.remove('glowing'); // Arrêter l'animation au clic
+            void nextBtn.offsetWidth; // Trigger reflow
+            // L'animation sera relancée par updateUI à la prochaine étape si besoin
+
             if (!isStarted) {
-                if (step < 4) step++;
-                else isStarted = true;
+                if (step < 4) {
+                    step++;
+                } else {
+                    isStarted = true;
+                    step = 0; // Réinitialiser le step pour ne plus l'utiliser
+                }
             } else {
                 if (bead < 10) {
                     bead++;
                 } else {
                     if (decade < 4) {
                         decade++;
-                        bead = -1;
+                        bead = -1; // Revenir au Pater pour la nouvelle dizaine
                     } else {
                         // FIN DU ROSAIRE
-                        document.getElementById('prayer-content').innerText = "Salve Regina...\nAu nom du Père, et du Fils, et du Saint-Esprit. Amen.";
-                        document.getElementById('instruction').innerText = "Rosaire terminé. Retour auto...";
-                        setTimeout(() => window.parent.location.href = 'priere.html', 4000);
+                        document.getElementById('prayer-content').innerText = "Salve Regina...\n\n---\n\nAu nom du Père, et du Fils, et du Saint-Esprit. Amen.\n\nFélicitations, le Rosaire est terminé !";
+                        document.getElementById('instruction').innerText = "Redirection vers l'accueil...";
+                        document.getElementById('next-btn').classList.add('hidden'); // Cacher le bouton
+                        document.getElementById('progress-container').classList.add('hidden');
+                        document.getElementById('counter-text').classList.add('hidden');
+                        document.getElementById('step-title').innerText = "Fin du Rosaire";
+                        document.getElementById('mystery-fruit').classList.add('hidden');
+                        document.getElementById('global-progress-fill').style.width = `100%`; // Assurer 100%
+                        setTimeout(() => backToHome(), 5000); // Retour à l'accueil après 5s
                         return;
                     }
                 }
@@ -228,6 +481,9 @@
             updateUI();
         }
 
+        // Initialisation de l'écran à charger
+        showScreen('home-screen');
+        // Initialisation de l'UI pour que les badges soient corrects dès le chargement si on va direct sur l'écran de prière
         updateUI();
     </script>
 </body>
