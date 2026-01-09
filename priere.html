@@ -20,6 +20,64 @@
         .gradient-header {
             background: linear-gradient(135deg, #b91c1c 0%, #7f1d1d 100%);
         }
+
+        /* --- NOUVEAUX STYLES MES PRIÈRES --- */
+        .prayer-option-row {
+            position: fixed;
+            right: 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transform: scale(0) translateX(20px);
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 55;
+            cursor: pointer;
+        }
+        .prayer-option-row.show {
+            transform: scale(1) translateX(0);
+            opacity: 1;
+        }
+        .bubble-icon {
+            width: 48px;
+            height: 48px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            font-size: 20px;
+            border: 1px solid #f1f5f9;
+        }
+        .bubble-label {
+            background: #1e293b;
+            color: white;
+            padding: 6px 14px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        .row-1 { bottom: 160px; transition-delay: 0.05s; }
+        .row-2 { bottom: 220px; transition-delay: 0.1s; }
+        .row-3 { bottom: 280px; transition-delay: 0.15s; }
+        .row-4 { bottom: 340px; transition-delay: 0.2s; }
+        .row-5 { bottom: 400px; transition-delay: 0.25s; }
+
+        #fab-blur-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            display: none;
+            z-index: 50;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
     </style>
 </head>
 <body class="bg-slate-50">
@@ -92,10 +150,70 @@
 
     </main>
 
+    <div id="fab-blur-overlay" onclick="togglePrayerFab()"></div>
+
+    <button id="main-fab" onclick="togglePrayerFab()" class="fixed bottom-24 right-6 w-14 h-14 bg-slate-900 rounded-full shadow-2xl flex items-center justify-center text-white z-[60] border-2 border-white/20 transition-all active:scale-90">
+        <span id="fab-icon" class="text-xl">🙏</span>
+    </button>
+
+    <div onclick="goToPrayer('matin')" class="prayer-option-row row-1">
+        <div class="bubble-label">Prière du Matin</div>
+        <div class="bubble-icon">🌅</div>
+    </div>
+    <div onclick="goToPrayer('soir')" class="prayer-option-row row-2">
+        <div class="bubble-label">Prière du Soir</div>
+        <div class="bubble-icon">🌙</div>
+    </div>
+    <div onclick="goToPrayer('usuelles')" class="prayer-option-row row-3">
+        <div class="bubble-label">Prières usuelles</div>
+        <div class="bubble-icon">✝️</div>
+    </div>
+    <div onclick="goToPrayer('chapelet')" class="prayer-option-row row-4">
+        <div class="bubble-label">Chapelet</div>
+        <div class="bubble-icon">📿</div>
+    </div>
+    <div onclick="goToPrayer('misericorde')" class="prayer-option-row row-5">
+        <div class="bubble-label">Miséricorde</div>
+        <div class="bubble-icon">❤️</div>
+    </div>
+
     <nav class="bottom-nav"></nav>
 
     <script src="js/config.js"></script>
     <script>
+        // --- LOGIQUE MES PRIÈRES ---
+        let isFabOpen = false;
+
+        function togglePrayerFab() {
+            isFabOpen = !isFabOpen;
+            const rows = document.querySelectorAll('.prayer-option-row');
+            const overlay = document.getElementById('fab-blur-overlay');
+            const icon = document.getElementById('fab-icon');
+            const btn = document.getElementById('main-fab');
+
+            if (isFabOpen) {
+                overlay.style.display = 'block';
+                setTimeout(() => overlay.style.opacity = '1', 10);
+                icon.style.transform = 'rotate(135deg)';
+                icon.innerText = '✕';
+                btn.style.backgroundColor = '#b91c1c';
+            } else {
+                overlay.style.opacity = '0';
+                setTimeout(() => overlay.style.display = 'none', 300);
+                icon.style.transform = 'rotate(0deg)';
+                icon.innerText = '🙏';
+                btn.style.backgroundColor = '#0f172a';
+            }
+            rows.forEach(r => r.classList.toggle('show', isFabOpen));
+        }
+
+        function goToPrayer(type) {
+            togglePrayerFab();
+            setTimeout(() => {
+                window.location.href = `mesprieres.html?type=${type}`;
+            }, 300);
+        }
+
         // --- LOGIQUE ACCORDÉON MESSE ---
         function toggleMesse() {
             const container = document.getElementById('container-messe');
