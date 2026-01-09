@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lectures du Jour - Missel 1962</title>
+    <style>
+        body { font-family: 'Georgia', serif; background-color: #fdfaf3; padding: 20px; color: #333; }
+        .container { max-width: 800px; margin: auto; background: white; border: 1px solid #d1c7b7; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        .header { background: #8b0000; color: white; padding: 20px; text-align: center; border-radius: 7px 7px 0 0; }
+        .header h1 { margin: 0; font-size: 1.3rem; text-transform: uppercase; letter-spacing: 1px; }
+        .content { padding: 30px; line-height: 1.8; text-align: justify; }
+        h2 { color: #8b0000; font-size: 1.1rem; border-bottom: 1px solid #eee; padding-bottom: 8px; margin-top: 30px; text-transform: uppercase; }
+        .text-area { white-space: pre-wrap; font-size: 1.05rem; margin-top: 15px; }
+        #loader { text-align: center; padding: 40px; font-style: italic; color: #8b0000; }
+        .error { color: #c0392b; text-align: center; padding: 20px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>Textes Liturgiques du Jour</h1>
+    </div>
+
+    <div id="loader">Chargement des textes depuis Supabase...</div>
+
+    <div id="main-content" style="display:none;" class="content">
+        <h2>Épître / Lecture</h2>
+        <div id="epitre" class="text-area"></div>
+
+        <h2>Saint Évangile</h2>
+        <div id="evangile" class="text-area"></div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+    // Configuration avec vos identifiants
+    const SUPABASE_URL = "https://rixdjcjlepadtchctxnn.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJpeGRqY2psZXBhZHRjaGN0eG5uIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc2MTQ2MzMsImV4cCI6MjA4MzE5MDYzM30.0rcj8iFYw-kK7RbAAJ7ZbYqCTdHIWV1DmIQtKP_Ky4c";
+    
+    const supabase = document.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    async function chargerLectures() {
+        try {
+            // Appel de votre fonction Edge "lecturesdujour"
+            const { data, error } = await supabase.functions.invoke('lecturesdujour');
+
+            if (error) throw error;
+
+            if (data) {
+                // Remplissage des textes
+                document.getElementById('epitre').innerText = data.epitre || "Texte de l'épître non disponible.";
+                document.getElementById('evangile').innerText = data.evangile || "Texte de l'évangile non disponible.";
+                
+                // Affichage du contenu
+                document.getElementById('loader').style.display = 'none';
+                document.getElementById('main-content').style.display = 'block';
+            }
+        } catch (err) {
+            console.error(err);
+            document.getElementById('loader').innerHTML = `<div class="error">Erreur de connexion : ${err.message}</div>`;
+        }
+    }
+
+    // Lancer la récupération au chargement de la page
+    window.onload = chargerLectures;
+</script>
+
+</body>
+</html>
