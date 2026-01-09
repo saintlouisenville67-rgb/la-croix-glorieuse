@@ -9,78 +9,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
-    <style>
-        .animate-fade-in {
-            animation: fadeIn 0.4s ease-out forwards;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        /* Style pour le gradient si non défini dans style.css */
-        .gradient-header {
-            background: linear-gradient(135deg, #b91c1c 0%, #7f1d1d 100%);
-        }
-
-        /* --- NOUVEAUX STYLES MES PRIÈRES (FIXÉ À GAUCHE) --- */
-        .prayer-option-row {
-            position: fixed;
-            left: 24px; /* Bouton à gauche */
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            /* Animation sortant de la gauche */
-            transform: scale(0) translateX(-20px);
-            opacity: 0;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            z-index: 55;
-            cursor: pointer;
-        }
-        .prayer-option-row.show {
-            transform: scale(1) translateX(0);
-            opacity: 1;
-        }
-        .bubble-icon {
-            width: 48px;
-            height: 48px;
-            background: white;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
-            border: 1px solid #f1f5f9;
-        }
-        .bubble-label {
-            background: #1e293b;
-            color: white;
-            padding: 6px 14px;
-            border-radius: 12px;
-            font-size: 11px;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            white-space: nowrap;
-        }
-        .row-1 { bottom: 160px; transition-delay: 0.05s; }
-        .row-2 { bottom: 220px; transition-delay: 0.1s; }
-        .row-3 { bottom: 280px; transition-delay: 0.15s; }
-        .row-4 { bottom: 340px; transition-delay: 0.2s; }
-        .row-5 { bottom: 400px; transition-delay: 0.25s; }
-
-        #fab-blur-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(255, 255, 255, 0.7);
-            backdrop-filter: blur(5px);
-            -webkit-backdrop-filter: blur(5px);
-            display: none;
-            z-index: 50;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-    </style>
 </head>
 <body class="bg-slate-50">
 
@@ -183,10 +111,8 @@
 
     <script src="js/config.js"></script>
     <script>
-        // Initialisation des icônes Lucide
         lucide.createIcons();
 
-        // --- LOGIQUE MES PRIÈRES ---
         let isFabOpen = false;
 
         function togglePrayerFab() {
@@ -207,7 +133,7 @@
                 iconContainer.innerHTML = '<i data-lucide="sparkles" class="w-6 h-6"></i>';
                 btn.style.backgroundColor = '#0f172a';
             }
-            lucide.createIcons(); // Pour rafraîchir l'icône X ou Sparkles
+            lucide.createIcons();
             rows.forEach(r => r.classList.toggle('show', isFabOpen));
         }
 
@@ -218,7 +144,6 @@
             }, 300);
         }
 
-        // --- LOGIQUE ACCORDÉON MESSE ---
         function toggleMesse() {
             const container = document.getElementById('container-messe');
             const chevron = document.getElementById('chevron-messe');
@@ -236,7 +161,6 @@
             }
         }
 
-        // --- LOGIQUE INTENTIONS DE PRIÈRE ---
         async function loadPrières() {
             const { data, error } = await sb
                 .from('intentions')
@@ -324,10 +248,8 @@
             if (!error) loadPrières();
         }
 
-        // Initialisation au chargement
         loadPrières();
 
-        // Temps réel Supabase
         sb.channel('intentions-channel')
           .on('postgres_changes', { event: '*', schema: 'public', table: 'intentions' }, payload => {
               loadPrières();
