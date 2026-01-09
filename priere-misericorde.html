@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Dévotion Miséricorde Divine</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         :root {
@@ -17,83 +18,119 @@
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             background-color: var(--bg-light);
-            margin: 0; padding: 20px; text-align: center;
+            margin: 0; padding: 10px; padding-bottom: 80px;
         }
         .prayer-card {
             background: var(--card-light);
-            border-radius: 32px;
-            padding: 25px;
+            border-radius: 24px;
+            padding: 20px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.05);
-            max-width: 500px; margin: auto;
-            min-height: 480px;
+            max-width: 500px; margin: 40px auto 20px;
+            min-height: 450px;
             display: flex; flex-direction: column; justify-content: space-between;
+            position: relative;
         }
-        .jesus-img {
-            width: 100px; height: 100px; border-radius: 50%;
-            margin: -50px auto 10px; border: 4px solid white;
-            box-shadow: 0 8px 20px rgba(185, 28, 28, 0.2);
-            object-fit: cover; background: white;
-        }
-        .faustine-quote {
-            background: #fef2f2;
-            border-radius: 20px;
-            padding: 12px 18px;
-            font-size: 0.85rem;
-            color: #991b1b;
-            margin-bottom: 15px;
-            border: 1px dashed #fecaca;
-            animation: fadeIn 0.5s ease-out;
-        }
-        @media (prefers-color-scheme: dark) {
-            .faustine-quote { background: #450a0a; color: #fecaca; border-color: #7f1d1d; }
-        }
+        .tab-content { display: none; animation: fadeIn 0.3s ease-in-out; }
+        .tab-content.active { display: flex; flex-direction: column; flex: 1; }
+        
         .bead-btn {
-            width: 60px; height: 60px; border-radius: 50%;
-            background: var(--card-light);
-            border: 1px solid #e2e8f0;
+            width: 65px; height: 65px; border-radius: 50%;
+            background: var(--card-light); border: 1px solid #e2e8f0;
             display: flex; align-items: center; justify-content: center;
             margin: 10px auto; cursor: pointer; transition: all 0.2s;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
         }
-        .bead-btn:active { transform: scale(0.9); }
-        .progress-dot { width: 7px; height: 7px; border-radius: 50%; background: #e2e8f0; transition: all 0.3s; }
-        .progress-dot.active { background: var(--misericorde-red); transform: scale(1.4); }
-        .text-fade { animation: fadeIn 0.3s ease-in-out; }
+        .bead-btn:active { transform: scale(0.9); background: #f1f5f9; }
+        
+        .progress-dot { width: 7px; height: 7px; border-radius: 50%; background: #cbd5e1; transition: all 0.3s; }
+        .progress-dot.active { background: var(--misericorde-red); transform: scale(1.3); }
+
+        .neuvaine-day-btn {
+            padding: 8px; border-radius: 12px; border: 1px solid #e2e8f0;
+            font-size: 11px; font-weight: bold; cursor: pointer;
+        }
+        .neuvaine-day-btn.active { background: var(--misericorde-red); color: white; border-color: var(--misericorde-red); }
+
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
-    <div class="prayer-card mt-16">
-        <div>
-            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a8/Divine_Mercy.jpg/480px-Divine_Mercy.jpg" class="jesus-img" alt="Jésus Miséricordieux">
+    <div class="prayer-card">
+        <div id="tab-chapelet" class="tab-content active">
+            <h2 id="step-title" class="text-[10px] font-black uppercase tracking-[0.3em] text-red-700 text-center mb-4">Début</h2>
             
-            <div id="quote-box" class="faustine-quote hidden italic"></div>
+            <div id="quote-box" class="bg-red-50 dark:bg-red-950/30 p-3 rounded-xl text-xs italic text-red-800 dark:text-red-200 mb-4 hidden border border-red-100 dark:border-red-900/50"></div>
 
-            <h2 id="step-title" class="text-[10px] font-900 uppercase tracking-[0.3em] text-red-700">Début</h2>
-            
-            <div class="my-6 min-h-[140px] flex items-center justify-center px-2">
-                <p id="prayer-content" class="text-lg italic font-serif leading-relaxed text-slate-700 dark:text-slate-200 text-fade">
-                    Au nom du Père, et du Fils, et du Saint-Esprit. Amen.
-                </p>
+            <div class="flex-1 flex items-center justify-center px-2">
+                <p id="prayer-content" class="text-lg italic font-serif leading-relaxed text-center text-slate-700 dark:text-slate-200"></p>
+            </div>
+
+            <div class="mt-4 text-center">
+                <div id="progress-container" class="flex justify-center gap-2 mb-3 hidden"></div>
+                <p id="counter-text" class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1"></p>
+                <div class="flex items-center justify-center gap-6">
+                    <button onclick="prevStep()" id="prev-btn" class="text-slate-300 opacity-0 transition-opacity"><svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg></button>
+                    <button onclick="nextStep()" class="bead-btn"><span id="bead-icon" class="text-2xl">📿</span></button>
+                    <div class="w-6"></div>
+                </div>
             </div>
         </div>
 
-        <div>
-            <div id="progress-container" class="flex justify-center gap-2.5 mb-4 hidden"></div>
-            <p id="counter-text" class="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2"></p>
-            <button id="next-btn" onclick="nextStep()" class="bead-btn">
-                <span id="bead-icon" class="text-2xl">📿</span>
-            </button>
-            <p id="instruction" class="text-[9px] font-bold text-slate-300 uppercase mt-4 tracking-tighter">Touchez le grain pour avancer</p>
+        <div id="tab-neuvaine" class="tab-content">
+            <h2 class="text-[10px] font-black uppercase tracking-[0.3em] text-red-700 text-center mb-4">Neuvaine à la Miséricorde</h2>
+            
+            <div class="flex flex-wrap justify-center gap-1 mb-4">
+                <script>
+                    for(let i=1; i<=9; i++) {
+                        document.write(`<button onclick="showNeuvaine(${i})" id="nday-${i}" class="neuvaine-day-btn ${i===1?'active':''}">J${i}</button>`);
+                    }
+                </script>
+            </div>
+
+            <div class="flex-1 overflow-y-auto px-1">
+                <h3 id="neuvaine-title" class="font-bold text-sm text-red-800 dark:text-red-400 mb-2 uppercase"></h3>
+                <p id="neuvaine-intent" class="text-xs font-bold text-slate-500 mb-3 italic"></p>
+                <p id="neuvaine-text" class="text-[15px] leading-relaxed font-serif text-slate-700 dark:text-slate-300"></p>
+            </div>
+        </div>
+
+        <div id="tab-heure" class="tab-content">
+            <h2 class="text-[10px] font-black uppercase tracking-[0.3em] text-red-700 text-center mb-6">L'Heure de la Miséricorde (15h)</h2>
+            <div class="flex-1 flex flex-col justify-center space-y-6 text-center italic font-serif text-slate-700 dark:text-slate-200">
+                <div class="p-4 bg-red-50 dark:bg-red-900/20 rounded-2xl border-l-4 border-red-700">
+                    "À trois heures, implore Ma miséricorde, tout particulièrement pour les pécheurs et, ne fût-ce que pour un bref instant, plonge-toi dans Ma Passion."
+                </div>
+                <p class="text-lg">« Ô Sang et Eau, qui avez jailli du Cœur de Jésus comme source de Miséricorde pour nous, j'ai confiance en Vous. »</p>
+                <p class="text-xs text-slate-400 non-italic">À cette heure, Je ne saurais rien refuser à l’âme qui Me prie par Ma Passion. (PJ 1320)</p>
+            </div>
         </div>
     </div>
 
-    <script>
-        let currentStep = 0;
-        let currentBead = 0;
-        let currentDecade = 1;
+    <nav class="fixed bottom-0 left-0 right-0 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 flex justify-around py-3">
+        <button onclick="switchTab('chapelet')" id="nav-chapelet" class="flex flex-col items-center text-red-700">
+            <span class="text-xl">📿</span><span class="text-[9px] font-bold uppercase mt-1">Chapelet</span>
+        </button>
+        <button onclick="switchTab('neuvaine')" id="nav-neuvaine" class="flex flex-col items-center text-slate-400">
+            <span class="text-xl">📜</span><span class="text-[9px] font-bold uppercase mt-1">Neuvaine</span>
+        </button>
+        <button onclick="switchTab('heure')" id="nav-heure" class="flex flex-col items-center text-slate-400">
+            <span class="text-xl">🕒</span><span class="text-[9px] font-bold uppercase mt-1">15h00</span>
+        </button>
+    </nav>
 
+    <script>
+        // --- LOGIQUE NAVIGATION ---
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.getElementById('tab-' + tabId).classList.add('active');
+            
+            document.querySelectorAll('nav button').forEach(b => b.classList.replace('text-red-700', 'text-slate-400'));
+            document.getElementById('nav-' + tabId).classList.replace('text-slate-400', 'text-red-700');
+        }
+
+        // --- LOGIQUE CHAPELET ---
+        let currentStep = 0, currentBead = 0, currentDecade = 1;
         const faustineQuotes = [
             "« Plus la misère est grande, plus elle a droit à Ma miséricorde. » (PJ 1182)",
             "« Je ne peux punir même le plus grand pécheur s'il invoque Ma pitié. » (PJ 1146)",
@@ -101,55 +138,41 @@
             "« Ma Miséricorde est plus grande que tes péchés et ceux du monde entier. » (PJ 1485)",
             "« L'humanité n'aura pas de paix tant qu'elle ne s'adressera pas à Ma Miséricorde. » (PJ 300)"
         ];
-
         const steps = [
             { title: "Début", text: "Au nom du Père, et du Fils, et du Saint-Esprit. Amen." },
             { title: "Introduction", text: "Notre Père... Je vous salue Marie... Je crois en Dieu..." },
             { title: "Gros Grain", text: "Père Éternel, je Vous offre le Corps et le Sang, l'Âme et la Divinité de Votre Fils Bien-Aimé, Notre Seigneur Jésus-Christ, en réparation de nos péchés et de ceux du monde entier." },
             { title: "Dizaine", text: "Par Sa douloureuse Passion, ayez pitié de nous et du monde entier." },
-            { title: "Conclusion (3 fois)", text: "Dieu Saint, Dieu Fort, Dieu Éternel, ayez pitié de nous et du monde entier." },
-            { title: "Fin", text: "Jésus Miséricorideux, j'ai confiance en Vous !" }
+            { title: "Conclusion", text: "Dieu Saint, Dieu Fort, Dieu Éternel, ayez pitié de nous et du monde entier. (3 fois)" },
+            { title: "Fin", text: "Jésus Miséricordieux, j'ai confiance en Vous !" }
         ];
 
         function updateUI() {
             const step = steps[currentStep];
-            const contentEl = document.getElementById('prayer-content');
-            const quoteBox = document.getElementById('quote-box');
-            
-            contentEl.innerText = step.text;
+            document.getElementById('prayer-content').innerText = step.text;
             document.getElementById('step-title').innerText = step.title;
-
-            // Afficher citation Faustine seulement sur le Gros Grain de chaque dizaine
+            
+            const qBox = document.getElementById('quote-box');
             if (currentStep === 2) {
-                quoteBox.innerText = faustineQuotes[currentDecade - 1];
-                quoteBox.classList.remove('hidden');
-            } else {
-                quoteBox.classList.add('hidden');
-            }
+                qBox.innerText = faustineQuotes[currentDecade - 1];
+                qBox.classList.remove('hidden');
+            } else { qBox.classList.add('hidden'); }
 
-            const progress = document.getElementById('progress-container');
-            const counter = document.getElementById('counter-text');
+            const prog = document.getElementById('progress-container');
+            const count = document.getElementById('counter-text');
             const icon = document.getElementById('bead-icon');
 
             if (currentStep === 3) {
-                progress.classList.remove('hidden');
-                counter.innerText = `Dizaine ${currentDecade} • Grain ${currentBead + 1}/10`;
+                prog.classList.remove('hidden');
+                count.innerText = `Dizaine ${currentDecade} • Grain ${currentBead + 1}/10`;
                 icon.innerText = "🔸";
                 renderDots();
             } else {
-                progress.classList.add('hidden');
-                counter.innerText = "";
-                icon.innerText = (currentStep === 2) ? "⚪" : (currentStep === 5 ? "✨" : "📿");
+                prog.classList.add('hidden');
+                count.innerText = "";
+                icon.innerText = (currentStep === 2) ? "⚪" : (currentStep >= 4 ? "✨" : "📿");
             }
-
-            // FERMETURE AUTOMATIQUE À LA FIN
-            if (currentStep === 5) {
-                document.getElementById('instruction').innerText = "Fin de la prière. Retour auto...";
-                setTimeout(() => {
-                    // On ferme l'iframe en changeant l'URL de la page parente
-                    window.parent.location.href = 'priere.html';
-                }, 3500);
-            }
+            document.getElementById('prev-btn').style.opacity = currentStep === 0 ? "0" : "1";
         }
 
         function renderDots() {
@@ -163,27 +186,49 @@
         }
 
         function nextStep() {
-            if (currentStep === 5) return; // Bloquer si c'est fini
-
             if (currentStep === 3) {
-                if (currentBead < 9) {
-                    currentBead++;
-                } else {
+                if (currentBead < 9) currentBead++;
+                else {
                     currentBead = 0;
-                    if (currentDecade < 5) {
-                        currentDecade++;
-                        currentStep = 2;
-                    } else {
-                        currentStep = 4;
-                    }
+                    if (currentDecade < 5) { currentDecade++; currentStep = 2; }
+                    else currentStep = 4;
                 }
-            } else {
-                currentStep++;
-            }
+            } else if (currentStep < 5) currentStep++;
             updateUI();
         }
 
+        function prevStep() {
+            if (currentStep === 3 && currentBead > 0) currentBead--;
+            else if (currentStep === 3 && currentBead === 0) currentStep = 2;
+            else if (currentStep === 2 && currentDecade > 1) { currentDecade--; currentStep = 3; currentBead = 9; }
+            else if (currentStep > 0) currentStep--;
+            updateUI();
+        }
+
+        // --- LOGIQUE NEUVAINE ---
+        const neuvaineData = {
+            1: { t: "Premier Jour", i: "L'humanité entière, particulièrement tous les pécheurs.", p: "Aujourd’hui, amène-moi l’humanité entière, et particulièrement tous les pécheurs et immerge-les dans l’océan de ma miséricorde. Par là, tu me consoleras dans cette amère tristesse que me cause la perte des âmes." },
+            2: { t: "Deuxième Jour", i: "Les âmes sacerdotales et religieuses.", p: "Aujourd’hui, amène-moi les âmes sacerdotales et religieuses et immerge-les dans mon insondable miséricorde. Elles m'ont donné la force d'endurer mon amère Passion." },
+            3: { t: "Troisième Jour", i: "Les âmes pieuses et fidèles.", p: "Aujourd’hui, amène-moi toutes les âmes pieuses et fidèles et immerge-les dans l’océan de ma miséricorde. Ces âmes m’ont consolé sur le chemin du Calvaire." },
+            4: { t: "Quatrième Jour", i: "Les païens et ceux qui ne me connaissent pas encore.", p: "Aujourd’hui, amène-moi les païens et ceux qui ne me connaissent pas encore. Je pensais aussi à eux durant mon amère Passion et leur futur zèle consolait mon Cœur." },
+            5: { t: "Cinquième Jour", i: "Les âmes des hérétiques et des apostats.", p: "Aujourd’hui, amène-moi les âmes des hérétiques et des apostats et immerge-les dans l’océan de ma miséricorde. Dans mon amère Passion, elles me déchiraient le corps et le cœur, c’est-à-dire mon Église." },
+            6: { t: "Sixième Jour", i: "Les âmes douces et humbles, et celles des petits enfants.", p: "Aujourd’hui, amène-moi les âmes douces et humbles, ainsi que celles des petits enfants, et immerge-les dans ma miséricorde. Ce sont elles qui ressemblent le plus à mon Cœur." },
+            7: { t: "Septième Jour", i: "Les âmes qui vénèrent et glorifient particulièrement ma miséricorde.", p: "Aujourd’hui, amène-moi les âmes qui vénèrent et glorifient particulièrement ma miséricorde. Ces âmes ont le plus partagé ma Passion et sont les reflets vivants de mon Cœur compatissant." },
+            8: { t: "Huitième Jour", i: "Les âmes du purgatoire.", p: "Aujourd’hui, amène-moi les âmes qui sont au purgatoire et immerge-les dans l’abîme de ma miséricorde. Que les flots de mon Sang rafraîchissent leurs brûlures !" },
+            9: { t: "Neuvième Jour", i: "Les âmes froides.", p: "Aujourd’hui, amène-moi les âmes froides et immerge-les dans l’abîme de ma miséricorde. Ce sont ces âmes qui blessent le plus douloureusement mon Cœur." }
+        };
+
+        function showNeuvaine(day) {
+            document.querySelectorAll('.neuvaine-day-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('nday-'+day).classList.add('active');
+            document.getElementById('neuvaine-title').innerText = neuvaineData[day].t;
+            document.getElementById('neuvaine-intent').innerText = "Intention : " + neuvaineData[day].i;
+            document.getElementById('neuvaine-text').innerText = neuvaineData[day].p;
+        }
+
+        // Initialisation
         updateUI();
+        showNeuvaine(1);
     </script>
 </body>
 </html>
