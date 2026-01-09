@@ -11,19 +11,19 @@
 <body class="bg-slate-50">
 
     <header class="gradient-header text-white p-8 rounded-b-[40px] shadow-lg relative">
-        <button onclick="toggleAide(true)" class="absolute top-8 right-6 w-8 h-8 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-white text-xs flex items-center justify-center shadow-lg z-[55] hover:bg-white/40 transition-all">
-            ❓
+        <button onclick="toggleAide(true)" class="absolute top-8 right-6 w-10 h-10 rounded-full bg-white text-slate-900 shadow-2xl z-[55] flex items-center justify-center active:scale-90 transition-all border-2 border-slate-200">
+            <span class="text-xl font-bold">?</span>
         </button>
         
         <h1 class="text-2xl font-800 tracking-tight mb-1">Entraide</h1>
-        <p class="text-[10px] font-black uppercase tracking-widest opacity-80">La charité en action</p>
+        <p class="text-[10px] font-black uppercase tracking-widest opacity-90">La charité en action</p>
     </header>
 
     <main class="p-6 mb-24">
         <div class="flex gap-2 mb-6 -mt-12 relative z-10">
-            <button onclick="loadEntraide('tous')" class="flex-1 py-3 rounded-xl bg-white shadow-md text-[10px] font-black uppercase text-slate-400 focus:text-red-700 transition-all">Tous</button>
-            <button onclick="loadEntraide('demande')" class="flex-1 py-3 rounded-xl bg-white shadow-md text-[10px] font-black uppercase text-slate-400 focus:text-red-700 transition-all">Demandes</button>
-            <button onclick="loadEntraide('offre')" class="flex-1 py-3 rounded-xl bg-white shadow-md text-[10px] font-black uppercase text-slate-400 focus:text-red-700 transition-all">Offres</button>
+            <button onclick="loadEntraide('tous')" class="flex-1 py-3 rounded-xl bg-white shadow-md text-[10px] font-black uppercase text-slate-400 focus:text-red-700 transition-all border border-slate-100">Tous</button>
+            <button onclick="loadEntraide('demande')" class="flex-1 py-3 rounded-xl bg-white shadow-md text-[10px] font-black uppercase text-slate-400 focus:text-red-700 transition-all border border-slate-100">Demandes</button>
+            <button onclick="loadEntraide('offre')" class="flex-1 py-3 rounded-xl bg-white shadow-md text-[10px] font-black uppercase text-slate-400 focus:text-red-700 transition-all border border-slate-100">Offres</button>
         </div>
 
         <div id="feed-entraide" class="space-y-4">
@@ -31,65 +31,75 @@
         </div>
     </main>
 
-    <div id="modal-aide" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[80] hidden flex items-center justify-center p-6">
-        <div class="bg-white w-full max-w-xs rounded-[30px] p-8 shadow-2xl animate-fade-in relative">
-            <button onclick="toggleAide(false)" class="absolute top-4 right-4 text-slate-300 hover:text-slate-500 text-2xl">&times;</button>
+    <div id="modal-aide" class="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-[80] hidden flex items-center justify-center p-6">
+        <div class="bg-white w-full max-w-sm rounded-[40px] p-8 shadow-2xl animate-fade-in relative border border-slate-200">
             
-            <div class="text-center mb-6">
-                <div class="inline-block p-3 bg-blue-50 rounded-2xl mb-3">
-                    <span class="text-2xl">🤝</span>
-                </div>
-                <h3 class="text-sm font-800 text-slate-800 uppercase tracking-tighter">Comment ça marche ?</h3>
+            <div class="text-center mb-8">
+                <h3 class="text-lg font-900 text-slate-950 uppercase tracking-tighter">Guide d'utilisation</h3>
+                <div class="h-1 w-12 bg-red-600 mx-auto mt-2 rounded-full"></div>
             </div>
 
-            <div class="space-y-6">
-                <div class="flex gap-4">
-                    <span class="text-blue-500 font-black text-sm">01.</span>
-                    <p class="text-[11px] text-slate-600 leading-relaxed"><b class="text-slate-800 uppercase">Publication :</b> Votre annonce est vérifiée par l'abbé avant d'être visible par la communauté.</p>
+            <div class="space-y-8">
+                <div class="flex items-start gap-4">
+                    <div class="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center text-blue-700 font-bold">1</div>
+                    <div>
+                        <h4 class="text-xs font-900 text-slate-950 uppercase mb-1 tracking-wide">Écrire une annonce</h4>
+                        <p class="text-[12px] text-slate-700 leading-snug">Remplissez le formulaire. Un <b>abbé validera</b> votre message avant qu'il ne soit visible par tous.</p>
+                    </div>
                 </div>
-                <div class="flex gap-4">
-                    <span class="text-blue-500 font-black text-sm">02.</span>
-                    <p class="text-[11px] text-slate-600 leading-relaxed"><b class="text-slate-800 uppercase">Contact :</b> Pour voir un numéro, demandez le <span class="text-red-700 font-bold">Code de Validation</span> à l'abbé.</p>
+
+                <div class="flex items-start gap-4">
+                    <div class="flex-shrink-0 w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center text-amber-700 font-bold">2</div>
+                    <div>
+                        <h4 class="text-xs font-900 text-slate-950 uppercase mb-1 tracking-wide">Obtenir le contact</h4>
+                        <p class="text-[12px] text-slate-700 leading-snug">Pour voir un numéro de téléphone, saisissez le <b>code secret</b> que vous donne un abbé (il faut lui demander à la fin de la Messe).</p>
+                    </div>
                 </div>
-                <div class="flex gap-4">
-                    <span class="text-blue-500 font-black text-sm">03.</span>
-                    <p class="text-[11px] text-slate-600 leading-relaxed"><b class="text-slate-800 uppercase">Clôture :</b> Une fois l'aide organisée, l'annonce est retirée pour rester à jour.</p>
+
+                <div class="flex items-start gap-4">
+                    <div class="flex-shrink-0 w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center text-green-700 font-bold">3</div>
+                    <div>
+                        <h4 class="text-xs font-900 text-slate-950 uppercase mb-1 tracking-wide">Fin de l'entraide</h4>
+                        <p class="text-[12px] text-slate-700 leading-snug">Dès que le contact est établi, l'annonce est <b>supprimée</b> pour laisser la place aux autres.</p>
+                    </div>
                 </div>
             </div>
 
-            <button onclick="toggleAide(false)" class="w-full mt-8 py-4 bg-slate-800 text-white rounded-2xl text-[10px] font-black uppercase shadow-lg">J'ai compris</button>
+            <button onclick="toggleAide(false)" class="w-full mt-10 py-5 bg-slate-950 text-white rounded-2xl text-[11px] font-black uppercase tracking-[2px] shadow-xl active:scale-95 transition-transform">
+                J'ai compris
+            </button>
         </div>
     </div>
 
     <button onclick="toggleModal(true)" class="fixed bottom-28 right-6 w-14 h-14 gradient-header rounded-full shadow-2xl text-white text-3xl z-40 flex items-center justify-center active:scale-90 transition-transform">+</button>
 
     <div id="modal-code" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[60] hidden flex items-center justify-center p-6">
-        <div class="bg-white w-full max-w-xs rounded-[30px] p-6 shadow-2xl animate-fade-in">
-            <h3 class="text-sm font-800 text-slate-800 uppercase mb-2 text-center">Code requis</h3>
-            <p class="text-[10px] text-slate-500 text-center mb-4">Saisissez le code donné par l'abbé.</p>
-            <input type="text" id="input-code-abbe" class="w-full bg-slate-50 p-3 rounded-xl border-none text-center font-bold text-lg mb-4 outline-none focus:ring-2 focus:ring-red-100 uppercase">
+        <div class="bg-white w-full max-w-xs rounded-[30px] p-6 shadow-2xl animate-fade-in border border-slate-200">
+            <h3 class="text-sm font-800 text-slate-950 uppercase mb-2 text-center">Code requis</h3>
+            <p class="text-[11px] text-slate-600 text-center mb-4 font-medium">Saisissez le code donné par l'abbé.</p>
+            <input type="text" id="input-code-abbe" class="w-full bg-slate-100 p-3 rounded-xl border-2 border-slate-200 text-center font-bold text-lg mb-4 outline-none focus:border-red-500 uppercase text-slate-950">
             <div class="flex gap-2">
-                <button onclick="closeCodeModal()" class="flex-1 py-3 text-[10px] font-black uppercase text-slate-400">Annuler</button>
+                <button onclick="closeCodeModal()" class="flex-1 py-3 text-[10px] font-black uppercase text-slate-500">Annuler</button>
                 <button id="btn-valider-code" class="flex-2 py-3 px-6 gradient-header text-white rounded-xl text-[10px] font-black uppercase">Valider</button>
             </div>
         </div>
     </div>
 
     <div id="modal-resultat" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[70] hidden flex items-center justify-center p-6">
-        <div class="bg-white w-full max-w-xs rounded-[30px] p-8 shadow-2xl animate-fade-in text-center">
+        <div class="bg-white w-full max-w-xs rounded-[30px] p-8 shadow-2xl animate-fade-in text-center border border-slate-200">
             <div class="text-4xl mb-4 text-green-500">✅</div>
-            <h3 class="text-sm font-800 text-slate-800 uppercase mb-4">Contact débloqué</h3>
+            <h3 class="text-sm font-800 text-slate-950 uppercase mb-4">Contact débloqué</h3>
             
-            <div class="bg-slate-50 p-4 rounded-2xl mb-4">
-                <p id="res-nom" class="text-xs font-900 text-slate-800 uppercase mb-1"></p>
+            <div class="bg-slate-100 p-4 rounded-2xl mb-4 border border-slate-200 text-slate-950">
+                <p id="res-nom" class="text-xs font-900 uppercase mb-1"></p>
                 <p id="res-tel" class="text-lg font-black text-red-700"></p>
                 <div class="flex justify-center gap-4 mt-2">
-                    <button onclick="copierTel()" class="text-[8px] font-black uppercase text-blue-600 tracking-widest underline">Copier</button>
-                    <button onclick="partagerWhatsApp()" class="text-[8px] font-black uppercase text-green-600 tracking-widest underline">WhatsApp</button>
+                    <button onclick="copierTel()" class="text-[10px] font-black uppercase text-blue-700 tracking-widest underline">Copier</button>
+                    <button onclick="partagerWhatsApp()" class="text-[10px] font-black uppercase text-green-700 tracking-widest underline">WhatsApp</button>
                 </div>
             </div>
 
-            <p class="text-[9px] text-red-600 font-bold uppercase mb-6 leading-tight">
+            <p class="text-[10px] text-red-600 font-bold uppercase mb-6 leading-tight">
                 ⚠️ Notez bien les coordonnées.<br>L'annonce disparaîtra après fermeture.
             </p>
 
@@ -102,26 +112,26 @@
     <div id="notif-system" class="fixed top-6 left-6 right-6 z-[100] pointer-events-none space-y-2"></div>
 
     <div id="modal-form" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-end">
-        <div class="bg-white w-full rounded-t-[40px] p-8 animate-slide-up max-h-[95vh] overflow-y-auto">
+        <div class="bg-white w-full rounded-t-[40px] p-8 animate-slide-up max-h-[95vh] overflow-y-auto border-t border-slate-200">
             <div class="flex justify-between items-center mb-6">
-                <h2 class="text-lg font-800 text-slate-800 uppercase italic">Déposer une annonce</h2>
+                <h2 class="text-lg font-900 text-slate-950 uppercase italic">Déposer une annonce</h2>
                 <button onclick="toggleModal(false)" class="text-slate-400 text-3xl">&times;</button>
             </div>
             <div class="space-y-4 pb-12">
-                <select id="type" class="w-full bg-slate-50 p-4 rounded-xl text-sm font-semibold outline-none">
+                <select id="type" class="w-full bg-slate-100 p-4 rounded-xl text-sm font-bold text-slate-950 border border-slate-200 outline-none">
                     <option value="demande">Je demande de l'aide</option>
                     <option value="offre">Je propose mon aide</option>
                 </select>
-                <input type="text" id="titre" placeholder="Titre de l'annonce" class="w-full bg-slate-50 p-4 rounded-xl text-sm font-semibold outline-none">
-                <textarea id="description" placeholder="Description..." class="w-full bg-slate-50 p-4 rounded-xl text-sm min-h-[100px] outline-none"></textarea>
+                <input type="text" id="titre" placeholder="Titre de l'annonce" class="w-full bg-slate-100 p-4 rounded-xl text-sm font-bold text-slate-950 border border-slate-200 outline-none">
+                <textarea id="description" placeholder="Description détaillée..." class="w-full bg-slate-100 p-4 rounded-xl text-sm font-medium text-slate-950 border border-slate-200 min-h-[100px] outline-none"></textarea>
                 <div class="grid grid-cols-2 gap-4">
-                    <input type="text" id="contact_nom" placeholder="Votre Nom" class="w-full bg-slate-50 p-4 rounded-xl text-sm font-semibold outline-none">
-                    <input type="tel" id="contact_info" placeholder="Téléphone" class="w-full bg-slate-50 p-4 rounded-xl text-sm font-semibold outline-none">
+                    <input type="text" id="contact_nom" placeholder="Votre Nom" class="w-full bg-slate-100 p-4 rounded-xl text-sm font-bold text-slate-950 border border-slate-200 outline-none">
+                    <input type="tel" id="contact_info" placeholder="Téléphone" class="w-full bg-slate-100 p-4 rounded-xl text-sm font-bold text-slate-950 border border-slate-200 outline-none">
                 </div>
-                <div class="p-4 bg-red-50 rounded-2xl">
-                    <p class="text-[8px] text-red-700 font-bold uppercase">⚠️ L'annonce sera vérifiée par un abbé avant publication.</p>
+                <div class="p-4 bg-red-50 rounded-2xl border border-red-100">
+                    <p class="text-[9px] text-red-700 font-black uppercase">⚠️ L'annonce sera vérifiée par un abbé avant publication.</p>
                 </div>
-                <button onclick="publierEntraide()" id="btn-publier" class="w-full gradient-header text-white py-4 rounded-2xl font-black text-[10px] uppercase shadow-lg">Envoyer pour validation</button>
+                <button onclick="publierEntraide()" id="btn-publier" class="w-full gradient-header text-white py-5 rounded-2xl font-black text-[11px] uppercase shadow-xl tracking-wider">Envoyer pour validation</button>
             </div>
         </div>
     </div>
@@ -139,7 +149,7 @@
         function showNotif(msg, isError = false) {
             const container = document.getElementById('notif-system');
             const div = document.createElement('div');
-            div.className = `p-4 rounded-2xl shadow-xl text-white text-[10px] font-black uppercase tracking-widest animate-fade-in pointer-events-auto ${isError ? 'bg-red-600' : 'bg-slate-800'}`;
+            div.className = `p-4 rounded-2xl shadow-xl text-white text-[10px] font-black uppercase tracking-widest animate-fade-in pointer-events-auto ${isError ? 'bg-red-700' : 'bg-slate-900'}`;
             div.innerText = msg;
             container.appendChild(div);
             setTimeout(() => { div.style.opacity = '0'; setTimeout(() => div.remove(), 500); }, 3000);
@@ -162,21 +172,21 @@
 
             if (data && data.length > 0) {
                 feed.innerHTML = data.map(a => `
-                    <div class="card animate-fade-in relative border-l-4 ${a.type === 'offre' ? 'border-green-500' : 'border-red-500'}">
+                    <div class="card animate-fade-in relative border-l-4 ${a.type === 'offre' ? 'border-green-600' : 'border-red-600'} bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
                         <div class="flex justify-between items-start mb-2">
-                            <span class="text-[8px] font-black px-2 py-0.5 rounded-full ${a.type === 'offre' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'} uppercase">${a.type}</span>
-                            <span class="text-[8px] font-bold text-slate-300">${new Date(a.created_at).toLocaleDateString()}</span>
+                            <span class="text-[9px] font-black px-2 py-1 rounded-md ${a.type === 'offre' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'} uppercase">${a.type}</span>
+                            <span class="text-[9px] font-bold text-slate-400">${new Date(a.created_at).toLocaleDateString()}</span>
                         </div>
-                        <h3 class="font-800 text-sm mb-1 text-slate-800 uppercase italic">${a.titre}</h3>
-                        <p class="text-[10px] text-slate-500 mb-4">${a.description}</p>
+                        <h3 class="font-900 text-sm mb-1 text-slate-950 uppercase italic tracking-tight">${a.titre}</h3>
+                        <p class="text-[11px] text-slate-600 mb-4 font-medium leading-normal">${a.description}</p>
                         
                         <div class="pt-3 border-t border-slate-50 text-right">
-                            <button onclick="demanderCode('${a.id}')" class="text-[9px] font-black text-blue-600 uppercase tracking-widest flex items-center justify-end gap-1">🤝 Répondre à l'annonce ➔</button>
+                            <button onclick="demanderCode('${a.id}')" class="text-[10px] font-black text-blue-700 uppercase tracking-widest flex items-center justify-end gap-1 active:opacity-50">🤝 Répondre à l'annonce ➔</button>
                         </div>
                     </div>
                 `).join('');
             } else {
-                feed.innerHTML = "<p class='text-center text-xs text-slate-400 italic py-10'>Aucune annonce disponible.</p>";
+                feed.innerHTML = "<p class='text-center text-xs text-slate-500 font-bold italic py-10 uppercase tracking-widest opacity-50'>Aucune annonce disponible.</p>";
             }
         }
 
@@ -203,7 +213,7 @@
         function copierTel() {
             const tel = document.getElementById('res-tel').innerText;
             navigator.clipboard.writeText(tel);
-            showNotif("Copié !");
+            showNotif("Copié dans le presse-papier !");
         }
 
         function partagerWhatsApp() {
@@ -230,11 +240,20 @@
                 valide: false,
                 est_terminee: false
             };
-            if (!fields.titre || !fields.description) return showNotif("Remplissez les champs.", true);
+            if (!fields.titre || !fields.description) return showNotif("Veuillez remplir les champs.", true);
             btn.disabled = true;
             const { error } = await sb.from('entraide').insert([fields]);
-            if (!error) { showNotif("Envoyé pour validation !"); toggleModal(false); }
-            else { btn.disabled = false; showNotif("Erreur d'envoi", true); }
+            if (!error) { 
+                showNotif("Annonce envoyée pour validation !"); 
+                toggleModal(false); 
+                // Reset form
+                document.getElementById('titre').value = '';
+                document.getElementById('description').value = '';
+                document.getElementById('contact_nom').value = '';
+                document.getElementById('contact_info').value = '';
+                btn.disabled = false;
+            }
+            else { btn.disabled = false; showNotif("Erreur lors de l'envoi", true); }
         }
 
         loadEntraide();
