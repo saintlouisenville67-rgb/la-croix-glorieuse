@@ -8,8 +8,8 @@
 /* Mode sombre automatique basé sur les réglages du téléphone */
 @media (prefers-color-scheme: dark) {
     :root {
-        --bg-light: #0f172a; /* Bleu nuit profond */
-        --card-light: #1e293b; /* Ardoise sombre */
+        --bg-light: #0f172a; 
+        --card-light: #1e293b;
     }
     body { color: #f1f5f9; }
     input, textarea { background-color: #334155 !important; color: white !important; }
@@ -28,7 +28,6 @@ body {
     background-color: var(--bg-light);
     margin: 0;
     overflow-x: hidden;
-    /* Animation de transition douce entre les pages */
     animation: fadeInPage 0.4s ease-out;
 }
 
@@ -84,7 +83,7 @@ body {
 }
 
 .nav-item:active {
-    transform: scale(0.9); /* Effet de pression au clic */
+    transform: scale(0.9);
 }
 
 /* --- ANIMATIONS & CHARGEMENT --- */
@@ -93,7 +92,6 @@ body {
     to { opacity: 1; transform: translateY(0); }
 }
 
-/* Skeleton loader (Effet de chargement scintillant) */
 .skeleton {
     background: linear-gradient(110deg, #ececec 8%, #f5f5f5 18%, #ececec 33%);
     background-size: 200% 100%;
@@ -109,8 +107,61 @@ body {
     .skeleton { background: linear-gradient(110deg, #1e293b 8%, #334155 18%, #1e293b 33%); background-size: 200% 100%; }
 }
 
-/* Bouton Retour en haut */
 #scrollTop {
     transition: all 0.3s ease;
     filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
+}
+
+/* --- STYLES IMPORTÉS DE INDEX.HTML --- */
+@keyframes soft-pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.7; }
+    100% { opacity: 1; }
+}
+.animate-soft-pulse {
+    animation: soft-pulse 2s infinite ease-in-out;
+}
+
+.badge-live {
+    background: #22c55e;
+    color: white;
+    padding: 4px 12px;
+    border-radius: 8px;
+    font-size: 8px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7);
+    animation: pulse-green 2s infinite;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.badge-upcoming {
+    background: #f59e0b;
+    color: white;
+    padding: 4px 12px;
+    border-radius: 8px;
+    font-size: 8px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7);
+    animation: pulse-orange 2s infinite;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+@keyframes pulse-green {
+    0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
+    70% { box-shadow: 0 0 0 8px rgba(34, 197, 94, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+}
+
+@keyframes pulse-orange {
+    0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7); }
+    70% { box-shadow: 0 0 0 8px rgba(245, 158, 11, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
 }
