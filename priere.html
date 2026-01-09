@@ -1,262 +1,679 @@
 <!DOCTYPE html>
+
 <html lang="fr">
+
 <head>
+
     <meta charset="UTF-8">
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
     <title>Prières - La Croix Glorieuse</title>
+
     
+
     <link rel="stylesheet" href="css/style.css">
+
     <script src="https://cdn.tailwindcss.com"></script>
+
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
     <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+
+        .animate-fade-in {
+
+            animation: fadeIn 0.4s ease-out forwards;
+
+        }
+
+        @keyframes fadeIn {
+
+            from { opacity: 0; transform: translateY(10px); }
+
+            to { opacity: 1; transform: translateY(0); }
+
+        }
+
+        /* Style pour le gradient si non défini dans style.css */
+
+        .gradient-header {
+
+            background: linear-gradient(135deg, #b91c1c 0%, #7f1d1d 100%);
+
+        }
+
+
+
+        /* --- NOUVEAUX STYLES MES PRIÈRES (FIXÉ À GAUCHE) --- */
+
+        .prayer-option-row {
+
+            position: fixed;
+
+            left: 24px; /* Bouton à gauche */
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 12px;
+
+            /* Animation sortant de la gauche */
+
+            transform: scale(0) translateX(-20px);
+
+            opacity: 0;
+
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+            z-index: 55;
+
+            cursor: pointer;
+
+        }
+
+        .prayer-option-row.show {
+
+            transform: scale(1) translateX(0);
+
+            opacity: 1;
+
+        }
+
+        .bubble-icon {
+
+            width: 48px;
+
+            height: 48px;
+
+            background: white;
+
+            border-radius: 50%;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+
+            border: 1px solid #f1f5f9;
+
+        }
+
+        .bubble-label {
+
+            background: #1e293b;
+
+            color: white;
+
+            padding: 6px 14px;
+
+            border-radius: 12px;
+
+            font-size: 11px;
+
+            font-weight: 800;
+
+            text-transform: uppercase;
+
+            letter-spacing: 0.5px;
+
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+
+            white-space: nowrap;
+
+        }
+
+        .row-1 { bottom: 160px; transition-delay: 0.05s; }
+
+        .row-2 { bottom: 220px; transition-delay: 0.1s; }
+
+        .row-3 { bottom: 280px; transition-delay: 0.15s; }
+
+        .row-4 { bottom: 340px; transition-delay: 0.2s; }
+
+        .row-5 { bottom: 400px; transition-delay: 0.25s; }
+
+
+
+        #fab-blur-overlay {
+
+            position: fixed;
+
+            inset: 0;
+
+            background: rgba(255, 255, 255, 0.7);
+
+            backdrop-filter: blur(5px);
+
+            -webkit-backdrop-filter: blur(5px);
+
+            display: none;
+
+            z-index: 50;
+
+            opacity: 0;
+
+            transition: opacity 0.3s ease;
+
+        }
+
+    </style>
+
 </head>
+
 <body class="bg-slate-50">
 
+
+
     <header class="gradient-header text-white p-8 rounded-b-[40px] shadow-lg">
+
         <h1 class="text-2xl font-800 tracking-tight mb-1 font-bold">Prière</h1>
+
         <p class="text-[10px] font-black uppercase tracking-widest opacity-80">Communion des Saints</p>
+
     </header>
 
+
+
     <main class="p-6 space-y-8 mb-24">
+
         
+
         <section class="card shadow-xl -mt-12 relative z-10 bg-white p-6 rounded-[32px]">
+
             <h2 class="text-sm font-black mb-4 text-red-700 uppercase tracking-widest">Confier une intention</h2>
+
             
+
             <div class="space-y-4">
+
                 <input type="text" id="prenom" placeholder="Votre prénom (optionnel)" 
+
                     class="w-full bg-slate-50 p-3 rounded-xl border-none text-sm font-semibold outline-none focus:ring-2 focus:ring-red-100">
+
                 
+
                 <textarea id="intention" placeholder="Votre intention de prière..." 
+
                     class="w-full bg-slate-50 p-4 rounded-xl border-none text-sm min-h-[100px] outline-none focus:ring-2 focus:ring-red-100"></textarea>
+
                 
+
                 <p class="text-[10px] text-slate-400 italic text-center px-2">Pour des raisons de sécurité, votre intention de prière s'affichera dès que les abbés la valident.</p>
 
+
+
                 <button onclick="envoyerPriere()" id="btn-priere"
+
                     class="w-full gradient-header text-white py-4 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] shadow-lg active:scale-95 transition-all font-bold">
+
                     Envoyer mon intention
+
                 </button>
 
+
+
                 <div id="msg-feedback" class="hidden p-4 rounded-2xl text-center text-[10px] font-black uppercase tracking-widest animate-fade-in border">
+
                 </div>
+
             </div>
+
         </section>
+
+
 
         <section>
+
             <div class="flex items-center gap-2 mb-6">
+
                 <div class="h-[1px] flex-1 bg-slate-200"></div>
+
                 <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Intentions de la communauté</span>
+
                 <div class="h-[1px] flex-1 bg-slate-200"></div>
+
             </div>
+
             
+
             <div id="feed-priere" class="space-y-4">
+
                 <div class="p-8 text-center text-slate-400 text-xs italic">Chargement des intentions...</div>
+
             </div>
+
         </section>
+
+
 
         <section class="space-y-4 pb-12">
+
             <div class="flex items-center gap-2 mb-2">
+
                 <div class="h-[1px] flex-1 bg-slate-200"></div>
+
                 <span class="text-[10px] font-black text-slate-300 uppercase tracking-widest text-center">Soutenir & Offrir</span>
+
                 <div class="h-[1px] flex-1 bg-slate-200"></div>
+
             </div>
+
+
 
             <button onclick="toggleMesse()" class="w-full flex items-center justify-between p-5 bg-white rounded-[28px] shadow-sm active:scale-95 transition-all border border-slate-100">
+
                 <div class="flex items-center gap-4">
+
                     <div class="w-10 h-10 bg-red-50 rounded-full flex items-center justify-center text-lg shadow-inner">🕊️</div>
+
                     <div class="text-left">
+
                         <span class="block text-[11px] font-black text-red-700 uppercase tracking-widest">Offrande</span>
+
                         <span class="text-sm font-bold text-slate-700">Demander une Messe</span>
+
                     </div>
+
                 </div>
+
                 <svg id="chevron-messe" class="w-5 h-5 text-slate-300 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+
                 </svg>
+
             </button>
 
+
+
             <div id="container-messe" class="hidden overflow-hidden transition-all duration-500 rounded-[32px] bg-white shadow-inner border border-slate-100">
+
                 <iframe src="demande-messe.html" id="iframe-messe" class="w-full border-none" style="height: 680px;"></iframe>
+
             </div>
+
         </section>
+
+
 
     </main>
 
+
+
     <div id="fab-blur-overlay" onclick="togglePrayerFab()"></div>
 
+
+
     <button id="main-fab" onclick="togglePrayerFab()" class="fixed bottom-24 left-6 w-14 h-14 bg-slate-900 rounded-full shadow-2xl flex items-center justify-center text-white z-[60] border-2 border-white/20 transition-all active:scale-90">
+
         <span id="fab-icon-container"><i data-lucide="sparkles" class="w-6 h-6"></i></span>
+
     </button>
 
+
+
     <div onclick="goToPrayer('matin')" class="prayer-option-row row-1">
+
         <div class="bubble-icon"><i data-lucide="sun" class="w-5 h-5 text-orange-500"></i></div>
+
         <div class="bubble-label">Prière du Matin</div>
+
     </div>
+
     <div onclick="goToPrayer('soir')" class="prayer-option-row row-2">
+
         <div class="bubble-icon"><i data-lucide="moon" class="w-5 h-5 text-indigo-600"></i></div>
+
         <div class="bubble-label">Prière du Soir</div>
+
     </div>
+
     <div onclick="goToPrayer('usuelles')" class="prayer-option-row row-3">
+
         <div class="bubble-icon"><i data-lucide="cross" class="w-5 h-5 text-red-800"></i></div>
+
         <div class="bubble-label">Prières usuelles et Confession</div>
+
     </div>
+
     <div onclick="goToPrayer('chapelet')" class="prayer-option-row row-4">
+
         <div class="bubble-icon"><i data-lucide="disc" class="w-5 h-5 text-amber-600"></i></div>
+
         <div class="bubble-label">Chapelet</div>
+
     </div>
+
     <div onclick="goToPrayer('misericorde')" class="prayer-option-row row-5">
+
         <div class="bubble-icon"><i data-lucide="heart" class="w-5 h-5 text-red-600"></i></div>
+
         <div class="bubble-label">Miséricorde</div>
+
     </div>
+
+
 
     <nav class="bottom-nav"></nav>
 
+
+
     <script src="js/config.js"></script>
+
     <script>
+
+        // Initialisation des icônes Lucide
+
         lucide.createIcons();
+
+
+
+        // --- LOGIQUE MES PRIÈRES ---
 
         let isFabOpen = false;
 
+
+
         function togglePrayerFab() {
+
             isFabOpen = !isFabOpen;
+
             const rows = document.querySelectorAll('.prayer-option-row');
+
             const overlay = document.getElementById('fab-blur-overlay');
+
             const iconContainer = document.getElementById('fab-icon-container');
+
             const btn = document.getElementById('main-fab');
 
+
+
             if (isFabOpen) {
+
                 overlay.style.display = 'block';
+
                 setTimeout(() => overlay.style.opacity = '1', 10);
+
                 iconContainer.innerHTML = '<i data-lucide="x" class="w-6 h-6"></i>';
+
                 btn.style.backgroundColor = '#b91c1c';
+
             } else {
+
                 overlay.style.opacity = '0';
+
                 setTimeout(() => overlay.style.display = 'none', 300);
+
                 iconContainer.innerHTML = '<i data-lucide="sparkles" class="w-6 h-6"></i>';
+
                 btn.style.backgroundColor = '#0f172a';
+
             }
-            lucide.createIcons();
+
+            lucide.createIcons(); // Pour rafraîchir l'icône X ou Sparkles
+
             rows.forEach(r => r.classList.toggle('show', isFabOpen));
+
         }
+
+
 
         function goToPrayer(type) {
+
             togglePrayerFab();
+
             setTimeout(() => {
+
                 window.location.href = `mesprieres.html?type=${type}`;
+
             }, 300);
+
         }
+
+
+
+        // --- LOGIQUE ACCORDÉON MESSE ---
 
         function toggleMesse() {
+
             const container = document.getElementById('container-messe');
+
             const chevron = document.getElementById('chevron-messe');
+
             const isHidden = container.classList.contains('hidden');
+
             
+
             if (isHidden) {
+
                 container.classList.remove('hidden');
+
                 chevron.style.transform = 'rotate(180deg)';
+
                 setTimeout(() => {
+
                     container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
                 }, 100);
+
             } else {
+
                 container.classList.add('hidden');
+
                 chevron.style.transform = 'rotate(0deg)';
+
             }
+
         }
+
+
+
+        // --- LOGIQUE INTENTIONS DE PRIÈRE ---
 
         async function loadPrières() {
+
             const { data, error } = await sb
+
                 .from('intentions')
+
                 .select('*')
+
                 .eq('valide', true)
+
                 .order('created_at', { ascending: false });
 
+
+
             if (data) {
+
                 const feed = document.getElementById('feed-priere');
+
                 feed.innerHTML = data.map(p => {
+
                     const count = p.bougies || 0;
+
                     const label = count > 1 ? "ont prié" : "a prié";
+
                     
+
                     return `
+
                     <div class="bg-white p-5 rounded-[24px] shadow-sm border border-slate-50 relative animate-fade-in mb-4">
+
                         <div class="flex justify-between items-start mb-3">
+
                             <span class="text-[9px] font-black text-red-700 uppercase tracking-widest">${p.prenom || 'Anonyme'}</span>
+
                             <span class="text-[8px] font-bold text-slate-300">${new Date(p.created_at).toLocaleDateString()}</span>
+
                         </div>
+
                         <p class="text-sm text-slate-600 italic mb-4 leading-relaxed">"${p.texte}"</p>
+
                         
+
                         <button onclick="allumerBougie('${p.id}')" 
+
                             class="flex items-center gap-2 bg-amber-50 text-amber-700 px-4 py-2 rounded-full border border-amber-100 active:scale-90 transition-transform">
+
                             <span class="text-sm">🕯️</span>
+
                             <span class="text-[10px] font-black uppercase tracking-tighter">${count} ${label}</span>
+
                         </button>
+
                     </div>
+
                 `}).join('');
+
             }
+
         }
+
+
 
         async function envoyerPriere() {
+
             const prenomInput = document.getElementById('prenom');
+
             const texteInput = document.getElementById('intention');
+
             const btn = document.getElementById('btn-priere');
 
+
+
             const prenom = prenomInput.value;
+
             const texte = texteInput.value;
 
+
+
             if (!texte) {
+
                 afficherFeedback("Veuillez écrire votre intention.", "error");
+
                 return;
+
             }
+
+
 
             btn.disabled = true;
+
             btn.innerText = "ENVOI EN COURS...";
+
             btn.style.opacity = "0.7";
 
+
+
             const { error } = await sb.from('intentions').insert([
+
                 { prenom: prenom || 'Anonyme', texte: texte }
+
             ]);
 
+
+
             btn.disabled = false;
+
             btn.innerText = "ENVOYER MON INTENTION";
+
             btn.style.opacity = "1";
 
+
+
             if (!error) {
+
                 prenomInput.value = '';
+
                 texteInput.value = '';
+
                 afficherFeedback("Union de prière ! Votre intention est transmise aux abbés.", "success");
+
                 loadPrières();
+
             } else {
+
                 afficherFeedback("Oups, l'envoi a échoué. Réessayez.", "error");
+
             }
+
         }
+
+
 
         function afficherFeedback(message, type) {
+
             const feedback = document.getElementById('msg-feedback');
+
             feedback.innerText = message;
+
             feedback.classList.remove('hidden', 'bg-green-50', 'text-green-700', 'border-green-100', 'bg-red-50', 'text-red-700', 'border-red-100');
 
+
+
             if (type === 'success') {
+
                 feedback.classList.add('bg-green-50', 'text-green-700', 'border-green-100');
+
             } else {
+
                 feedback.classList.add('bg-red-50', 'text-red-700', 'border-red-100');
+
             }
 
+
+
             setTimeout(() => {
+
                 feedback.classList.add('hidden');
+
             }, 5000);
+
         }
 
+
+
         async function allumerBougie(id) {
+
             const { error } = await sb.rpc('increment_bougie', { row_id: id });
+
             if (!error) loadPrières();
+
         }
+
+
+
+        // Initialisation au chargement
 
         loadPrières();
 
+
+
+        // Temps réel Supabase
+
         sb.channel('intentions-channel')
+
           .on('postgres_changes', { event: '*', schema: 'public', table: 'intentions' }, payload => {
+
               loadPrières();
+
           })
+
           .subscribe();
+
     </script>
+
     
+
     <script src="js/menu.js"></script>
+
 </body>
+
 </html>
