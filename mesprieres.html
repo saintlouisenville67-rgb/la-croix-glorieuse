@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; }
+        iframe { width: 100%; height: 100%; border: none; }
+    </style>
+</head>
+<body class="bg-slate-50">
+    <div class="fixed top-0 left-0 right-0 p-4 z-50 bg-white/80 backdrop-blur-md flex items-center shadow-sm">
+        <button onclick="window.location.href='priere.html'" class="flex items-center gap-2 text-slate-500 font-bold uppercase text-[10px] tracking-widest">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+            Retour
+        </button>
+    </div>
+
+    <iframe id="prayer-frame" src=""></iframe>
+
+    <script>
+        // On récupère le type (matin, soir, etc.)
+        const urlParams = new URLSearchParams(window.location.search);
+        const type = urlParams.get('type') || 'matin';
+        
+        // On définit le fichier cible
+        const prayerFiles = {
+            'matin': 'priere-matin.html',
+            'soir': 'priere-soir.html',
+            'usuelles': 'priere-usuelles.html',
+            'chapelet': 'priere-chapelet.html',
+            'misericorde': 'priere-misericorde.html'
+        };
+
+        // On charge le fichier dans l'iframe
+        if(prayerFiles[type]) {
+            document.getElementById('prayer-frame').src = prayerFiles[type];
+        }
+    </script>
+</body>
+</html>
