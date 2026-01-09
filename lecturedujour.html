@@ -3,34 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lectures du Jour - Missel 1962</title>
+    <title>Lectures du Jour</title>
     <style>
-        body { font-family: 'Georgia', serif; background-color: #fdfaf3; padding: 20px; color: #333; }
-        .container { max-width: 800px; margin: auto; background: white; border: 1px solid #d1c7b7; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
-        .header { background: #8b0000; color: white; padding: 20px; text-align: center; border-radius: 7px 7px 0 0; }
-        .header h1 { margin: 0; font-size: 1.3rem; text-transform: uppercase; letter-spacing: 1px; }
-        .content { padding: 30px; line-height: 1.8; text-align: justify; }
-        h2 { color: #8b0000; font-size: 1.1rem; border-bottom: 1px solid #eee; padding-bottom: 8px; margin-top: 30px; text-transform: uppercase; }
-        .text-area { white-space: pre-wrap; font-size: 1.05rem; margin-top: 15px; }
-        #loader { text-align: center; padding: 40px; font-style: italic; color: #8b0000; }
-        .error { color: #c0392b; text-align: center; padding: 20px; border: 1px solid #c0392b; margin: 20px; border-radius: 5px; background: #fff5f5; }
+        body { font-family: 'Georgia', serif; background-color: #fdfaf3; padding: 10px; color: #333; }
+        .container { max-width: 800px; margin: auto; background: white; border-radius: 8px; }
+        .content { padding: 20px; line-height: 1.6; text-align: justify; }
+        
+        /* Style des étiquettes Épître et Évangile pour les intégrer au texte */
+        .label { color: #8b0000; font-weight: bold; text-transform: uppercase; font-size: 0.9rem; }
+        
+        /* Bloc unique sans retours à la ligne forcés */
+        .text-block { font-size: 1.05rem; display: inline; }
+        
+        #loader { text-align: center; padding: 20px; font-style: italic; color: #8b0000; }
+        .error { color: #c0392b; text-align: center; padding: 20px; font-size: 0.9rem; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="header">
-        <h1>Textes Liturgiques du Jour</h1>
-    </div>
-
-    <div id="loader">Chargement des textes sacrés...</div>
+    <div id="loader">Chargement...</div>
 
     <div id="main-content" style="display:none;" class="content">
-        <h2>Épître / Lecture</h2>
-        <div id="epitre" class="text-area"></div>
-
-        <h2>Saint Évangile</h2>
-        <div id="evangile" class="text-area"></div>
+        <span class="label">Épître :</span> 
+        <span id="epitre" class="text-block"></span>
+        
+        <br><br>
+        
+        <span class="label">Évangile :</span> 
+        <span id="evangile" class="text-block"></span>
     </div>
 </div>
 
@@ -43,28 +44,23 @@
     const clientSupabase = supabase.createClient(URL_PROJET, KEY_ANON);
 
     async function chargerLectures() {
-        const loader = document.getElementById('loader');
-        const mainContent = document.getElementById('main-content');
-
         try {
-            // CORRECTION ICI : Nom de la fonction = 'dynamic-endpoint'
             const { data, error } = await clientSupabase.functions.invoke('dynamic-endpoint');
 
             if (error) throw error;
 
             if (data) {
-                document.getElementById('epitre').innerText = data.epitre || "Non disponible.";
-                document.getElementById('evangile').innerText = data.evangile || "Non disponible.";
+                // Nettoyage des sauts de ligne dans les données reçues pour garantir le bloc unique
+                const nettoyerTexte = (t) => t ? t.replace(/\n+/g, ' ').trim() : "";
+
+                document.getElementById('epitre').innerText = nettoyerTexte(data.epitre);
+                document.getElementById('evangile').innerText = nettoyerTexte(data.evangile);
                 
-                loader.style.display = 'none';
-                mainContent.style.display = 'block';
+                document.getElementById('loader').style.display = 'none';
+                document.getElementById('main-content').style.display = 'block';
             }
         } catch (err) {
-            console.error("Erreur détaillée:", err);
-            loader.innerHTML = `<div class="error">
-                <strong>Erreur de connexion</strong><br>
-                Vérifiez que la fonction 'dynamic-endpoint' est bien déployée avec --no-verify-jwt.
-            </div>`;
+            document.getElementById('loader').innerHTML = `<div class="error">Erreur de chargement.</div>`;
         }
     }
 
