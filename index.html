@@ -131,14 +131,26 @@
             document.getElementById('btn-today').classList.toggle('hidden', isToday);
             document.getElementById('date-du-jour').innerText = currentDateDisplay.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
             
+            // Format du jour (DD-MM) et récupération de l'année
             const jourMois = `${String(currentDateDisplay.getDate()).padStart(2, '0')}-${String(currentDateDisplay.getMonth() + 1).padStart(2, '0')}`;
-            const { data } = await sb.from('calendrier_traditionnel').select('*').eq('jour', jourMois).single();
+            const anneeEnCours = currentDateDisplay.getFullYear();
+
+            // Requête Supabase filtrée par jour ET année
+            const { data } = await sb.from('calendrier_traditionnel')
+                .select('*')
+                .eq('jour', jourMois)
+                .eq('annee', anneeEnCours)
+                .maybeSingle();
             
             if (data) {
                 document.getElementById('saint-nom').innerText = data.saint_nom;
                 document.getElementById('classe-liturgique').innerText = data.classe + (data.classe === 1 ? "ère" : "ème") + " classe";
                 const couleurs = { 'blanc': '#ffffff', 'rouge': '#ef4444', 'vert': '#22c55e', 'violet': '#a855f7', 'noir': '#1e293b', 'rose': '#f472b6' };
                 document.getElementById('indic-couleur').style.backgroundColor = couleurs[data.couleur.toLowerCase()] || '#ffffff';
+            } else {
+                document.getElementById('saint-nom').innerText = "Férie";
+                document.getElementById('classe-liturgique').innerText = "";
+                document.getElementById('indic-couleur').style.backgroundColor = '#ffffff';
             }
             fetchMesseDuJour(currentDateDisplay);
         }
@@ -234,7 +246,7 @@
         }
 
         async function loadAnnonceImportante() {
-            const { data } = await sb.from('annonces').select('*').eq('est_importante', true).order('created_at', { ascending: false }).limit(1).single();
+            const { data } = await sb.from('annonces').select('*').eq('est_importante', true).order('created_at', { ascending: false }).limit(1).maybeSingle();
             if (data) {
                 document.getElementById('bloc-annonce-importante').classList.remove('hidden');
                 document.getElementById('titre-important').innerText = data.titre;
@@ -247,7 +259,6 @@
 
         initHome();
 
-        // RAFRAÎCHISSEMENT AUTOMATIQUE DU DIRECT (Toutes les 60 secondes)
         setInterval(() => {
             fetchMesseDuJour(currentDateDisplay);
         }, 60000);
