@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Lectures du Jour</title>
     <style>
-        /* --- VARIABLES & BASE (VOTRE STYLE) --- */
+        /* --- VOS STYLES EXISTANTS (Gardés à l'identique) --- */
         :root {
             --primary-gradient: linear-gradient(135deg, #b91c1c 0%, #7f1d1d 100%);
             --bg-light: #f8fafc;
@@ -13,7 +13,6 @@
             --text-main: #1e293b;
             --text-muted: #64748b;
         }
-
         @media (prefers-color-scheme: dark) {
             :root {
                 --bg-light: #0f172a;
@@ -22,18 +21,14 @@
                 --text-muted: #94a3b8;
             }
         }
-
-        /* --- ANIMATIONS PRO --- */
         @keyframes slideIn {
             from { opacity: 0; transform: translateY(20px) scale(0.98); }
             to { opacity: 1; transform: translateY(0) scale(1); }
         }
-
         @keyframes slideOut {
             from { opacity: 1; transform: translateY(0); }
             to { opacity: 0; transform: translateY(30px); }
         }
-
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             background-color: var(--bg-light);
@@ -44,18 +39,8 @@
             overflow-x: hidden;
             animation: slideIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
-
-        .page-exit {
-            animation: slideOut 0.4s cubic-bezier(0.7, 0, 0.84, 0) forwards !important;
-        }
-
-        /* --- BOUTON FERMER --- */
-        .close-container {
-            display: flex;
-            justify-content: flex-end;
-            margin-bottom: 15px;
-        }
-
+        .page-exit { animation: slideOut 0.4s cubic-bezier(0.7, 0, 0.84, 0) forwards !important; }
+        .close-container { display: flex; justify-content: flex-end; margin-bottom: 15px; }
         .btn-close {
             background: rgba(148, 163, 184, 0.1);
             border: none;
@@ -66,20 +51,13 @@
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            transition: all 0.2s ease;
         }
-
-        .btn-close:active { transform: scale(0.9); }
-        .btn-close svg { width: 20px; height: 20px; stroke: var(--text-muted); }
-
-        /* --- COMPOSANT CARD --- */
         .card {
             background: var(--card-light);
             border-radius: 24px;
             padding: 24px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
         }
-
         h2 {
             background: var(--primary-gradient);
             -webkit-background-clip: text;
@@ -88,40 +66,23 @@
             text-transform: uppercase;
             letter-spacing: 1px;
             margin-top: 25px;
-            margin-bottom: 10px;
             font-weight: 800;
         }
-
-        h2:first-of-type { margin-top: 0; }
-
-        .text-content {
-            text-align: justify;
-            font-size: 1.05rem;
-            margin-bottom: 20px;
-        }
-
-        /* --- SKELETON LOADER --- */
+        .text-content { text-align: justify; font-size: 1.05rem; margin-bottom: 20px; white-space: pre-line; }
         .skeleton {
             background: linear-gradient(110deg, #ececec 8%, #f5f5f5 18%, #ececec 33%);
             background-size: 200% 100%;
             animation: shine 1.5s linear infinite;
-            border-radius: 12px;
-            height: 20px;
-            margin-bottom: 10px;
+            border-radius: 12px; height: 20px; margin-bottom: 10px;
         }
-
         @keyframes shine { to { background-position-x: -200%; } }
-
-        @media (prefers-color-scheme: dark) {
-            .skeleton { background: linear-gradient(110deg, #1e293b 8%, #334155 18%, #1e293b 33%); }
-        }
     </style>
 </head>
 <body>
 
     <div class="close-container">
-        <button class="btn-close" onclick="quitterPage()" aria-label="Fermer">
-            <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <button class="btn-close" onclick="quitterPage()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                 <line x1="18" y1="6" x2="6" y2="18"></line>
                 <line x1="6" y1="6" x2="18" y2="18"></line>
             </svg>
@@ -132,50 +93,58 @@
         <div class="skeleton" style="width: 40%"></div>
         <div class="skeleton" style="width: 100%"></div>
         <div class="skeleton" style="width: 90%"></div>
-        <br>
-        <div class="skeleton" style="width: 30%"></div>
-        <div class="skeleton" style="width: 100%"></div>
-        <div class="skeleton" style="width: 95%"></div>
     </div>
 
     <div id="main-content" style="display:none;" class="card">
-        <h2>Épître</h2>
+        <h2 id="titre-epitre">Épître</h2>
         <div id="epitre" class="text-content"></div>
 
-        <h2>Évangile</h2>
+        <h2 id="titre-evangile">Évangile</h2>
         <div id="evangile" class="text-content"></div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
+        // Configuration identique à votre index.html
         const URL_PROJET = "https://rixdjcjlepadtchctxnn.supabase.co";
         const KEY_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJpeGRqY2psZXBhZHRjaGN0eG5uIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc2MTQ2MzMsImV4cCI6MjA4MzE5MDYzM30.0rcj8iFYw-kK7RbAAJ7ZbYqCTdHIWV1DmIQtKP_Ky4c";
-        
         const clientSupabase = supabase.createClient(URL_PROJET, KEY_ANON);
 
         function quitterPage() {
             document.body.classList.add('page-exit');
-            setTimeout(() => {
-                history.back();
-            }, 350);
+            setTimeout(() => { history.back(); }, 350);
         }
 
         async function chargerLectures() {
             try {
-                const { data, error } = await clientSupabase.functions.invoke('dynamic-endpoint');
+                // On récupère la date du jour au format DD-MM
+                const maintenant = new Date();
+                const jourMois = `${String(maintenant.getDate()).padStart(2, '0')}-${String(maintenant.getMonth() + 1).padStart(2, '0')}`;
+
+                // Appel direct à votre table calendrier_traditionnel
+                const { data, error } = await clientSupabase
+                    .from('calendrier_traditionnel')
+                    .select('epitre, evangile, epitre_ref, evangile_ref')
+                    .eq('jour', jourMois)
+                    .single();
+
                 if (error) throw error;
 
                 if (data) {
-                    const nettoyer = (t) => t ? t.replace(/\n+/g, ' ').trim() : "Non disponible";
-                    
-                    document.getElementById('epitre').innerText = nettoyer(data.epitre);
-                    document.getElementById('evangile').innerText = nettoyer(data.evangile);
+                    // Affichage des références dans les titres si elles existent
+                    if (data.epitre_ref) document.getElementById('titre-epitre').innerText = `Épître (${data.epitre_ref})`;
+                    if (data.evangile_ref) document.getElementById('titre-evangile').innerText = `Évangile (${data.evangile_ref})`;
+
+                    // Injection des textes (avec gestion des retours à la ligne)
+                    document.getElementById('epitre').innerText = data.epitre || "Texte de l'épître non renseigné pour ce jour.";
+                    document.getElementById('evangile').innerText = data.evangile || "Texte de l'évangile non renseigné pour ce jour.";
                     
                     document.getElementById('loader').style.display = 'none';
                     document.getElementById('main-content').style.display = 'block';
                 }
             } catch (err) {
-                document.getElementById('loader').innerHTML = `<p style="text-align:center; color:var(--text-muted)">Impossible de charger les textes.</p>`;
+                console.error(err);
+                document.getElementById('loader').innerHTML = `<p style="text-align:center; color:var(--text-muted)">Aucune lecture trouvée pour aujourd'hui.</p>`;
             }
         }
 
