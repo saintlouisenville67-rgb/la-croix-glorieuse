@@ -61,6 +61,11 @@
             </button>
         </div>
 
+        <div id="container-note-messe" class="mt-4 hidden bg-white/10 backdrop-blur-sm p-4 rounded-2xl border border-white/20">
+            <p class="text-[9px] font-black uppercase tracking-widest text-white/60 mb-1">Note de la Messe</p>
+            <p id="display-note-messe" class="text-[11px] font-bold text-white leading-snug"></p>
+        </div>
+
         <div id="bloc-messe" class="mt-4 px-2 hidden text-center">
             <p id="phrase-messe" class="text-[11px] font-black uppercase tracking-wider text-white"></p>
         </div>
@@ -106,6 +111,22 @@
         const CALENDAR_API_KEY = 'AIzaSyAI5N6lamviexKaPR-WoOP4006m5IClDoQ';
         const CALENDAR_ID = 'saintlouisenville67@gmail.com';
 
+        // --- NOUVELLE FONCTION NOTE DE MESSE ---
+        async function fetchNoteMesse(dateCible) {
+            const dateStr = dateCible.toISOString().split('T')[0];
+            const { data } = await sb.from('notes_messe').select('message').eq('date_concernee', dateStr).maybeSingle();
+            
+            const container = document.getElementById('container-note-messe');
+            const display = document.getElementById('display-note-messe');
+            
+            if (data && data.message) {
+                container.classList.remove('hidden');
+                display.innerText = data.message;
+            } else {
+                container.classList.add('hidden');
+            }
+        }
+
         function isOfficeValide(titre) {
             const t = titre.toLowerCase();
             if (t.includes("paul vi") || t.includes("paul 6")) return false;
@@ -131,11 +152,9 @@
             document.getElementById('btn-today').classList.toggle('hidden', isToday);
             document.getElementById('date-du-jour').innerText = currentDateDisplay.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
             
-            // Format du jour (DD-MM) et récupération de l'année
             const jourMois = `${String(currentDateDisplay.getDate()).padStart(2, '0')}-${String(currentDateDisplay.getMonth() + 1).padStart(2, '0')}`;
             const anneeEnCours = currentDateDisplay.getFullYear();
 
-            // Requête Supabase filtrée par jour ET année
             const { data } = await sb.from('calendrier_traditionnel')
                 .select('*')
                 .eq('jour', jourMois)
@@ -153,6 +172,7 @@
                 document.getElementById('indic-couleur').style.backgroundColor = '#ffffff';
             }
             fetchMesseDuJour(currentDateDisplay);
+            fetchNoteMesse(currentDateDisplay); // Appel ajouté ici
         }
 
         async function fetchMesseDuJour(dateCible) {
@@ -261,6 +281,7 @@
 
         setInterval(() => {
             fetchMesseDuJour(currentDateDisplay);
+            fetchNoteMesse(currentDateDisplay);
         }, 60000);
     </script>
     <script src="js/menu.js"></script>
