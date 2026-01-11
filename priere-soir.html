@@ -9,9 +9,14 @@
             --primary-gradient: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
             --bg-light: #f8fafc;
             --card-light: #ffffff;
+            --icon-color: #b91c1c;
         }
         @media (prefers-color-scheme: dark) {
-            :root { --bg-light: #0f172a; --card-light: #1e293b; }
+            :root { 
+                --bg-light: #0f172a; 
+                --card-light: #1e293b; 
+                --icon-color: #f1f5f9;
+            }
             body { color: #f1f5f9; }
         }
         body {
@@ -61,13 +66,27 @@
         .red-cross { color: #b91c1c; font-weight: bold; }
         .divider { width: 30px; height: 1px; background: #e2e8f0; margin: 25px auto; }
         @media (prefers-color-scheme: dark) { .divider { background: #334155; } }
+
+        .header-icon {
+            width: 40px;
+            height: 40px;
+            margin: 0 auto;
+            color: var(--icon-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
     </style>
 </head>
 <body>
 
     <div class="prayer-card">
         <div class="text-center mb-8">
-            <span class="text-3xl">🌙</span>
+            <div class="header-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 2V22M7 9H17"/>
+                </svg>
+            </div>
             <p class="mt-4 font-bold text-slate-800 dark:text-white">
                 <span class="red-cross">†</span> Au nom du Père, et du Fils, et du Saint-Esprit. Amen.
             </p>
