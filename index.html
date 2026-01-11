@@ -20,11 +20,13 @@
                 
                 <a href="https://www.croix-glorieuse.org/" target="_blank" class="inline-flex items-center gap-2 bg-white/10 border border-white/40 px-3 py-1.5 rounded-full transition-all active:scale-95">
                     <span class="text-[9px] font-black uppercase tracking-wider">Site web</span>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
                 </a>
             </div>
             
-            <a href="admin.html" class="opacity-40 hover:opacity-100 p-2"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3m-3-3l-2.5-2.5"></path></svg></a>
+            <a href="admin.html" class="p-2 text-red-700">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3m-3-3l-2.5-2.5"></path></svg>
+            </a>
         </div>
 
         <div class="bg-white/10 backdrop-blur-md p-6 rounded-3xl border border-white/20">
@@ -62,7 +64,7 @@
         </div>
 
         <div id="container-note-messe" class="mt-4 hidden bg-white/10 backdrop-blur-sm p-4 rounded-2xl border border-white/20">
-            <p class="text-[9px] font-black uppercase tracking-widest text-white/60 mb-1">Aujourd'hui à la Messe :</p>
+            <p class="text-[9px] font-black uppercase tracking-widest text-white/60 mb-1">Note de la Messe</p>
             <p id="display-note-messe" class="text-[11px] font-bold text-white leading-snug"></p>
         </div>
 
@@ -111,14 +113,11 @@
         const CALENDAR_API_KEY = 'AIzaSyAI5N6lamviexKaPR-WoOP4006m5IClDoQ';
         const CALENDAR_ID = 'saintlouisenville67@gmail.com';
 
-        // --- NOUVELLE FONCTION NOTE DE MESSE ---
         async function fetchNoteMesse(dateCible) {
             const dateStr = dateCible.toISOString().split('T')[0];
             const { data } = await sb.from('notes_messe').select('message').eq('date_concernee', dateStr).maybeSingle();
-            
             const container = document.getElementById('container-note-messe');
             const display = document.getElementById('display-note-messe');
-            
             if (data && data.message) {
                 container.classList.remove('hidden');
                 display.innerText = data.message;
@@ -148,19 +147,11 @@
             const blocLectures = document.getElementById('bloc-lectures');
             if (isToday) blocLectures.classList.remove('hidden');
             else blocLectures.classList.add('hidden');
-
             document.getElementById('btn-today').classList.toggle('hidden', isToday);
             document.getElementById('date-du-jour').innerText = currentDateDisplay.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
-            
             const jourMois = `${String(currentDateDisplay.getDate()).padStart(2, '0')}-${String(currentDateDisplay.getMonth() + 1).padStart(2, '0')}`;
             const anneeEnCours = currentDateDisplay.getFullYear();
-
-            const { data } = await sb.from('calendrier_traditionnel')
-                .select('*')
-                .eq('jour', jourMois)
-                .eq('annee', anneeEnCours)
-                .maybeSingle();
-            
+            const { data } = await sb.from('calendrier_traditionnel').select('*').eq('jour', jourMois).eq('annee', anneeEnCours).maybeSingle();
             if (data) {
                 document.getElementById('saint-nom').innerText = data.saint_nom;
                 document.getElementById('classe-liturgique').innerText = data.classe + (data.classe === 1 ? "ère" : "ème") + " classe";
@@ -172,29 +163,25 @@
                 document.getElementById('indic-couleur').style.backgroundColor = '#ffffff';
             }
             fetchMesseDuJour(currentDateDisplay);
-            fetchNoteMesse(currentDateDisplay); // Appel ajouté ici
+            fetchNoteMesse(currentDateDisplay);
         }
 
         async function fetchMesseDuJour(dateCible) {
             const start = new Date(dateCible.getFullYear(), dateCible.getMonth(), dateCible.getDate(), 0, 0, 0).toISOString();
             const end = new Date(dateCible.getFullYear(), dateCible.getMonth(), dateCible.getDate(), 23, 59, 59).toISOString();
             const url = `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(CALENDAR_ID)}/events?key=${CALENDAR_API_KEY}&timeMin=${start}&timeMax=${end}&singleEvents=true&orderBy=startTime`;
-
             try {
                 const response = await fetch(url);
                 const data = await response.json();
                 const events = data.items || [];
                 const now = new Date();
                 const dixMinMs = 10 * 60 * 1000;
-
                 let activeEvent = null;
                 let status = "";
-
                 events.forEach(e => {
                     if (!e.start.dateTime || !isOfficeValide(e.summary || "")) return;
                     const debut = new Date(e.start.dateTime);
                     const fin = new Date(e.end.dateTime);
-
                     if (now >= debut && now <= fin && dateCible.toDateString() === now.toDateString()) {
                         activeEvent = e;
                         status = "live";
@@ -207,16 +194,12 @@
                         }
                     }
                 });
-
                 const container = document.getElementById('live-indicator-home');
                 const badgeBtn = document.getElementById('badge-btn');
                 const badgeTexte = document.getElementById('badge-texte');
-
                 if (activeEvent) {
                     container.classList.remove('hidden');
                     const titre = activeEvent.summary;
-                    const estOfficeTexte = titre.toLowerCase().includes("laudes") || titre.toLowerCase().includes("vêpres") || titre.toLowerCase().includes("vepres");
-
                     if (status === "live") {
                         badgeTexte.className = "badge-live animate-soft-pulse";
                         badgeTexte.innerText = `● EN DIRECT : ${titre}`;
@@ -224,19 +207,9 @@
                         badgeTexte.className = "badge-upcoming";
                         badgeTexte.innerText = `● PROCHAINEMENT : ${titre}`;
                     }
-
-                    if (estOfficeTexte) {
-                        badgeBtn.onclick = () => window.location.href = 'office.html';
-                        badgeBtn.classList.add('cursor-pointer', 'active:scale-95', 'transition-transform');
-                        badgeTexte.innerHTML += ' <span class="opacity-70 ml-1">›</span>';
-                    } else {
-                        badgeBtn.onclick = null;
-                        badgeBtn.classList.remove('cursor-pointer', 'active:scale-95');
-                    }
                 } else {
                     container.classList.add('hidden');
                 }
-
                 const filteredMesses = events.filter(e => e.summary && e.summary.toLowerCase().includes('messe') && !e.summary.toLowerCase().includes('paul vi'));
                 const blocMesse = document.getElementById('bloc-messe');
                 if (filteredMesses.length > 0) {
@@ -278,11 +251,7 @@
         function goToday() { currentDateDisplay = new Date(); updateLiturgie(); loadIntention(); }
 
         initHome();
-
-        setInterval(() => {
-            fetchMesseDuJour(currentDateDisplay);
-            fetchNoteMesse(currentDateDisplay);
-        }, 60000);
+        setInterval(() => { fetchMesseDuJour(currentDateDisplay); fetchNoteMesse(currentDateDisplay); }, 60000);
     </script>
     <script src="js/menu.js"></script>
 </body>
