@@ -193,11 +193,20 @@
 
         function confirmAction(text, action) { showModal("Confirmation", text, "⚠️", "confirm", action); }
 
-        // --- AUTH ---
-        function checkPin() {
-            if (document.getElementById('pin-input').value === "5717") {
-                document.getElementById('pin-overlay').style.display = 'none';
-                refreshData();
+        // --- AUTH (SOLUTION ANONYME) ---
+        async function checkPin() {
+            const pin = document.getElementById('pin-input').value;
+
+            if (pin === "5717") {
+                // Appel de la fonction SQL pour définir le code dans la session
+                const { error } = await sb.rpc('set_session_pin', { pin_code: pin });
+
+                if (!error) {
+                    document.getElementById('pin-overlay').style.display = 'none';
+                    refreshData();
+                } else {
+                    showModal("Erreur", "Problème de session SQL. Vérifiez votre fonction RPC dans Supabase.", "❌");
+                }
             } else {
                 showModal("Erreur", "Code PIN invalide.", "❌");
                 document.getElementById('pin-input').value = "";
