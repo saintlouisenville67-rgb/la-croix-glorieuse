@@ -11,16 +11,10 @@
         body { font-family: 'Plus Jakarta Sans', sans-serif; background: #f8fafc; color: #0f172a; }
         .card { background: white; border: 1px solid #e2e8f0; border-radius: 24px; transition: all 0.3s ease; }
         .gradient-dark { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); }
-        
-        /* Respect des retours à la ligne pour les messages et annonces */
         .preserve-lines { white-space: pre-wrap; }
-
-        /* MODALE UI */
         #custom-modal { display: none; backdrop-filter: blur(12px); }
         .modal-content { animation: modalEnter 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         @keyframes modalEnter { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-
-        /* BADGE NOUVEAU */
         .badge-new { 
             background: #10b981; color: white; padding: 2px 8px; border-radius: 99px;
             font-size: 10px; font-weight: 800; animation: pulse-green 2s infinite;
@@ -77,6 +71,32 @@
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
             <div class="space-y-10">
+                <section class="card p-8 border-t-4 border-blue-500">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-xs font-800 uppercase text-blue-600 flex items-center gap-2">📝 Note de la Messe</h2>
+                        <button onclick="confirmAction('Supprimer toutes les notes passées ?', cleanOldNotesMesse)" class="text-[9px] font-800 uppercase bg-red-50 text-red-600 px-3 py-2 rounded-xl border border-red-100">Nettoyer les anciennes notes</button>
+                    </div>
+                    
+                    <div class="space-y-4 mb-8">
+                        <input type="date" id="note-date" class="w-full bg-slate-50 p-4 rounded-xl text-sm font-bold border-none">
+                        <textarea id="note-text" placeholder="Message spécifique (ex: Quête impérée, Annonce fête...)" rows="3" class="w-full bg-slate-50 p-4 rounded-xl text-sm border-none"></textarea>
+                        <button onclick="saveNoteMesse()" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-800 text-xs uppercase tracking-widest shadow-lg shadow-blue-500/20">Enregistrer / Modifier</button>
+                    </div>
+
+                    <div class="overflow-hidden border rounded-2xl">
+                        <table class="w-full text-left text-[11px]">
+                            <thead class="bg-slate-50 border-b">
+                                <tr class="text-slate-400 font-800 uppercase">
+                                    <th class="p-3">Date</th>
+                                    <th class="p-3">Message</th>
+                                    <th class="p-3 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="list-notes-messe" class="divide-y"></tbody>
+                        </table>
+                    </div>
+                </section>
+
                 <section class="card p-8 border-t-4 border-indigo-400">
                     <h2 class="text-xs font-800 uppercase text-indigo-600 mb-6 flex items-center gap-2">📅 Calendrier Traditionnel (Fixe)</h2>
                     <div class="flex gap-2 mb-6">
@@ -188,6 +208,52 @@
             if(!text) return;
             navigator.clipboard.writeText(text);
             showModal("Copié !", `${label} ajouté au presse-papier.`, "✅");
+        }
+
+        // --- GESTION NOTES DE MESSE ---
+        async function loadNotesMesse() {
+            const { data } = await sb.from('notes_messe').select('*').order('date_concernee', { ascending: true });
+            const tbody = document.getElementById('list-notes-messe');
+            if (data) {
+                tbody.innerHTML = data.map(n => `
+                    <tr>
+                        <td class="p-3 font-bold">${new Date(n.date_concernee).toLocaleDateString('fr-FR')}</td>
+                        <td class="p-3 text-slate-500">${n.message}</td>
+                        <td class="p-3 text-right">
+                            <button onclick="prepareEditNote('${n.date_concernee}', '${n.message.replace(/'/g, "\\'")}')" class="text-blue-600 mr-2">Mod.</button>
+                            <button onclick="confirmAction('Supprimer cette note ?', ()=>deleteRow('notes_messe','${n.id}',loadNotesMesse))" class="text-red-400">Suppr.</button>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+        }
+
+        function prepareEditNote(date, msg) {
+            document.getElementById('note-date').value = date;
+            document.getElementById('note-text').value = msg;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        async function saveNoteMesse() {
+            const date = document.getElementById('note-date').value;
+            const msg = document.getElementById('note-text').value;
+            if(!date || !msg) return showModal("Champs requis", "Date et message obligatoires", "⚠️");
+
+            const { error } = await sb.from('notes_messe').upsert({ date_concernee: date, message: msg }, { onConflict: 'date_concernee' });
+            if(!error) {
+                document.getElementById('note-text').value = "";
+                loadNotesMesse();
+                showModal("Enregistré", "La note a été mise à jour.", "✅");
+            }
+        }
+
+        async function cleanOldNotesMesse() {
+            const today = new Date().toISOString().split('T')[0];
+            const { error } = await sb.from('notes_messe').delete().lt('date_concernee', today);
+            if(!error) {
+                loadNotesMesse();
+                showModal("Nettoyage réussi", "Les anciennes notes ont été supprimées.", "🧹");
+            }
         }
 
         // --- FONCTIONS CALENDRIER FIXE ---
@@ -349,7 +415,7 @@
         }
 
         function refreshData() {
-            loadStats(); loadAdminTicker(); loadAdminAnnonces(); loadAdminEntraide(); loadMessages(); loadAdminPrières();
+            loadStats(); loadAdminTicker(); loadAdminAnnonces(); loadAdminEntraide(); loadMessages(); loadAdminPrières(); loadNotesMesse();
         }
 
         setInterval(refreshData, 30000);
