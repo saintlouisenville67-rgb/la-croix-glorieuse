@@ -400,6 +400,7 @@
                             <span class="text-[10px] font-800 text-indigo-600 uppercase">${i.prenom || 'Anonyme'}</span>
                             <div class="flex gap-3">
                                 ${!i.valide ? `<button onclick="updateField('intentions','${i.id}',{valide:true},loadAdminPrières)" class="text-[9px] font-800 text-emerald-600 uppercase">Valider</button>` : ''}
+                                <button onclick="confirmAction('Anonymiser ?',()=>anonymiserIntention('${i.id}'))" class="text-[9px] font-800 uppercase text-slate-400">Anonymiser</button>
                                 <button onclick="confirmAction('Supprimer ?',()=>deleteRow('intentions','${i.id}',loadAdminPrières))" class="text-slate-300 hover:text-red-500">✕</button>
                             </div>
                         </div>
@@ -409,6 +410,17 @@
         }
 
         async function anonymiserToutesIntentions() { await sb.from('intentions').update({ prenom: 'Anonyme' }); loadAdminPrières(); showModal("Anonymisé","Toutes les intentions sont privées.","👥"); }
+
+        async function anonymiserIntention(id) {
+            const { error } = await sb.from('intentions').update({ prenom: 'Anonyme' }).eq('id', id);
+            if (!error) {
+                loadAdminPrières();
+                showModal("Anonymisé", "Cette intention est désormais anonyme.", "🕶️");
+            } else {
+                showModal("Erreur", "Impossible d'anonymiser cette intention.", "❌");
+            }
+        }
+
         async function loadAdminTicker() { const { data } = await sb.from('app_settings').select('value').eq('id', 'ticker_message').single(); if(data) document.getElementById('ticker-input').value = data.value; }
         async function updateTicker() { await sb.from('app_settings').update({ value: document.getElementById('ticker-input').value }).eq('id', 'ticker_message'); showModal("Mis à jour","Bandeau actualisé.","📺"); }
         async function deleteRow(table, id, cb) { await sb.from(table).delete().eq('id', id); cb(); }
