@@ -78,6 +78,7 @@
             <div class="bg-red-50 border-2 border-red-200 p-6 rounded-2xl shadow-sm relative animate-soft-pulse">
                 <h3 id="titre-important" class="text-sm font-900 text-red-800 mb-2 uppercase"></h3>
                 <p id="texte-important" class="text-xs text-red-900/80 italic"></p>
+                <a id="lien-important" href="#" target="_blank" class="hidden inline-block mt-3 text-[10px] font-black uppercase text-red-700 underline">Lire l’annonce</a>
             </div>
         </section>
 
@@ -262,6 +263,14 @@
                 document.getElementById('bloc-annonce-importante').classList.remove('hidden');
                 document.getElementById('titre-important').innerText = data.titre;
                 document.getElementById('texte-important').innerText = data.contenu;
+
+                const lien = document.getElementById('lien-important');
+                if (data.lien_url) {
+                    lien.href = data.lien_url;
+                    lien.classList.remove('hidden');
+                } else {
+                    lien.classList.add('hidden');
+                }
             }
         }
 
