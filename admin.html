@@ -326,7 +326,10 @@
 
         // --- ANNONCES ---
         async function loadAdminAnnonces() {
-            const { data } = await sb.from('annonces').select('*').order('created_at', { ascending: false });
+            const { data } = await sb.from('annonces').select('*')
+              .order('est_importante', { ascending: false })
+              .order('priorite', { ascending: false })
+              .order('created_at', { ascending: false });
             if (data) {
                 document.getElementById('admin-list-annonces').innerHTML = data.map(a => `
                     <div class="bg-slate-50 p-5 rounded-2xl border border-slate-100 flex justify-between items-center">
@@ -338,7 +341,7 @@
                             <p class="text-sm font-800 text-slate-800 truncate">${a.titre}</p>
                         </div>
                         <div class="flex gap-2">
-                            <button onclick="updateField('annonces','${a.id}',{est_importante:${!a.est_importante}},loadAdminAnnonces)" class="p-3 bg-white rounded-xl text-slate-300 hover:text-indigo-600 transition-all">★</button>
+                            <button onclick="updateField('annonces','${a.id}',{est_importante:${!a.est_importante}, priorite:${a.est_importante ? 0 : 100}},loadAdminAnnonces)" class="p-3 bg-white rounded-xl text-slate-300 hover:text-indigo-600 transition-all">★</button>
                             <button onclick="confirmAction('Supprimer ?',()=>deleteRow('annonces','${a.id}',loadAdminAnnonces))" class="p-3 bg-white rounded-xl text-slate-300 hover:text-red-500">✕</button>
                         </div>
                     </div>`).join('');
@@ -349,10 +352,12 @@
             const titre = document.getElementById('ann-titre').value;
             const contenu = document.getElementById('ann-texte').value;
             if(!titre || !contenu) return showModal("Champs requis","Titre et contenu obligatoires","⚠️");
+            const important = document.getElementById('ann-important').checked;
             const { error } = await sb.from('annonces').insert([{
                 titre, contenu, 
                 lien_url: document.getElementById('ann-url').value, 
-                est_importante: document.getElementById('ann-important').checked
+                est_importante: important,
+                priorite: important ? 100 : 0
             }]);
             if(!error) {
                 document.getElementById('ann-titre').value = ""; document.getElementById('ann-texte').value = "";
