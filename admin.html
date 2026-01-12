@@ -219,6 +219,31 @@
             showModal("Copié !", `${label} ajouté au presse-papier.`, "✅");
         }
 
+        async function toggleImportantAnnonce(id) {
+            const { data: row, error: readErr } = await sb
+                .from('annonces')
+                .select('est_importante')
+                .eq('id', id)
+                .maybeSingle();
+
+            if (readErr || !row) {
+                showModal("Erreur", "Impossible de lire l'état actuel de l'annonce.", "❌");
+                return;
+            }
+
+            const { error: updErr } = await sb
+                .from('annonces')
+                .update({ est_importante: !row.est_importante })
+                .eq('id', id);
+
+            if (updErr) {
+                showModal("Erreur", "Impossible de modifier l'annonce (droits / réseau).", "❌");
+                return;
+            }
+
+            loadAdminAnnonces();
+        }
+
         // --- GESTION NOTES DE MESSE ---
         async function loadNotesMesse() {
             const { data } = await sb.from('notes_messe').select('*').order('date_concernee', { ascending: true });
@@ -341,7 +366,7 @@
                             <p class="text-sm font-800 text-slate-800 truncate">${a.titre}</p>
                         </div>
                         <div class="flex gap-2">
-                            <button onclick="updateField('annonces','${a.id}',{est_importante:${!a.est_importante}, priorite:${a.est_importante ? 0 : 100}},loadAdminAnnonces)" class="p-3 bg-white rounded-xl text-slate-300 hover:text-indigo-600 transition-all">★</button>
+                            <button onclick="toggleImportantAnnonce('${a.id}')" class="p-3 bg-white rounded-xl text-slate-300 hover:text-indigo-600 transition-all">★</button>
                             <button onclick="confirmAction('Supprimer ?',()=>deleteRow('annonces','${a.id}',loadAdminAnnonces))" class="p-3 bg-white rounded-xl text-slate-300 hover:text-red-500">✕</button>
                         </div>
                     </div>`).join('');
