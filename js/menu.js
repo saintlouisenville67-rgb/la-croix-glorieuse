@@ -4,7 +4,7 @@ scriptLucide.src = 'https://unpkg.com/lucide@latest';
 scriptLucide.onload = () => { if (window.lucide) lucide.createIcons(); };
 document.head.appendChild(scriptLucide);
 
-// 2. STYLES COMPLETS (NAVIGATION + BANDEAU TRANSLUCIDE + ANIMATIONS)
+// 2. STYLES COMPLETS (NAVIGATION + POPUP TEXTE PUR)
 const styleNav = document.createElement('style');
 styleNav.innerHTML = `
     /* Animation de l'icône active */
@@ -18,63 +18,73 @@ styleNav.innerHTML = `
     
     @media (prefers-color-scheme: dark) { 
         .badge-dot { border-color: #1e293b; } 
-        .ticker-container { background: rgba(30, 41, 59, 0.8) !important; color: white !important; border-color: rgba(255,255,255,0.1) !important; }
-        .ticker-close { background: rgba(30, 41, 59, 0.9) !important; color: white !important; }
     }
 
     /* Style du Menu */
     .bottom-nav { min-height: 80px; display: flex; align-items: center; justify-content: space-around; }
 
-    /* --- STYLES DU BANDEAU DÉFILANT TRANSLUCIDE --- */
-    .ticker-container {
+    /* --- STYLES DU POPUP ÉPURÉ --- */
+    .popup-overlay {
         position: fixed;
-        top: 10px;
-        left: 10px;
-        right: 10px;
-        background: rgba(255, 255, 255, 0.75);
-        backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
-        color: #1e293b;
-        z-index: 2000;
-        height: 40px;
-        display: flex;
-        align-items: center;
-        overflow: hidden;
-        font-size: 13px;
-        font-weight: 600;
-        border-radius: 20px;
-        border: 1px solid rgba(255, 255, 255, 0.4);
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-    }
-    .ticker-text {
-        white-space: nowrap;
-        display: inline-block;
-        padding-left: 100%;
-        animation: tickerMove 25s linear infinite;
-    }
-    @keyframes tickerMove {
-        0% { transform: translate3d(0, 0, 0); }
-        100% { transform: translate3d(-100%, 0, 0); }
-    }
-    
-    /* BOUTON FERMER FIXE À DROITE */
-    .ticker-close {
-        position: absolute;
-        right: 0;
-        top: 0;
-        bottom: 0;
-        width: 40px;
-        background: rgba(255, 255, 255, 0.9);
-        border: none;
-        color: #ef4444;
-        font-size: 20px;
-        font-weight: bold;
-        cursor: pointer;
-        z-index: 2005;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(0, 0, 0, 0.4);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
         display: flex;
         align-items: center;
         justify-content: center;
-        border-radius: 0 20px 20px 0;
+        z-index: 3000;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+    }
+    .popup-overlay.active {
+        opacity: 1;
+        visibility: visible;
+    }
+    .popup-card {
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        width: 80%;
+        max-width: 320px;
+        padding: 40px 25px 25px 25px;
+        border-radius: 30px;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        text-align: center;
+        transform: translateY(20px);
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .popup-overlay.active .popup-card {
+        transform: translateY(0);
+    }
+    .popup-message {
+        font-size: 17px;
+        color: #1e293b;
+        line-height: 1.6;
+        font-weight: 600;
+        margin-bottom: 30px;
+        white-space: pre-wrap; /* Respecte les sauts de ligne si besoin */
+    }
+    .popup-btn {
+        background: #1e293b;
+        color: white;
+        border: none;
+        padding: 14px;
+        border-radius: 18px;
+        font-weight: 700;
+        font-size: 15px;
+        cursor: pointer;
+        width: 100%;
+        transition: opacity 0.2s;
+    }
+    .popup-btn:active { opacity: 0.8; }
+    
+    @media (prefers-color-scheme: dark) { 
+        .popup-card { background: rgba(30, 41, 59, 0.9); border-color: rgba(255, 255, 255, 0.1); }
+        .popup-message { color: white; }
+        .popup-btn { background: white; color: #1e293b; }
     }
 `;
 document.head.appendChild(styleNav);
@@ -115,7 +125,7 @@ async function loadMenu() {
     if (window.lucide) lucide.createIcons();
 
     updateBadges(); 
-    loadTicker();
+    loadTicker(); 
     setupScrollTop();
 }
 
@@ -151,21 +161,33 @@ async function updateBadges() {
 
 async function loadTicker() {
     try {
-        if (sessionStorage.getItem('ticker_hidden')) return;
+        if (sessionStorage.getItem('popup_viewed')) return;
+
         const { data: tickerData } = await sb.from('app_settings').select('value').eq('id', 'ticker_message').single();
+        
         if (tickerData && tickerData.value.trim() !== "") {
-            const ticker = document.createElement('div');
-            ticker.id = 'ticker-bar';
-            ticker.className = 'ticker-container';
-            ticker.innerHTML = `
-                <div class="ticker-text">
-                    ${tickerData.value} &nbsp;&nbsp;&nbsp;&nbsp; • &nbsp;&nbsp;&nbsp;&nbsp; ${tickerData.value}
+            const overlay = document.createElement('div');
+            overlay.id = 'app-popup';
+            overlay.className = 'popup-overlay';
+            overlay.innerHTML = `
+                <div class="popup-card">
+                    <div class="popup-message">${tickerData.value}</div>
+                    <button class="popup-btn" onclick="closePopup()">Continuer</button>
                 </div>
-                <button onclick="document.getElementById('ticker-bar').remove(); sessionStorage.setItem('ticker_hidden', 'true')" class="ticker-close">✕</button>
             `;
-            document.body.appendChild(ticker);
+            document.body.appendChild(overlay);
+            setTimeout(() => overlay.classList.add('active'), 100);
         }
-    } catch (e) { console.error("Erreur ticker:", e); }
+    } catch (e) { console.error("Erreur popup:", e); }
+}
+
+function closePopup() {
+    const overlay = document.getElementById('app-popup');
+    if (overlay) {
+        overlay.classList.remove('active');
+        sessionStorage.setItem('popup_viewed', 'true');
+        setTimeout(() => overlay.remove(), 400);
+    }
 }
 
 function setupScrollTop() {
