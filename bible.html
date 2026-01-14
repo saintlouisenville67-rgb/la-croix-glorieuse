@@ -68,8 +68,7 @@
                 <span class="w-2 h-2 bg-rose-500 rounded-full mr-2"></span> Ancien Testament
             </h2>
             <div id="at-list" class="flex overflow-x-auto no-scrollbar pb-4 pl-2">
-                <p class="text-slate-600 text-sm animate-pulse">Chargement des livres...</p>
-            </div>
+                </div>
         </section>
 
         <section class="mb-10">
@@ -77,8 +76,7 @@
                 <span class="w-2 h-2 bg-amber-500 rounded-full mr-2"></span> Nouveau Testament
             </h2>
             <div id="nt-list" class="flex overflow-x-auto no-scrollbar pb-4 pl-2">
-                <p class="text-slate-600 text-sm animate-pulse">Chargement des livres...</p>
-            </div>
+                </div>
         </section>
 
         <div id="chapter-section" class="hidden mb-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -103,45 +101,17 @@
         const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
         let currentFontSize = 19;
-        
-        // Ordre de référence pour le tri
-        const orderRef = ["Genèse", "Exode", "Lévitique", "Nombres", "Deutéronome", "Josué", "Juges", "Ruth", "1 Samuel", "2 Samuel", "1 Rois", "2 Rois", "1 Chroniques", "2 Chroniques", "Esdras", "Néhémie", "Tobie", "Judith", "Esther", "1 Machabées", "2 Machabées", "Job", "Psaumes", "Proverbes", "Ecclésiaste", "Cantique des Cantiques", "Sagesse", "Ecclésiastique", "Isaïe", "Jérémie", "Lamentations", "Baruch", "Ezéchiel", "Daniel", "Osée", "Joël", "Amos", "Abdias", "Jonas", "Michée", "Nahum", "Habacuc", "Sophonie", "Aggée", "Zacharie", "Malachie", "Matthieu", "Marc", "Luc", "Jean", "Actes", "Romains", "1 Corinthiens", "2 Corinthiens", "Galates", "Ephésiens", "Philippiens", "Colossiens", "1 Thessaloniciens", "2 Thessaloniciens", "1 Timothée", "2 Timothée", "Tite", "Philémon", "Hébreux", "Jacques", "1 Pierre", "2 Pierre", "1 Jean", "2 Jean", "3 Jean", "Jude", "Apocalypse"];
 
-        async function fetchBooks() {
-            // Récupère les livres uniques présents dans la table
-            const { data, error } = await supabaseClient
-                .from('bible_crampon')
-                .select('livre')
-                .order('livre');
+        // Listes statiques extraites de votre base Crampon
+        const booksAT = ["Genèse", "Exode", "Lévitique", "Nombres", "Deutéronome", "Josué", "Juges", "Ruth", "1 Samuel", "2 Samuel", "1 Rois", "2 Rois", "1 Chroniques", "2 Chroniques", "Esdras", "Néhémie", "Tobie", "Judith", "Esther", "1 Machabées", "2 Machabées", "Job", "Psaumes", "Proverbes", "Ecclésiaste", "Cantique des Cantiques", "Sagesse", "Ecclésiastique", "Isaïe", "Jérémie", "Lamentations", "Baruch", "Ezéchiel", "Daniel", "Osée", "Joël", "Amos", "Abdias", "Jonas", "Michée", "Nahum", "Habacuc", "Sophonie", "Aggée", "Zacharie", "Malachie"];
+        const booksNT = ["Matthieu", "Marc", "Luc", "Jean", "Actes", "Romains", "1 Corinthiens", "2 Corinthiens", "Galates", "Ephésiens", "Philippiens", "Colossiens", "1 Thessaloniciens", "2 Thessaloniciens", "1 Timothée", "2 Timothée", "Tite", "Philémon", "Hébreux", "Jacques", "1 Pierre", "2 Pierre", "1 Jean", "2 Jean", "3 Jean", "Jude", "Apocalypse"];
 
-            if (error) {
-                console.error("Erreur Supabase:", error);
-                return;
-            }
-
-            // Filtrer les doublons et trier selon l'ordre biblique
-            const uniqueBooks = [...new Set(data.map(item => item.livre))];
-            uniqueBooks.sort((a, b) => orderRef.indexOf(a) - orderRef.indexOf(b));
-
-            renderBooks(uniqueBooks);
-        }
-
-        function renderBooks(books) {
+        function renderBooks() {
             const atContainer = document.getElementById('at-list');
             const ntContainer = document.getElementById('nt-list');
             
-            atContainer.innerHTML = "";
-            ntContainer.innerHTML = "";
-
-            books.forEach(book => {
-                const card = `<div class="book-card" onclick="selectBook(this, '${book.replace(/'/g, "\\'")}')">${book}</div>`;
-                // Si le livre est avant Matthieu, c'est l'AT
-                if (orderRef.indexOf(book) < orderRef.indexOf("Matthieu")) {
-                    atContainer.innerHTML += card;
-                } else {
-                    ntContainer.innerHTML += card;
-                }
-            });
+            atContainer.innerHTML = booksAT.map(book => `<div class="book-card" onclick="selectBook(this, '${book.replace(/'/g, "\\'")}')">${book}</div>`).join('');
+            ntContainer.innerHTML = booksNT.map(book => `<div class="book-card" onclick="selectBook(this, '${book.replace(/'/g, "\\'")}')">${book}</div>`).join('');
         }
 
         async function selectBook(element, bookName) {
@@ -152,7 +122,7 @@
             document.getElementById('chapter-section').classList.remove('hidden');
             document.getElementById('bible-content').innerHTML = ""; 
 
-            // Récupérer le nombre de chapitres max
+            // Appel rapide pour obtenir le nombre de chapitres
             const { data } = await supabaseClient
                 .from('bible_crampon')
                 .select('chapitre')
@@ -164,16 +134,17 @@
             grid.innerHTML = '';
             
             if (data && data.length > 0) {
-                for(let i=1; i <= data[0].chapitre; i++) {
+                const maxChap = data[0].chapitre;
+                for(let i=1; i <= maxChap; i++) {
                     grid.innerHTML += `<button onclick="loadChapter('${bookName.replace(/'/g, "\\'")}', ${i})" class="bg-slate-800 hover:bg-rose-900/40 py-3 rounded-xl border border-slate-700 transition-all font-bold text-slate-200">${i}</button>`;
                 }
             }
-            grid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            grid.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
 
         async function loadChapter(book, chapter) {
             const content = document.getElementById('bible-content');
-            content.innerHTML = '<div class="text-center py-20 animate-pulse text-rose-500">Chargement...</div>';
+            content.innerHTML = '<div class="text-center py-20 animate-pulse text-rose-500 font-bold">Ouverture...</div>';
             
             const { data } = await supabaseClient
                 .from('bible_crampon')
@@ -199,7 +170,7 @@
             document.querySelectorAll('#bible-content p').forEach(p => p.style.fontSize = currentFontSize + 'px');
         }
 
-        fetchBooks();
+        renderBooks();
     </script>
 </body>
 </html>
