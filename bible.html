@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Bible - La Croix Glorieuse</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;600&display=swap');
+        
+        body { background-color: #0f172a; color: #f1f5f9; }
+        .bible-text { font-family: 'Crimson Pro', serif; line-height: 1.6; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        .book-card {
+            min-width: 120px;
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #1e293b;
+            border-radius: 12px;
+            margin-right: 8px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            border: 1px solid #334155;
+            transition: all 0.2s;
+        }
+        .book-card.active {
+            background: #e11d48; /* Couleur accent */
+            border-color: #fb7185;
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+
+    <header class="bg-slate-900 p-6 rounded-b-[40px] shadow-2xl border-b border-slate-800">
+        <div class="flex justify-between items-center mb-6">
+            <div>
+                <h1 class="text-xl font-bold">La Sainte Bible</h1>
+                <p class="text-[10px] uppercase tracking-widest text-slate-400">Traduction Crampon</p>
+            </div>
+            <div class="flex bg-slate-800 rounded-full p-1 border border-slate-700">
+                <button onclick="changeFontSize(-2)" class="px-3 py-1 text-sm font-bold">-</button>
+                <button onclick="changeFontSize(2)" class="px-3 py-1 text-sm font-bold">+</button>
+            </div>
+        </div>
+
+        <div class="relative">
+            <input type="text" id="bookSearch" placeholder="Rechercher un livre..." 
+                   class="w-full bg-slate-800 border border-slate-700 rounded-2xl py-3 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500">
+            <div id="suggestions" class="absolute z-50 w-full bg-slate-800 mt-2 rounded-xl shadow-2xl hidden max-h-48 overflow-y-auto border border-slate-700"></div>
+        </div>
+    </header>
+
+    <main class="p-4 mb-24">
+        <div class="mb-6">
+            <h2 class="text-xs font-black text-slate-500 uppercase tracking-tighter mb-3 ml-2">Ancien Testament</h2>
+            <div id="at-list" class="flex overflow-x-auto no-scrollbar pb-2"></div>
+        </div>
+
+        <div class="mb-6">
+            <h2 class="text-xs font-black text-slate-500 uppercase tracking-tighter mb-3 ml-2">Nouveau Testament</h2>
+            <div id="nt-list" class="flex overflow-x-auto no-scrollbar pb-2"></div>
+        </div>
+
+        <div id="chapter-section" class="hidden mb-8 animate-fade-in">
+            <h2 id="selected-book-title" class="text-xl font-bold mb-4 text-rose-400"></h2>
+            <div id="chapters-grid" class="grid grid-cols-5 gap-2"></div>
+        </div>
+
+        <hr class="border-slate-800 mb-8">
+
+        <div id="bible-content" class="bible-text text-lg space-y-4 px-2">
+            <p class="text-slate-500 text-center italic mt-10">Sélectionnez un livre et un chapitre pour commencer la lecture.</p>
+        </div>
+    </main>
+
+    <nav class="bottom-nav"></nav>
+
+    <script src="js/config.js"></script>
+    <script src="js/menu.js"></script>
+    <script>
+        // Initialisation Supabase (utilise vos variables globales si présentes dans config.js)
+        const supabaseUrl = window.CONFIG?.SUPABASE_URL || 'VOTRE_URL_SUPABASE';
+        const supabaseKey = window.CONFIG?.SUPABASE_ANON_KEY || 'VOTRE_CLE_ANON';
+        const supabase = exports.supabase.createClient(supabaseUrl, supabaseKey);
+
+        const booksAT = ["Genèse", "Exode", "Lévitique", "Nombres", "Deutéronome", "Josué", "Juges", "Ruth", "1 Samuel", "2 Samuel", "1 Rois", "2 Rois", "1 Chroniques", "2 Chroniques", "Esdras", "Néhémie", "Tobie", "Judith", "Esther", "1 Machabées", "2 Machabées", "Job", "Psaumes", "Proverbes", "Ecclésiaste", "Cantique des Cantiques", "Sagesse", "Ecclésiastique", "Isaïe", "Jérémie", "Lamentations", "Baruch", "Ezéchiel", "Daniel", "Osée", "Joël", "Amos", "Abdias", "Jonas", "Michée", "Nahum", "Habacuc", "Sophonie", "Aggée", "Zacharie", "Malachie"];
+        const booksNT = ["Matthieu", "Marc", "Luc", "Jean", "Actes", "Romains", "1 Corinthiens", "2 Corinthiens", "Galates", "Ephésiens", "Philippiens", "Colossiens", "1 Thessaloniciens", "2 Thessaloniciens", "1 Timothée", "2 Timothée", "Tite", "Philémon", "Hébreux", "Jacques", "1 Pierre", "2 Pierre", "1 Jean", "2 Jean", "3 Jean", "Jude", "Apocalypse"];
+
+        let currentFontSize = 18;
+
+        // Générer les listes défilantes
+        function renderBooks() {
+            const atContainer = document.getElementById('at-list');
+            const ntContainer = document.getElementById('nt-list');
+            
+            booksAT.forEach(b => atContainer.innerHTML += `<div class="book-card" onclick="selectBook('${b.replace(/'/g, "\\'")}')">${b}</div>`);
+            booksNT.forEach(b => ntContainer.innerHTML += `<div class="book-card" onclick="selectBook('${b.replace(/'/g, "\\'")}')">${b}</div>`);
+        }
+
+        async function selectBook(bookName) {
+            document.querySelectorAll('.book-card').forEach(el => el.classList.remove('active'));
+            event?.target?.classList?.add('active');
+            
+            document.getElementById('selected-book-title').innerText = bookName;
+            document.getElementById('chapter-section').classList.remove('hidden');
+            
+            // Récupérer le nombre de chapitres
+            const { data, error } = await supabase
+                .from('bible_crampon')
+                .select('chapitre')
+                .eq('livre', bookName)
+                .order('chapitre', { ascending: false })
+                .limit(1);
+
+            const grid = document.getElementById('chapters-grid');
+            grid.innerHTML = '';
+            for(let i=1; i <= data[0].chapitre; i++) {
+                grid.innerHTML += `<button onclick="loadChapter('${bookName.replace(/'/g, "\\'")}', ${i})" class="bg-slate-800 hover:bg-slate-700 py-3 rounded-xl border border-slate-700 transition-all active:scale-90">${i}</button>`;
+            }
+            window.scrollTo({ top: 200, behavior: 'smooth' });
+        }
+
+        async function loadChapter(book, chapter) {
+            const content = document.getElementById('bible-content');
+            content.innerHTML = '<div class="text-center py-10">Chargement...</div>';
+            
+            const { data, error } = await supabase
+                .from('bible_crampon')
+                .select('verset_num, texte')
+                .eq('livre', book)
+                .eq('chapitre', chapter)
+                .order('verset_num', { ascending: true });
+
+            content.innerHTML = data.map(v => `
+                <div class="flex items-start mb-4">
+                    <span class="text-rose-500 font-bold text-xs mt-1 mr-3 min-w-[20px]">${v.verset_num}</span>
+                    <p style="font-size: ${currentFontSize}px">${v.texte}</p>
+                </div>
+            `).join('');
+        }
+
+        function changeFontSize(delta) {
+            currentFontSize += delta;
+            document.querySelectorAll('#bible-content p').forEach(p => p.style.fontSize = currentFontSize + 'px');
+        }
+
+        // Recherche avec suggestions
+        const searchInput = document.getElementById('bookSearch');
+        const suggBox = document.getElementById('suggestions');
+
+        searchInput.addEventListener('input', (e) => {
+            const val = e.target.value.toLowerCase();
+            const allBooks = [...booksAT, ...booksNT];
+            if(val.length < 1) { suggBox.classList.add('hidden'); return; }
+            
+            const filtered = allBooks.filter(b => b.toLowerCase().includes(val));
+            suggBox.innerHTML = filtered.map(b => `<div class="p-4 hover:bg-slate-700 cursor-pointer border-b border-slate-700" onclick="selectBook('${b.replace(/'/g, "\\'")}') ; document.getElementById('suggestions').classList.add('hidden')">${b}</div>`).join('');
+            suggBox.classList.remove('hidden');
+        });
+
+        renderBooks();
+    </script>
+</body>
+</html>
