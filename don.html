@@ -7,33 +7,46 @@
     <link rel="stylesheet" href="css/style.css">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        .modal-overlay {
-            background-color: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(4px);
+        .glass-overlay {
+            background-color: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
         }
     </style>
 </head>
 <body class="bg-slate-50">
 
-    <div id="sacristieModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden">
-        <div class="modal-overlay absolute inset-0" onclick="closeModal()"></div>
-        <div class="relative bg-white w-full max-w-[380px] rounded-[30px] shadow-2xl overflow-hidden transform transition-all">
-            <div class="p-6 text-center">
-                <h2 class="text-xl font-bold text-slate-800 mb-4 leading-tight">Aidez à la rénovation de notre sacristie</h2>
-                
-                <div class="flex justify-center">
-                    <iframe id="haWidget" allowtransparency="true" src="https://www.helloasso.com/associations/association-pour-le-culte-catholique-traditionnel-en-alsace/collectes/une-nouvelle-sacristie-pour-l-eglise-saint-louis-en-ville-de-strasbourg/widget-vignette" style="width:350px;border:none;" onload="window.addEventListener( 'message', function(e) { const dataHeight = e.data.height; const haWidgetElement = document.getElementById('haWidget'); haWidgetElement.height = dataHeight + 'px'; } )"></iframe>
-                </div>
-
-                <button onclick="closeModal()" class="mt-4 px-8 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold rounded-full transition-colors duration-200">
-                    Fermer
-                </button>
-            </div>
-            <button onclick="closeModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <div id="sacristieOverlay" class="fixed inset-0 z-[100] flex items-center justify-center p-6 glass-overlay transition-opacity duration-500">
+        <div class="relative w-full max-w-sm bg-white rounded-[32px] shadow-2xl p-6 border border-white/20 transform transition-all scale-100">
+            <button onclick="closeOverlay()" class="absolute -top-2 -right-2 bg-slate-800 text-white rounded-full p-2 shadow-lg active:scale-90 transition-transform">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                 </svg>
             </button>
+
+            <div class="text-center">
+                <div class="inline-flex items-center justify-center w-16 h-16 bg-amber-50 rounded-full mb-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                    </svg>
+                </div>
+                
+                <h2 class="text-xl font-bold text-slate-800 mb-2">Projet Sacristie</h2>
+                <p class="text-slate-500 text-sm mb-6 leading-relaxed">
+                    Aidez-nous à financer la rénovation de la sacristie de l'église Saint-Louis.
+                </p>
+
+                <div class="flex flex-col gap-3">
+                    <a href="https://www.helloasso.com/associations/association-pour-le-culte-catholique-traditionnel-en-alsace/collectes/une-nouvelle-sacristie-pour-l-eglise-saint-louis-en-ville-de-strasbourg" 
+                       target="_blank"
+                       class="w-full py-4 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-2xl shadow-md transition-colors text-center">
+                        Participer au projet
+                    </a>
+                    <button onclick="closeOverlay()" class="w-full py-3 text-slate-400 text-xs font-medium uppercase tracking-widest">
+                        Plus tard
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -62,19 +75,13 @@
     <script src="js/menu.js"></script>
 
     <script>
-        function closeModal() {
-            document.getElementById('sacristieModal').classList.add('hidden');
+        function closeOverlay() {
+            const overlay = document.getElementById('sacristieOverlay');
+            overlay.classList.add('opacity-0');
+            setTimeout(() => {
+                overlay.style.display = 'none';
+            }, 500);
         }
-
-        window.addEventListener('DOMContentLoaded', () => {
-            // Vérifie si l'utilisateur a déjà vu le popup durant cette session
-            if (!sessionStorage.getItem('sacristiePopupShown')) {
-                setTimeout(() => {
-                    document.getElementById('sacristieModal').classList.remove('hidden');
-                    sessionStorage.setItem('sacristiePopupShown', 'true');
-                }, 800);
-            }
-        });
     </script>
 </body>
 </html>
