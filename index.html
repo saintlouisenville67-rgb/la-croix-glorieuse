@@ -44,7 +44,7 @@
                 <p id="classe-liturgique" class="text-[10px] font-bold opacity-60 uppercase"></p>
                 <div class="flex items-center gap-2">
                     <div id="live-indicator-home" class="hidden">
-                        <button id="badge-btn" class="flex items-center">
+                        <button id="badge-btn" class="flex items-center transition-all active:scale-95">
                             <span id="badge-texte"></span>
                         </button>
                     </div>
@@ -206,6 +206,17 @@
                 if (activeEvent) {
                     container.classList.remove('hidden');
                     const titre = activeEvent.summary;
+                    const tLower = titre.toLowerCase();
+
+                    // Configuration du clic élégant uniquement pour Laudes et Vepres
+                    if (tLower.includes("laudes") || tLower.includes("vêpres") || tLower.includes("vepres")) {
+                        badgeBtn.onclick = () => window.location.href = 'office.html';
+                        badgeBtn.style.cursor = "pointer";
+                    } else {
+                        badgeBtn.onclick = null;
+                        badgeBtn.style.cursor = "default";
+                    }
+
                     if (status === "live") {
                         badgeTexte.className = "badge-live animate-soft-pulse";
                         badgeTexte.innerText = `● EN DIRECT : ${titre}`;
