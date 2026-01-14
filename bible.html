@@ -67,14 +67,16 @@
             <h2 class="text-[11px] font-black text-slate-500 uppercase tracking-[0.15em] mb-4 ml-2 flex items-center">
                 <span class="w-2 h-2 bg-rose-500 rounded-full mr-2"></span> Ancien Testament
             </h2>
-            <div id="at-list" class="flex overflow-x-auto no-scrollbar pb-4 pl-2"></div>
+            <div id="at-list" class="flex overflow-x-auto no-scrollbar pb-4 pl-2">
+                </div>
         </section>
 
         <section class="mb-10">
             <h2 class="text-[11px] font-black text-slate-500 uppercase tracking-[0.15em] mb-4 ml-2 flex items-center">
                 <span class="w-2 h-2 bg-amber-500 rounded-full mr-2"></span> Nouveau Testament
             </h2>
-            <div id="nt-list" class="flex overflow-x-auto no-scrollbar pb-4 pl-2"></div>
+            <div id="nt-list" class="flex overflow-x-auto no-scrollbar pb-4 pl-2">
+                </div>
         </section>
 
         <div id="chapter-section" class="hidden mb-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -99,7 +101,7 @@
     <script>
         const supabaseUrl = window.CONFIG.SUPABASE_URL;
         const supabaseKey = window.CONFIG.SUPABASE_ANON_KEY;
-        const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+        const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
         let currentFontSize = 19;
 
@@ -111,25 +113,20 @@
             const atContainer = document.getElementById('at-list');
             const ntContainer = document.getElementById('nt-list');
             
-            booksAT.forEach(book => {
-                atContainer.innerHTML += `<div class="book-card" onclick="selectBook(this, '${book.replace(/'/g, "\\'")}')">${book}</div>`;
-            });
-            booksNT.forEach(book => {
-                ntContainer.innerHTML += `<div class="book-card" onclick="selectBook(this, '${book.replace(/'/g, "\\'")}')">${book}</div>`;
-            });
+            atContainer.innerHTML = booksAT.map(book => `<div class="book-card" onclick="selectBook(this, '${book.replace(/'/g, "\\'")}')">${book}</div>`).join('');
+            ntContainer.innerHTML = booksNT.map(book => `<div class="book-card" onclick="selectBook(this, '${book.replace(/'/g, "\\'")}')">${book}</div>`).join('');
         }
 
         async function selectBook(element, bookName) {
-            // Mise à jour visuelle des boutons
             document.querySelectorAll('.book-card').forEach(el => el.classList.remove('active'));
             element.classList.add('active');
 
             document.getElementById('selected-book-title').innerText = bookName;
             document.getElementById('chapter-section').classList.remove('hidden');
-            document.getElementById('bible-content').innerHTML = ""; // Vider le contenu précédent
+            document.getElementById('bible-content').innerHTML = ""; 
 
-            // Récupérer le nombre de chapitres
-            const { data, error } = await supabase
+            // Récupérer le nombre de chapitres via RPC ou Select max
+            const { data, error } = await supabaseClient
                 .from('bible_crampon')
                 .select('chapitre')
                 .eq('livre', bookName)
@@ -140,7 +137,8 @@
             grid.innerHTML = '';
             
             if (data && data.length > 0) {
-                for(let i=1; i <= data[0].chapitre; i++) {
+                const maxChap = data[0].chapitre;
+                for(let i=1; i <= maxChap; i++) {
                     grid.innerHTML += `<button onclick="loadChapter('${bookName.replace(/'/g, "\\'")}', ${i})" class="bg-slate-800 hover:bg-rose-900/40 py-3 rounded-xl border border-slate-700 transition-all active:scale-95 font-bold text-slate-200">${i}</button>`;
                 }
             }
@@ -150,9 +148,9 @@
 
         async function loadChapter(book, chapter) {
             const content = document.getElementById('bible-content');
-            content.innerHTML = '<div class="text-center py-20 animate-pulse text-rose-500">Chargement du chapitre...</div>';
+            content.innerHTML = '<div class="text-center py-20 animate-pulse text-rose-500 font-bold">Ouverture du Livre...</div>';
             
-            const { data, error } = await supabase
+            const { data, error } = await supabaseClient
                 .from('bible_crampon')
                 .select('verset_num, texte')
                 .eq('livre', book)
@@ -162,7 +160,7 @@
             if (data) {
                 content.innerHTML = `<div class="mb-10 text-slate-500 uppercase text-[10px] tracking-[0.3em] text-center italic">— Chapitre ${chapter} —</div>`;
                 content.innerHTML += data.map(v => `
-                    <div class="flex items-start group">
+                    <div class="flex items-start mb-4">
                         <span class="text-rose-600 font-black text-[10px] mt-2 mr-4 min-w-[24px] text-right opacity-60">${v.verset_num}</span>
                         <p class="leading-relaxed" style="font-size: ${currentFontSize}px">${v.texte}</p>
                     </div>
@@ -175,10 +173,11 @@
         function changeFontSize(delta) {
             currentFontSize += delta;
             if(currentFontSize < 12) currentFontSize = 12;
-            if(currentFontSize > 32) currentFontSize = 32;
+            if(currentFontSize > 35) currentFontSize = 35;
             document.querySelectorAll('#bible-content p').forEach(p => p.style.fontSize = currentFontSize + 'px');
         }
 
+        // Lancement immédiat
         renderInterface();
     </script>
 </body>
