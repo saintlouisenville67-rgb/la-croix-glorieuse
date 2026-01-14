@@ -14,7 +14,6 @@
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         
-        /* Cartes (communes livres et chapitres) */
         .book-card, .chapter-card {
             min-width: 100px; height: 50px; display: flex; align-items: center; justify-content: center;
             background: #1e293b; border-radius: 16px; margin-right: 12px; font-size: 0.85rem;
@@ -27,16 +26,17 @@
         }
 
         .glass-header { background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
-        
-        /* Numéro du verset dans le texte */
         .v-num { color: #e11d48; font-weight: 800; font-size: 0.65em; vertical-align: top; margin-right: 4px; margin-left: 8px; }
         
-        /* Bouton remonter */
         #btn-back-to-chapters {
             position: fixed; bottom: 100px; right: 20px; background: #e11d48;
             width: 45px; height: 45px; border-radius: 50%; display: none;
             align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.5); z-index: 100;
         }
+
+        /* Style des flèches de navigation chapitre */
+        .nav-chap { background: #1e293b; border: 1px solid #334155; padding: 8px 12px; border-radius: 10px; color: #fb7185; font-weight: bold; }
+        .nav-chap:disabled { opacity: 0.2; color: #475569; }
     </style>
 </head>
 <body class="min-h-screen pb-24">
@@ -75,6 +75,12 @@
         </div>
 
         <div id="bible-content" class="px-4 max-w-2xl mx-auto pb-20">
+            <div id="chapter-nav-header" class="hidden flex justify-between items-center mb-6">
+                <button id="prev-chap" class="nav-chap" onclick="navChapter(-1)">←</button>
+                <div id="chapter-indicator" class="text-slate-500 uppercase text-[10px] tracking-[0.4em] font-bold"></div>
+                <button id="next-chap" class="nav-chap" onclick="navChapter(1)">→</button>
+            </div>
+            
             <div id="bible-text-container" class="bible-text text-slate-200">
                 <div class="text-center py-20 opacity-20">Sélectionnez un livre et un chapitre</div>
             </div>
@@ -92,6 +98,9 @@
 
     <script>
         let currentFontSize = 19;
+        let currentBook = "";
+        let currentChapter = 1;
+        let maxChaptersInBook = 1;
 
         const booksAT = ["Genèse", "Exode", "Lévitique", "Nombres", "Deutéronome", "Josué", "Juges", "Ruth", "1 Samuel", "2 Samuel", "1 Rois", "2 Rois", "1 Chroniques", "2 Chroniques", "Esdras", "Néhémie", "Tobie", "Judith", "Esther", "1 Machabées", "2 Machabées", "Job", "Psaumes", "Proverbes", "Ecclésiaste", "Cantique des Cantiques", "Sagesse", "Ecclésiastique", "Isaïe", "Jérémie", "Lamentations", "Baruch", "Ezéchiel", "Daniel", "Osée", "Joël", "Amos", "Abdias", "Jonas", "Michée", "Nahum", "Habacuc", "Sophonie", "Aggée", "Zacharie", "Malachie"];
         const booksNT = ["Matthieu", "Marc", "Luc", "Jean", "Actes", "Romains", "1 Corinthiens", "2 Corinthiens", "Galates", "Ephésiens", "Philippiens", "Colossiens", "1 Thessaloniciens", "2 Thessaloniciens", "1 Timothée", "2 Timothée", "Tite", "Philémon", "Hébreux", "Jacques", "1 Pierre", "2 Pierre", "1 Jean", "2 Jean", "3 Jean", "Jude", "Apocalypse"];
@@ -102,20 +111,23 @@
         }
 
         async function selectBook(element, bookName) {
+            currentBook = bookName;
             document.querySelectorAll('.book-card').forEach(el => el.classList.remove('active'));
             element.classList.add('active');
             
             document.getElementById('selected-book-title').innerText = "Chapitres : " + bookName;
             document.getElementById('chapter-section').classList.remove('hidden');
             document.getElementById('bible-text-container').innerHTML = "";
+            document.getElementById('chapter-nav-header').classList.add('hidden');
             document.getElementById('btn-back-to-chapters').style.display = "none";
 
             const { data } = await sb.from('bible_crampon').select('chapitre').eq('livre', bookName).order('chapitre', { ascending: false }).limit(1);
 
             if (data && data.length > 0) {
+                maxChaptersInBook = data[0].chapitre;
                 let html = '';
-                for(let i=1; i <= data[0].chapitre; i++) {
-                    html += `<div class="chapter-card" onclick="loadChapter(this, '${bookName.replace(/'/g, "\\'")}', ${i})">${i}</div>`;
+                for(let i=1; i <= maxChaptersInBook; i++) {
+                    html += `<div class="chapter-card" id="chap-btn-${i}" onclick="loadChapter(this, '${bookName.replace(/'/g, "\\'")}', ${i})">${i}</div>`;
                 }
                 document.getElementById('chapters-list').innerHTML = html;
                 document.getElementById('chapter-section').scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -123,8 +135,10 @@
         }
 
         async function loadChapter(btnElement, book, chapter) {
+            currentChapter = chapter;
             document.querySelectorAll('.chapter-card').forEach(el => el.classList.remove('active'));
-            btnElement.classList.add('active');
+            if(btnElement) btnElement.classList.add('active');
+            else document.getElementById(`chap-btn-${chapter}`)?.classList.add('active');
 
             const container = document.getElementById('bible-text-container');
             container.innerHTML = "<div class='text-center py-10 text-rose-500 animate-pulse'>...</div>";
@@ -132,16 +146,26 @@
             const { data } = await sb.from('bible_crampon').select('verset_num, texte').eq('livre', book).eq('chapitre', chapter).order('verset_num', { ascending: true });
 
             if (data) {
-                // Construction du paragraphe continu
-                let html = `<div class="mb-8 text-slate-500 text-[10px] tracking-[0.4em] text-center italic">— Chapitre ${chapter} —</div>`;
-                html += `<div style="font-size: ${currentFontSize}px">`;
+                // Maj de la navigation
+                document.getElementById('chapter-nav-header').classList.remove('hidden');
+                document.getElementById('chapter-indicator').innerText = `— Chapitre ${chapter} —`;
+                document.getElementById('prev-chap').disabled = (chapter <= 1);
+                document.getElementById('next-chap').disabled = (chapter >= maxChaptersInBook);
+
+                let html = `<div style="font-size: ${currentFontSize}px">`;
                 html += data.map(v => `<span class="v-num">${v.verset_num}</span>${v.texte}`).join(' ');
                 html += `</div>`;
                 
                 container.innerHTML = html;
                 document.getElementById('btn-back-to-chapters').style.display = "flex";
-                // On descend vers le texte
-                setTimeout(() => { container.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 100);
+                setTimeout(() => { document.getElementById('chapter-nav-header').scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 100);
+            }
+        }
+
+        function navChapter(delta) {
+            let next = currentChapter + delta;
+            if(next >= 1 && next <= maxChaptersInBook) {
+                loadChapter(null, currentBook, next);
             }
         }
 
@@ -152,7 +176,7 @@
         function changeFontSize(delta) {
             currentFontSize += delta;
             if(currentFontSize < 12) currentFontSize = 12;
-            const container = document.querySelector('#bible-text-container > div:last-child');
+            const container = document.querySelector('#bible-text-container > div');
             if(container) container.style.fontSize = currentFontSize + 'px';
         }
 
