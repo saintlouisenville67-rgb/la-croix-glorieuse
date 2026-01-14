@@ -6,8 +6,36 @@
     <title>Don - La Croix Glorieuse</title>
     <link rel="stylesheet" href="css/style.css">
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .modal-overlay {
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+        }
+    </style>
 </head>
 <body class="bg-slate-50">
+
+    <div id="sacristieModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden">
+        <div class="modal-overlay absolute inset-0" onclick="closeModal()"></div>
+        <div class="relative bg-white w-full max-w-[380px] rounded-[30px] shadow-2xl overflow-hidden transform transition-all">
+            <div class="p-6 text-center">
+                <h2 class="text-xl font-bold text-slate-800 mb-4 leading-tight">Aidez à la rénovation de notre sacristie</h2>
+                
+                <div class="flex justify-center">
+                    <iframe id="haWidget" allowtransparency="true" src="https://www.helloasso.com/associations/association-pour-le-culte-catholique-traditionnel-en-alsace/collectes/une-nouvelle-sacristie-pour-l-eglise-saint-louis-en-ville-de-strasbourg/widget-vignette" style="width:350px;border:none;" onload="window.addEventListener( 'message', function(e) { const dataHeight = e.data.height; const haWidgetElement = document.getElementById('haWidget'); haWidgetElement.height = dataHeight + 'px'; } )"></iframe>
+                </div>
+
+                <button onclick="closeModal()" class="mt-4 px-8 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold rounded-full transition-colors duration-200">
+                    Fermer
+                </button>
+            </div>
+            <button onclick="closeModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+    </div>
 
     <header class="gradient-header text-white p-8 rounded-b-[40px] shadow-lg">
         <h1 class="text-2xl font-800 tracking-tight">Faire un don</h1>
@@ -32,5 +60,21 @@
 
     <script src="js/config.js"></script>
     <script src="js/menu.js"></script>
+
+    <script>
+        function closeModal() {
+            document.getElementById('sacristieModal').classList.add('hidden');
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            // Vérifie si l'utilisateur a déjà vu le popup durant cette session
+            if (!sessionStorage.getItem('sacristiePopupShown')) {
+                setTimeout(() => {
+                    document.getElementById('sacristieModal').classList.remove('hidden');
+                    sessionStorage.setItem('sacristiePopupShown', 'true');
+                }, 800);
+            }
+        });
+    </script>
 </body>
 </html>
