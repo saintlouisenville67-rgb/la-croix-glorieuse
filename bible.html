@@ -15,30 +15,32 @@
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         
         .book-card {
-            min-width: 130px;
+            min-width: 140px;
             height: 50px;
             display: flex;
             align-items: center;
             justify-content: center;
             background: #1e293b;
             border-radius: 16px;
-            margin-right: 10px;
+            margin-right: 12px;
             font-size: 0.85rem;
             font-weight: 600;
             cursor: pointer;
             border: 1px solid #334155;
-            transition: all 0.3s ease;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             white-space: nowrap;
             padding: 0 15px;
+            color: #94a3b8;
         }
         .book-card.active {
             background: #e11d48;
             border-color: #fb7185;
+            color: white;
             transform: scale(1.05);
-            box-shadow: 0 4px 15px rgba(225, 29, 72, 0.3);
+            box-shadow: 0 10px 15px -3px rgba(225, 29, 72, 0.4);
         }
         .glass-header {
-            background: rgba(15, 23, 42, 0.8);
+            background: rgba(15, 23, 42, 0.9);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
         }
@@ -46,54 +48,46 @@
 </head>
 <body class="min-h-screen pb-24">
 
-    <header class="sticky top-0 z-50 glass-header p-6 rounded-b-[40px] border-b border-slate-800 shadow-2xl">
-        <div class="flex justify-between items-center mb-6">
+    <header class="sticky top-0 z-50 glass-header p-6 rounded-b-[40px] border-b border-slate-800 shadow-xl">
+        <div class="flex justify-between items-center">
             <div>
                 <h1 class="text-xl font-bold bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">La Sainte Bible</h1>
                 <p class="text-[10px] uppercase tracking-[0.2em] text-rose-500 font-black">Crampon 1923</p>
             </div>
-            <div class="flex bg-slate-800/50 rounded-full p-1 border border-slate-700">
+            <div class="flex bg-slate-800/80 rounded-full p-1 border border-slate-700">
                 <button onclick="changeFontSize(-2)" class="w-10 h-8 flex items-center justify-center text-lg font-bold hover:text-rose-400">-</button>
                 <div class="w-[1px] bg-slate-700 my-1"></div>
                 <button onclick="changeFontSize(2)" class="w-10 h-8 flex items-center justify-center text-lg font-bold hover:text-rose-400">+</button>
             </div>
         </div>
-
-        <div class="relative">
-            <input type="text" id="bookSearch" placeholder="Rechercher un livre (ex: Jean, Genèse...)" 
-                   class="w-full bg-slate-900/50 border border-slate-700 rounded-2xl py-3.5 px-5 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 transition-all">
-            <div id="suggestions" class="absolute z-[60] w-full bg-slate-800 mt-2 rounded-2xl shadow-2xl hidden max-h-60 overflow-y-auto border border-slate-700 p-2"></div>
-        </div>
     </header>
 
     <main class="p-4 mt-4">
-        <section id="lists-container">
-            <div class="mb-8">
-                <h2 class="text-[11px] font-black text-slate-500 uppercase tracking-[0.15em] mb-4 ml-2 flex items-center">
-                    <span class="w-2 h-2 bg-rose-500 rounded-full mr-2"></span> Ancien Testament
-                </h2>
-                <div id="at-list" class="flex overflow-x-auto no-scrollbar pb-4 pl-2"></div>
-            </div>
-
-            <div class="mb-8">
-                <h2 class="text-[11px] font-black text-slate-500 uppercase tracking-[0.15em] mb-4 ml-2 flex items-center">
-                    <span class="w-2 h-2 bg-amber-500 rounded-full mr-2"></span> Nouveau Testament
-                </h2>
-                <div id="nt-list" class="flex overflow-x-auto no-scrollbar pb-4 pl-2"></div>
-            </div>
+        <section class="mb-10">
+            <h2 class="text-[11px] font-black text-slate-500 uppercase tracking-[0.15em] mb-4 ml-2 flex items-center">
+                <span class="w-2 h-2 bg-rose-500 rounded-full mr-2"></span> Ancien Testament
+            </h2>
+            <div id="at-list" class="flex overflow-x-auto no-scrollbar pb-4 pl-2"></div>
         </section>
 
-        <div id="chapter-section" class="hidden mb-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <h2 id="selected-book-title" class="text-2xl font-bold mb-5 text-center text-white"></h2>
-            <div id="chapters-grid" class="grid grid-cols-5 gap-3 max-w-sm mx-auto"></div>
+        <section class="mb-10">
+            <h2 class="text-[11px] font-black text-slate-500 uppercase tracking-[0.15em] mb-4 ml-2 flex items-center">
+                <span class="w-2 h-2 bg-amber-500 rounded-full mr-2"></span> Nouveau Testament
+            </h2>
+            <div id="nt-list" class="flex overflow-x-auto no-scrollbar pb-4 pl-2"></div>
+        </section>
+
+        <div id="chapter-section" class="hidden mb-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <h2 id="selected-book-title" class="text-2xl font-bold mb-6 text-center text-white"></h2>
+            <div id="chapters-grid" class="grid grid-cols-5 gap-3 max-w-sm mx-auto px-4"></div>
         </div>
 
         <div id="bible-content" class="bible-text text-lg space-y-6 px-4 max-w-2xl mx-auto">
-            <div class="text-center py-20 opacity-30">
+            <div class="text-center py-20 opacity-20">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                 </svg>
-                <p>Choisissez un livre pour commencer</p>
+                <p>Sélectionnez un livre pour commencer la lecture</p>
             </div>
         </div>
     </main>
@@ -108,52 +102,34 @@
         const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
         let currentFontSize = 19;
-        let allBooks = [];
 
-        // Liste officielle pour le tri AT/NT
-        const listAT = ["Genèse", "Exode", "Lévitique", "Nombres", "Deutéronome", "Josué", "Juges", "Ruth", "1 Samuel", "2 Samuel", "1 Rois", "2 Rois", "1 Chroniques", "2 Chroniques", "Esdras", "Néhémie", "Tobie", "Judith", "Esther", "1 Machabées", "2 Machabées", "Job", "Psaumes", "Proverbes", "Ecclésiaste", "Cantique des Cantiques", "Sagesse", "Ecclésiastique", "Isaïe", "Jérémie", "Lamentations", "Baruch", "Ezéchiel", "Daniel", "Osée", "Joël", "Amos", "Abdias", "Jonas", "Michée", "Nahum", "Habacuc", "Sophonie", "Aggée", "Zacharie", "Malachie"];
+        // Ordre Catholique Officiel
+        const booksAT = ["Genèse", "Exode", "Lévitique", "Nombres", "Deutéronome", "Josué", "Juges", "Ruth", "1 Samuel", "2 Samuel", "1 Rois", "2 Rois", "1 Chroniques", "2 Chroniques", "Esdras", "Néhémie", "Tobie", "Judith", "Esther", "1 Machabées", "2 Machabées", "Job", "Psaumes", "Proverbes", "Ecclésiaste", "Cantique des Cantiques", "Sagesse", "Ecclésiastique", "Isaïe", "Jérémie", "Lamentations", "Baruch", "Ezéchiel", "Daniel", "Osée", "Joël", "Amos", "Abdias", "Jonas", "Michée", "Nahum", "Habacuc", "Sophonie", "Aggée", "Zacharie", "Malachie"];
+        const booksNT = ["Matthieu", "Marc", "Luc", "Jean", "Actes", "Romains", "1 Corinthiens", "2 Corinthiens", "Galates", "Ephésiens", "Philippiens", "Colossiens", "1 Thessaloniciens", "2 Thessaloniciens", "1 Timothée", "2 Timothée", "Tite", "Philémon", "Hébreux", "Jacques", "1 Pierre", "2 Pierre", "1 Jean", "2 Jean", "3 Jean", "Jude", "Apocalypse"];
 
-        async function initBible() {
-            // 1. Récupérer la liste unique des livres depuis Supabase
-            const { data, error } = await supabase
-                .from('bible_crampon')
-                .select('livre')
-                .order('id', { ascending: true });
-
-            if (error) return;
-
-            // Extraire les noms uniques en gardant l'ordre de la DB
-            allBooks = [...new Set(data.map(item => item.livre))];
-            renderBooks();
-        }
-
-        function renderBooks() {
+        function renderInterface() {
             const atContainer = document.getElementById('at-list');
             const ntContainer = document.getElementById('nt-list');
             
-            allBooks.forEach(book => {
-                const card = `<div class="book-card" onclick="selectBook('${book.replace(/'/g, "\\'")}')">${book}</div>`;
-                if (listAT.includes(book)) {
-                    atContainer.innerHTML += card;
-                } else {
-                    ntContainer.innerHTML += card;
-                }
+            booksAT.forEach(book => {
+                atContainer.innerHTML += `<div class="book-card" onclick="selectBook(this, '${book.replace(/'/g, "\\'")}')">${book}</div>`;
+            });
+            booksNT.forEach(book => {
+                ntContainer.innerHTML += `<div class="book-card" onclick="selectBook(this, '${book.replace(/'/g, "\\'")}')">${book}</div>`;
             });
         }
 
-        async function selectBook(bookName) {
-            // UI
+        async function selectBook(element, bookName) {
+            // Mise à jour visuelle des boutons
             document.querySelectorAll('.book-card').forEach(el => el.classList.remove('active'));
-            const cards = document.querySelectorAll('.book-card');
-            cards.forEach(c => { if(c.innerText === bookName) c.classList.add('active'); });
+            element.classList.add('active');
 
             document.getElementById('selected-book-title').innerText = bookName;
             document.getElementById('chapter-section').classList.remove('hidden');
-            document.getElementById('suggestions').classList.add('hidden');
-            document.getElementById('bookSearch').value = "";
+            document.getElementById('bible-content').innerHTML = ""; // Vider le contenu précédent
 
-            // Récupérer le nombre de chapitres max pour ce livre
-            const { data } = await supabase
+            // Récupérer le nombre de chapitres
+            const { data, error } = await supabase
                 .from('bible_crampon')
                 .select('chapitre')
                 .eq('livre', bookName)
@@ -162,69 +138,48 @@
 
             const grid = document.getElementById('chapters-grid');
             grid.innerHTML = '';
-            for(let i=1; i <= data[0].chapitre; i++) {
-                grid.innerHTML += `<button onclick="loadChapter('${bookName.replace(/'/g, "\\'")}', ${i})" class="bg-slate-800 hover:bg-rose-900/40 py-3 rounded-xl border border-slate-700 transition-all active:scale-95 font-bold">${i}</button>`;
+            
+            if (data && data.length > 0) {
+                for(let i=1; i <= data[0].chapitre; i++) {
+                    grid.innerHTML += `<button onclick="loadChapter('${bookName.replace(/'/g, "\\'")}', ${i})" class="bg-slate-800 hover:bg-rose-900/40 py-3 rounded-xl border border-slate-700 transition-all active:scale-95 font-bold text-slate-200">${i}</button>`;
+                }
             }
-            grid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            
+            document.getElementById('chapter-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
 
         async function loadChapter(book, chapter) {
             const content = document.getElementById('bible-content');
-            content.innerHTML = '<div class="text-center py-20 animate-pulse text-rose-500">Ouverture du rouleau...</div>';
+            content.innerHTML = '<div class="text-center py-20 animate-pulse text-rose-500">Chargement du chapitre...</div>';
             
-            const { data } = await supabase
+            const { data, error } = await supabase
                 .from('bible_crampon')
                 .select('verset_num, texte')
                 .eq('livre', book)
                 .eq('chapitre', chapter)
                 .order('verset_num', { ascending: true });
 
-            content.innerHTML = `<div class="mb-10 text-slate-500 uppercase text-[10px] tracking-[0.3em] text-center italic">— Chapitre ${chapter} —</div>`;
-            content.innerHTML += data.map(v => `
-                <div class="flex items-start group">
-                    <span class="text-rose-600 font-black text-[10px] mt-2 mr-4 min-w-[24px] text-right opacity-60">${v.verset_num}</span>
-                    <p class="leading-relaxed" style="font-size: ${currentFontSize}px">${v.texte}</p>
-                </div>
-            `).join('');
-            
-            window.scrollTo({ top: document.getElementById('selected-book-title').offsetTop - 100, behavior: 'smooth' });
+            if (data) {
+                content.innerHTML = `<div class="mb-10 text-slate-500 uppercase text-[10px] tracking-[0.3em] text-center italic">— Chapitre ${chapter} —</div>`;
+                content.innerHTML += data.map(v => `
+                    <div class="flex items-start group">
+                        <span class="text-rose-600 font-black text-[10px] mt-2 mr-4 min-w-[24px] text-right opacity-60">${v.verset_num}</span>
+                        <p class="leading-relaxed" style="font-size: ${currentFontSize}px">${v.texte}</p>
+                    </div>
+                `).join('');
+                
+                window.scrollTo({ top: document.getElementById('selected-book-title').offsetTop - 80, behavior: 'smooth' });
+            }
         }
 
         function changeFontSize(delta) {
             currentFontSize += delta;
+            if(currentFontSize < 12) currentFontSize = 12;
+            if(currentFontSize > 32) currentFontSize = 32;
             document.querySelectorAll('#bible-content p').forEach(p => p.style.fontSize = currentFontSize + 'px');
         }
 
-        // Recherche dynamique
-        const searchInput = document.getElementById('bookSearch');
-        const suggBox = document.getElementById('suggestions');
-
-        searchInput.addEventListener('input', (e) => {
-            const val = e.target.value.toLowerCase().trim();
-            if(val.length < 1) { suggBox.classList.add('hidden'); return; }
-            
-            const filtered = allBooks.filter(b => b.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").includes(val));
-            
-            if(filtered.length > 0) {
-                suggBox.innerHTML = filtered.map(b => `
-                    <div class="p-4 hover:bg-rose-900/20 cursor-pointer border-b border-slate-700/50 flex justify-between items-center" 
-                         onclick="selectBook('${b.replace(/'/g, "\\'")}')">
-                        <span class="font-medium">${b}</span>
-                        <span class="text-[10px] text-slate-500 uppercase">${listAT.includes(b) ? 'AT' : 'NT'}</span>
-                    </div>
-                `).join('');
-                suggBox.classList.remove('hidden');
-            } else {
-                suggBox.classList.add('hidden');
-            }
-        });
-
-        // Fermer suggestions si on clique ailleurs
-        document.addEventListener('click', (e) => {
-            if(!searchInput.contains(e.target)) suggBox.classList.add('hidden');
-        });
-
-        initBible();
+        renderInterface();
     </script>
 </body>
 </html>
