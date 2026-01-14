@@ -127,7 +127,7 @@
 
         function isOfficeValide(titre) {
             const t = titre.toLowerCase();
-            if (t.includes("paul vi") || t.includes("paul 6")) return false;
+            if (t.includes("paul vi") || t.includes("messe anticipée")) return false;
             const autorises = ["messe", "adoration", "laudes", "vêpres", "vepres", "ténèbres", "tenebres", "jeudi saint", "vendredi saint", "vigile", "semaine sainte"];
             return autorises.some(mot => t.includes(mot));
         }
