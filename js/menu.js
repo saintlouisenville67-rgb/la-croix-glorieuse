@@ -4,7 +4,7 @@ scriptLucide.src = 'https://unpkg.com/lucide@latest';
 scriptLucide.onload = () => { if (window.lucide) lucide.createIcons(); };
 document.head.appendChild(scriptLucide);
 
-// 2. STYLES COMPLETS (NAVIGATION + BANDEAU DÉFILANT HARMONISÉ + ANIMATIONS)
+// 2. STYLES COMPLETS (NAVIGATION + BANDEAU TRANSLUCIDE + ANIMATIONS)
 const styleNav = document.createElement('style');
 styleNav.innerHTML = `
     /* Animation de l'icône active */
@@ -16,59 +16,58 @@ styleNav.innerHTML = `
     .nav-indicator { position: absolute; bottom: -10px; width: 4px; height: 4px; background-color: #b91c1c; border-radius: 50%; }
     .badge-dot { position: absolute; top: -2px; right: -4px; width: 10px; height: 10px; background-color: #ef4444; border-radius: 50%; border: 2px solid white; display: none; }
     
-    @media (prefers-color-scheme: dark) { .badge-dot { border-color: #1e293b; } }
+    @media (prefers-color-scheme: dark) { 
+        .badge-dot { border-color: #1e293b; } 
+        .ticker-container { background: rgba(30, 41, 59, 0.7) !important; color: white !important; border-color: rgba(255,255,255,0.1) !important; }
+    }
 
-    /* Style du Menu pour éviter le saut visuel */
+    /* Style du Menu */
     .bottom-nav { min-height: 80px; display: flex; align-items: center; justify-content: space-around; }
 
-    /* --- STYLES DU BANDEAU DÉFILANT (TICKER) HARMONISÉ --- */
+    /* --- STYLES DU BANDEAU DÉFILANT TRANSLUCIDE --- */
     .ticker-container {
         position: fixed;
-        top: 12px;
-        left: 12px;
-        right: 12px;
-        background: rgba(255, 255, 255, 0.9);
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
+        top: 10px;
+        left: 10px;
+        right: 10px;
+        background: rgba(255, 255, 255, 0.7); /* Fond blanc très transparent */
+        backdrop-filter: blur(12px); /* L'effet de flou translucide */
+        -webkit-backdrop-filter: blur(12px);
         color: #1e293b;
-        z-index: 1000;
-        height: 40px;
+        z-index: 2000;
+        height: 38px;
         display: flex;
         align-items: center;
         overflow: hidden;
-        font-size: 12px;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.03em;
-        border-radius: 12px;
-        border: 1px solid rgba(226, 232, 240, 0.8);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-    }
-    .ticker-container::before {
-        content: "📢";
-        padding-left: 12px;
-        padding-right: 8px;
-        z-index: 1002;
+        font-size: 13px;
+        font-weight: 600;
+        border-radius: 20px; /* Bords très arrondis pour le look moderne */
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
     }
     .ticker-text {
         white-space: nowrap;
         display: inline-block;
         padding-left: 100%;
-        animation: tickerMove 30s linear infinite;
+        animation: tickerMove 25s linear infinite;
     }
     @keyframes tickerMove {
         0% { transform: translate3d(0, 0, 0); }
         100% { transform: translate3d(-100%, 0, 0); }
     }
     .ticker-close {
-        padding: 0 12px;
-        background: none;
+        padding: 0 15px;
+        background: transparent;
         border: none;
-        color: #94a3b8;
-        font-size: 16px;
+        color: #64748b;
+        font-size: 18px;
         cursor: pointer;
-        z-index: 1002;
-        margin-left: auto;
+        z-index: 2001;
+        font-family: sans-serif;
+        line-height: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 `;
 document.head.appendChild(styleNav);
@@ -77,7 +76,6 @@ async function loadMenu() {
     const nav = document.querySelector('.bottom-nav');
     if (!nav) return;
 
-    // Configuration des icônes Lucide
     const menuItems = [
         { href: 'index.html', icon: 'home', label: 'Accueil', id: 'home' },
         { href: 'annonces.html', icon: 'megaphone', label: 'Annonces', id: 'annonces' },
@@ -91,7 +89,6 @@ async function loadMenu() {
 
     const currentPath = window.location.pathname.split('/').pop() || 'index.html';
     
-    // Injection du HTML du menu
     nav.innerHTML = menuItems.map(item => {
         const isActive = (currentPath === item.href) || (currentPath === "" && item.href === "index.html");
         return `
@@ -108,23 +105,18 @@ async function loadMenu() {
         `;
     }).join('');
 
-    // Rendu des icônes Lucide
     if (window.lucide) lucide.createIcons();
 
-    // Lancement des fonctions satellites (Badges, Ticker, Scroll)
     updateBadges(); 
     loadTicker();
     setupScrollTop();
 }
 
-// Lancement automatique au chargement
 if (document.readyState === 'interactive' || document.readyState === 'complete') {
     loadMenu();
 } else {
     document.addEventListener('DOMContentLoaded', loadMenu);
 }
-
-// --- FONCTIONS DE GESTION (INTACTES) ---
 
 function markAsRead(id) {
     const dot = document.getElementById(`dot-${id}`);
@@ -160,7 +152,7 @@ async function loadTicker() {
             ticker.className = 'ticker-container';
             ticker.innerHTML = `
                 <div class="ticker-text">
-                    ${tickerData.value} &nbsp;&nbsp;&nbsp;&nbsp; • &nbsp;&nbsp;&nbsp;&nbsp; ${tickerData.value} &nbsp;&nbsp;&nbsp;&nbsp; • &nbsp;&nbsp;&nbsp;&nbsp; ${tickerData.value}
+                    ${tickerData.value} &nbsp;&nbsp;&nbsp;&nbsp; • &nbsp;&nbsp;&nbsp;&nbsp; ${tickerData.value}
                 </div>
                 <button onclick="document.getElementById('ticker-bar').remove(); sessionStorage.setItem('ticker_hidden', 'true')" class="ticker-close">✕</button>
             `;
