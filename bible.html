@@ -24,6 +24,15 @@
             background: #e11d48; border-color: #fb7185; color: white; transform: scale(1.05);
             box-shadow: 0 10px 15px -3px rgba(225, 29, 72, 0.4);
         }
+        
+        .chapter-btn {
+            background: #1e293b; border: 1px solid #334155; border-radius: 12px;
+            padding: 12px 0; font-weight: bold; color: #f1f5f9; transition: all 0.2s;
+        }
+        .chapter-btn.active {
+            background: #e11d48; border-color: #fb7185; transform: scale(0.95);
+        }
+
         .glass-header { background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
     </style>
 </head>
@@ -57,13 +66,16 @@
             <div id="nt-list" class="flex overflow-x-auto no-scrollbar pb-4 pl-2"></div>
         </section>
 
-        <div id="chapter-section" class="hidden mb-12">
+        <div id="chapter-section" class="hidden mb-12 animate-in fade-in duration-500">
+            <div class="w-12 h-1 bg-slate-700 mx-auto mb-6 rounded-full opacity-30"></div>
             <h2 id="selected-book-title" class="text-2xl font-bold mb-6 text-center text-white"></h2>
             <div id="chapters-grid" class="grid grid-cols-5 gap-3 max-w-sm mx-auto px-4"></div>
         </div>
 
         <div id="bible-content" class="bible-text text-lg space-y-6 px-4 max-w-2xl mx-auto pb-10">
-            <div class="text-center py-20 opacity-20"><p>Sélectionnez un livre pour commencer</p></div>
+            <div class="text-center py-20 opacity-20">
+                <p>Sélectionnez un livre, puis un chapitre</p>
+            </div>
         </div>
     </main>
 
@@ -76,15 +88,12 @@
         let supabaseClient;
         let currentFontSize = 19;
 
-        // Listes statiques synchronisées avec vos noms de table (1 Chroniques, etc.)
         const booksAT = ["Genèse", "Exode", "Lévitique", "Nombres", "Deutéronome", "Josué", "Juges", "Ruth", "1 Samuel", "2 Samuel", "1 Rois", "2 Rois", "1 Chroniques", "2 Chroniques", "Esdras", "Néhémie", "Tobie", "Judith", "Esther", "1 Machabées", "2 Machabées", "Job", "Psaumes", "Proverbes", "Ecclésiaste", "Cantique des Cantiques", "Sagesse", "Ecclésiastique", "Isaïe", "Jérémie", "Lamentations", "Baruch", "Ezéchiel", "Daniel", "Osée", "Joël", "Amos", "Abdias", "Jonas", "Michée", "Nahum", "Habacuc", "Sophonie", "Aggée", "Zacharie", "Malachie"];
         const booksNT = ["Matthieu", "Marc", "Luc", "Jean", "Actes", "Romains", "1 Corinthiens", "2 Corinthiens", "Galates", "Ephésiens", "Philippiens", "Colossiens", "1 Thessaloniciens", "2 Thessaloniciens", "1 Timothée", "2 Timothée", "Tite", "Philémon", "Hébreux", "Jacques", "1 Pierre", "2 Pierre", "1 Jean", "2 Jean", "3 Jean", "Jude", "Apocalypse"];
 
         function init() {
-            // Sécurité si CONFIG est indéfini
             const url = window.CONFIG?.SUPABASE_URL || 'https://rixdjcjlepadtchctxnn.supabase.co';
-            const key = window.CONFIG?.SUPABASE_ANON_KEY || 'VOTRE_CLE_PAR_DEFAUT';
-            
+            const key = window.CONFIG?.SUPABASE_ANON_KEY || '';
             supabaseClient = supabase.createClient(url, key);
             renderBooks();
         }
@@ -94,40 +103,70 @@
             document.getElementById('nt-list').innerHTML = booksNT.map(b => `<div class="book-card" onclick="selectBook(this, '${b.replace(/'/g, "\\'")}')">${b}</div>`).join('');
         }
 
+        // ETAPE 1 : Sélectionner le Livre -> Affiche les chapitres
         async function selectBook(element, bookName) {
+            // UI
             document.querySelectorAll('.book-card').forEach(el => el.classList.remove('active'));
             element.classList.add('active');
+            
             document.getElementById('selected-book-title').innerText = bookName;
             document.getElementById('chapter-section').classList.remove('hidden');
-            document.getElementById('bible-content').innerHTML = ""; 
+            document.getElementById('bible-content').innerHTML = ""; // On vide le texte si on change de livre
 
-            const { data, error } = await supabaseClient.from('bible_crampon').select('chapitre').eq('livre', bookName).order('chapitre', { ascending: false }).limit(1);
+            // Récupérer le nombre de chapitres
+            const { data } = await supabaseClient
+                .from('bible_crampon')
+                .select('chapitre')
+                .eq('livre', bookName)
+                .order('chapitre', { ascending: false })
+                .limit(1);
 
             if (data && data.length > 0) {
                 let html = '';
                 for(let i=1; i <= data[0].chapitre; i++) {
-                    html += `<button onclick="loadChapter('${bookName.replace(/'/g, "\\'")}', ${i})" class="bg-slate-800 py-3 rounded-xl border border-slate-700 font-bold text-slate-200">${i}</button>`;
+                    html += `<button onclick="loadChapter(this, '${bookName.replace(/'/g, "\\'")}', ${i})" class="chapter-btn">${i}</button>`;
                 }
                 document.getElementById('chapters-grid').innerHTML = html;
-                document.getElementById('chapter-section').scrollIntoView({ behavior: 'smooth' });
+                
+                // Scroll vers la grille des chapitres
+                document.getElementById('chapter-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
             }
         }
 
-        async function loadChapter(book, chapter) {
+        // ETAPE 2 : Sélectionner le Chapitre -> Affiche les versets
+        async function loadChapter(btnElement, book, chapter) {
+            // UI Chapitre Actif
+            document.querySelectorAll('.chapter-btn').forEach(el => el.classList.remove('active'));
+            btnElement.classList.add('active');
+
             const content = document.getElementById('bible-content');
-            content.innerHTML = '<div class="text-center py-20 text-rose-500 font-bold animate-pulse">Chargement...</div>';
+            content.innerHTML = '<div class="text-center py-20 text-rose-500 font-bold animate-pulse text-xs tracking-widest uppercase">Ouverture du rouleau...</div>';
             
-            const { data } = await supabaseClient.from('bible_crampon').select('verset_num, texte').eq('livre', book).eq('chapitre', chapter).order('verset_num', { ascending: true });
+            const { data, error } = await supabaseClient
+                .from('bible_crampon')
+                .select('verset_num, texte')
+                .eq('livre', book)
+                .eq('chapitre', chapter)
+                .order('verset_num', { ascending: true });
 
             if (data) {
-                content.innerHTML = `<div class="mb-10 text-slate-500 uppercase text-[10px] tracking-[0.3em] text-center italic">— Chapitre ${chapter} —</div>` + 
-                data.map(v => `<div class="flex items-start mb-5"><span class="text-rose-600 font-black text-[10px] mt-2 mr-4 min-w-[24px] text-right opacity-60">${v.verset_num}</span><p class="leading-relaxed text-slate-200 bible-text" style="font-size: ${currentFontSize}px">${v.texte}</p></div>`).join('');
-                window.scrollTo({ top: document.getElementById('selected-book-title').offsetTop - 80, behavior: 'smooth' });
+                content.innerHTML = `<div class="mb-12 text-slate-500 uppercase text-[10px] tracking-[0.4em] text-center italic">— Chapitre ${chapter} —</div>` + 
+                data.map(v => `
+                    <div class="flex items-start mb-6">
+                        <span class="text-rose-600 font-black text-[10px] mt-2 mr-4 min-w-[24px] text-right opacity-50">${v.verset_num}</span>
+                        <p class="leading-relaxed text-slate-200" style="font-size: ${currentFontSize}px">${v.texte}</p>
+                    </div>
+                `).join('');
+                
+                // On remonte un peu pour lire confortablement
+                window.scrollTo({ top: document.getElementById('chapter-section').offsetTop + 100, behavior: 'smooth' });
             }
         }
 
         function changeFontSize(delta) {
             currentFontSize += delta;
+            if(currentFontSize < 12) currentFontSize = 12;
+            if(currentFontSize > 35) currentFontSize = 35;
             document.querySelectorAll('#bible-content p').forEach(p => p.style.fontSize = currentFontSize + 'px');
         }
 
