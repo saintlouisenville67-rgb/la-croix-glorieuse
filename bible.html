@@ -9,8 +9,8 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;600&display=swap');
-        body { background-color: #0f172a; color: #f1f5f9; overflow-x: hidden; }
-        .bible-text { font-family: 'Crimson Pro', serif; line-height: 1.6; }
+        body { background-color: #0f172a; color: #f1f5f9; overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
+        .bible-text { font-family: 'Crimson Pro', serif; line-height: 1.7; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         
@@ -67,16 +67,14 @@
             <h2 class="text-[11px] font-black text-slate-500 uppercase tracking-[0.15em] mb-4 ml-2 flex items-center">
                 <span class="w-2 h-2 bg-rose-500 rounded-full mr-2"></span> Ancien Testament
             </h2>
-            <div id="at-list" class="flex overflow-x-auto no-scrollbar pb-4 pl-2">
-                </div>
+            <div id="at-list" class="flex overflow-x-auto no-scrollbar pb-4 pl-2"></div>
         </section>
 
         <section class="mb-10">
             <h2 class="text-[11px] font-black text-slate-500 uppercase tracking-[0.15em] mb-4 ml-2 flex items-center">
                 <span class="w-2 h-2 bg-amber-500 rounded-full mr-2"></span> Nouveau Testament
             </h2>
-            <div id="nt-list" class="flex overflow-x-auto no-scrollbar pb-4 pl-2">
-                </div>
+            <div id="nt-list" class="flex overflow-x-auto no-scrollbar pb-4 pl-2"></div>
         </section>
 
         <div id="chapter-section" class="hidden mb-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -84,7 +82,7 @@
             <div id="chapters-grid" class="grid grid-cols-5 gap-3 max-w-sm mx-auto px-4"></div>
         </div>
 
-        <div id="bible-content" class="bible-text text-lg space-y-6 px-4 max-w-2xl mx-auto">
+        <div id="bible-content" class="bible-text text-lg space-y-6 px-4 max-w-2xl mx-auto pb-10">
             <div class="text-center py-20 opacity-20">
                 <p>Sélectionnez un livre pour commencer</p>
             </div>
@@ -95,14 +93,20 @@
 
     <script src="js/config.js"></script>
     <script src="js/menu.js"></script>
-    <script>
-        const supabaseUrl = window.CONFIG.SUPABASE_URL;
-        const supabaseKey = window.CONFIG.SUPABASE_ANON_KEY;
-        const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
+    <script>
+        // Vérification de la configuration Supabase sécurisée
+        const SUPABASE_URL = (window.CONFIG && window.CONFIG.SUPABASE_URL) ? window.CONFIG.SUPABASE_URL : '';
+        const SUPABASE_KEY = (window.CONFIG && window.CONFIG.SUPABASE_ANON_KEY) ? window.CONFIG.SUPABASE_ANON_KEY : '';
+
+        if (!SUPABASE_URL || !SUPABASE_KEY) {
+            console.error("Configuration Supabase manquante dans js/config.js");
+        }
+
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         let currentFontSize = 19;
 
-        // Listes statiques extraites de votre base Crampon
+        // Ordre officiel basé sur votre table
         const booksAT = ["Genèse", "Exode", "Lévitique", "Nombres", "Deutéronome", "Josué", "Juges", "Ruth", "1 Samuel", "2 Samuel", "1 Rois", "2 Rois", "1 Chroniques", "2 Chroniques", "Esdras", "Néhémie", "Tobie", "Judith", "Esther", "1 Machabées", "2 Machabées", "Job", "Psaumes", "Proverbes", "Ecclésiaste", "Cantique des Cantiques", "Sagesse", "Ecclésiastique", "Isaïe", "Jérémie", "Lamentations", "Baruch", "Ezéchiel", "Daniel", "Osée", "Joël", "Amos", "Abdias", "Jonas", "Michée", "Nahum", "Habacuc", "Sophonie", "Aggée", "Zacharie", "Malachie"];
         const booksNT = ["Matthieu", "Marc", "Luc", "Jean", "Actes", "Romains", "1 Corinthiens", "2 Corinthiens", "Galates", "Ephésiens", "Philippiens", "Colossiens", "1 Thessaloniciens", "2 Thessaloniciens", "1 Timothée", "2 Timothée", "Tite", "Philémon", "Hébreux", "Jacques", "1 Pierre", "2 Pierre", "1 Jean", "2 Jean", "3 Jean", "Jude", "Apocalypse"];
 
@@ -122,21 +126,22 @@
             document.getElementById('chapter-section').classList.remove('hidden');
             document.getElementById('bible-content').innerHTML = ""; 
 
-            // Appel rapide pour obtenir le nombre de chapitres
-            const { data } = await supabaseClient
+            // Requête pour les chapitres
+            const { data, error } = await supabaseClient
                 .from('bible_crampon')
                 .select('chapitre')
                 .eq('livre', bookName)
                 .order('chapitre', { ascending: false })
                 .limit(1);
 
+            if (error) { console.error(error); return; }
+
             const grid = document.getElementById('chapters-grid');
             grid.innerHTML = '';
             
             if (data && data.length > 0) {
-                const maxChap = data[0].chapitre;
-                for(let i=1; i <= maxChap; i++) {
-                    grid.innerHTML += `<button onclick="loadChapter('${bookName.replace(/'/g, "\\'")}', ${i})" class="bg-slate-800 hover:bg-rose-900/40 py-3 rounded-xl border border-slate-700 transition-all font-bold text-slate-200">${i}</button>`;
+                for(let i=1; i <= data[0].chapitre; i++) {
+                    grid.innerHTML += `<button onclick="loadChapter('${bookName.replace(/'/g, "\\'")}', ${i})" class="bg-slate-800 hover:bg-rose-900/40 py-3 rounded-xl border border-slate-700 transition-all font-bold text-slate-200 active:scale-95">${i}</button>`;
                 }
             }
             grid.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -146,19 +151,21 @@
             const content = document.getElementById('bible-content');
             content.innerHTML = '<div class="text-center py-20 animate-pulse text-rose-500 font-bold">Ouverture...</div>';
             
-            const { data } = await supabaseClient
+            const { data, error } = await supabaseClient
                 .from('bible_crampon')
                 .select('verset_num, texte')
                 .eq('livre', book)
                 .eq('chapitre', chapter)
                 .order('verset_num', { ascending: true });
 
+            if (error) { content.innerHTML = "Erreur de chargement."; return; }
+
             if (data) {
                 content.innerHTML = `<div class="mb-10 text-slate-500 uppercase text-[10px] tracking-[0.3em] text-center italic">— Chapitre ${chapter} —</div>`;
                 content.innerHTML += data.map(v => `
-                    <div class="flex items-start mb-4">
+                    <div class="flex items-start mb-5">
                         <span class="text-rose-600 font-black text-[10px] mt-2 mr-4 min-w-[24px] text-right opacity-60">${v.verset_num}</span>
-                        <p class="leading-relaxed" style="font-size: ${currentFontSize}px">${v.texte}</p>
+                        <p class="leading-relaxed text-slate-200" style="font-size: ${currentFontSize}px">${v.texte}</p>
                     </div>
                 `).join('');
                 window.scrollTo({ top: document.getElementById('selected-book-title').offsetTop - 80, behavior: 'smooth' });
@@ -167,9 +174,12 @@
 
         function changeFontSize(delta) {
             currentFontSize += delta;
+            if(currentFontSize < 12) currentFontSize = 12;
+            if(currentFontSize > 40) currentFontSize = 40;
             document.querySelectorAll('#bible-content p').forEach(p => p.style.fontSize = currentFontSize + 'px');
         }
 
+        // Initialisation
         renderBooks();
     </script>
 </body>
