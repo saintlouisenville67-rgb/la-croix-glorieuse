@@ -28,8 +28,11 @@
     <script>
         async function loadAllAnnonces() {
             const feed = document.getElementById('feed-annonces-complet');
+            
+            // Logique de tri mise à jour : Priorité (desc) puis Date (desc)
             const { data, error } = await sb.from('annonces')
                 .select('*')
+                .order('priorite', { ascending: false })
                 .order('created_at', { ascending: false });
 
             if (data && data.length > 0) {
@@ -58,7 +61,6 @@
                     </div>
                 `).join('');
                 
-                // On marque tout comme lu en enregistrant la date de la plus récente
                 localStorage.setItem('last_annonce_date', data[0].created_at);
             } else {
                 feed.innerHTML = "<p class='text-center text-xs text-slate-400 italic py-10'>Aucune annonce pour le moment.</p>";
