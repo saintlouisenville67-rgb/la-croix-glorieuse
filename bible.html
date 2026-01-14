@@ -68,7 +68,8 @@
                 <span class="w-2 h-2 bg-rose-500 rounded-full mr-2"></span> Ancien Testament
             </h2>
             <div id="at-list" class="flex overflow-x-auto no-scrollbar pb-4 pl-2">
-                </div>
+                <p class="text-slate-600 text-sm animate-pulse">Chargement des livres...</p>
+            </div>
         </section>
 
         <section class="mb-10">
@@ -76,7 +77,8 @@
                 <span class="w-2 h-2 bg-amber-500 rounded-full mr-2"></span> Nouveau Testament
             </h2>
             <div id="nt-list" class="flex overflow-x-auto no-scrollbar pb-4 pl-2">
-                </div>
+                <p class="text-slate-600 text-sm animate-pulse">Chargement des livres...</p>
+            </div>
         </section>
 
         <div id="chapter-section" class="hidden mb-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -86,10 +88,7 @@
 
         <div id="bible-content" class="bible-text text-lg space-y-6 px-4 max-w-2xl mx-auto">
             <div class="text-center py-20 opacity-20">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                </svg>
-                <p>Sélectionnez un livre pour commencer la lecture</p>
+                <p>Sélectionnez un livre pour commencer</p>
             </div>
         </div>
     </main>
@@ -104,17 +103,45 @@
         const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
         let currentFontSize = 19;
+        
+        // Ordre de référence pour le tri
+        const orderRef = ["Genèse", "Exode", "Lévitique", "Nombres", "Deutéronome", "Josué", "Juges", "Ruth", "1 Samuel", "2 Samuel", "1 Rois", "2 Rois", "1 Chroniques", "2 Chroniques", "Esdras", "Néhémie", "Tobie", "Judith", "Esther", "1 Machabées", "2 Machabées", "Job", "Psaumes", "Proverbes", "Ecclésiaste", "Cantique des Cantiques", "Sagesse", "Ecclésiastique", "Isaïe", "Jérémie", "Lamentations", "Baruch", "Ezéchiel", "Daniel", "Osée", "Joël", "Amos", "Abdias", "Jonas", "Michée", "Nahum", "Habacuc", "Sophonie", "Aggée", "Zacharie", "Malachie", "Matthieu", "Marc", "Luc", "Jean", "Actes", "Romains", "1 Corinthiens", "2 Corinthiens", "Galates", "Ephésiens", "Philippiens", "Colossiens", "1 Thessaloniciens", "2 Thessaloniciens", "1 Timothée", "2 Timothée", "Tite", "Philémon", "Hébreux", "Jacques", "1 Pierre", "2 Pierre", "1 Jean", "2 Jean", "3 Jean", "Jude", "Apocalypse"];
 
-        // Ordre Catholique Officiel
-        const booksAT = ["Genèse", "Exode", "Lévitique", "Nombres", "Deutéronome", "Josué", "Juges", "Ruth", "1 Samuel", "2 Samuel", "1 Rois", "2 Rois", "1 Chroniques", "2 Chroniques", "Esdras", "Néhémie", "Tobie", "Judith", "Esther", "1 Machabées", "2 Machabées", "Job", "Psaumes", "Proverbes", "Ecclésiaste", "Cantique des Cantiques", "Sagesse", "Ecclésiastique", "Isaïe", "Jérémie", "Lamentations", "Baruch", "Ezéchiel", "Daniel", "Osée", "Joël", "Amos", "Abdias", "Jonas", "Michée", "Nahum", "Habacuc", "Sophonie", "Aggée", "Zacharie", "Malachie"];
-        const booksNT = ["Matthieu", "Marc", "Luc", "Jean", "Actes", "Romains", "1 Corinthiens", "2 Corinthiens", "Galates", "Ephésiens", "Philippiens", "Colossiens", "1 Thessaloniciens", "2 Thessaloniciens", "1 Timothée", "2 Timothée", "Tite", "Philémon", "Hébreux", "Jacques", "1 Pierre", "2 Pierre", "1 Jean", "2 Jean", "3 Jean", "Jude", "Apocalypse"];
+        async function fetchBooks() {
+            // Récupère les livres uniques présents dans la table
+            const { data, error } = await supabaseClient
+                .from('bible_crampon')
+                .select('livre')
+                .order('livre');
 
-        function renderInterface() {
+            if (error) {
+                console.error("Erreur Supabase:", error);
+                return;
+            }
+
+            // Filtrer les doublons et trier selon l'ordre biblique
+            const uniqueBooks = [...new Set(data.map(item => item.livre))];
+            uniqueBooks.sort((a, b) => orderRef.indexOf(a) - orderRef.indexOf(b));
+
+            renderBooks(uniqueBooks);
+        }
+
+        function renderBooks(books) {
             const atContainer = document.getElementById('at-list');
             const ntContainer = document.getElementById('nt-list');
             
-            atContainer.innerHTML = booksAT.map(book => `<div class="book-card" onclick="selectBook(this, '${book.replace(/'/g, "\\'")}')">${book}</div>`).join('');
-            ntContainer.innerHTML = booksNT.map(book => `<div class="book-card" onclick="selectBook(this, '${book.replace(/'/g, "\\'")}')">${book}</div>`).join('');
+            atContainer.innerHTML = "";
+            ntContainer.innerHTML = "";
+
+            books.forEach(book => {
+                const card = `<div class="book-card" onclick="selectBook(this, '${book.replace(/'/g, "\\'")}')">${book}</div>`;
+                // Si le livre est avant Matthieu, c'est l'AT
+                if (orderRef.indexOf(book) < orderRef.indexOf("Matthieu")) {
+                    atContainer.innerHTML += card;
+                } else {
+                    ntContainer.innerHTML += card;
+                }
+            });
         }
 
         async function selectBook(element, bookName) {
@@ -125,8 +152,8 @@
             document.getElementById('chapter-section').classList.remove('hidden');
             document.getElementById('bible-content').innerHTML = ""; 
 
-            // Récupérer le nombre de chapitres via RPC ou Select max
-            const { data, error } = await supabaseClient
+            // Récupérer le nombre de chapitres max
+            const { data } = await supabaseClient
                 .from('bible_crampon')
                 .select('chapitre')
                 .eq('livre', bookName)
@@ -137,20 +164,18 @@
             grid.innerHTML = '';
             
             if (data && data.length > 0) {
-                const maxChap = data[0].chapitre;
-                for(let i=1; i <= maxChap; i++) {
-                    grid.innerHTML += `<button onclick="loadChapter('${bookName.replace(/'/g, "\\'")}', ${i})" class="bg-slate-800 hover:bg-rose-900/40 py-3 rounded-xl border border-slate-700 transition-all active:scale-95 font-bold text-slate-200">${i}</button>`;
+                for(let i=1; i <= data[0].chapitre; i++) {
+                    grid.innerHTML += `<button onclick="loadChapter('${bookName.replace(/'/g, "\\'")}', ${i})" class="bg-slate-800 hover:bg-rose-900/40 py-3 rounded-xl border border-slate-700 transition-all font-bold text-slate-200">${i}</button>`;
                 }
             }
-            
-            document.getElementById('chapter-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            grid.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
 
         async function loadChapter(book, chapter) {
             const content = document.getElementById('bible-content');
-            content.innerHTML = '<div class="text-center py-20 animate-pulse text-rose-500 font-bold">Ouverture du Livre...</div>';
+            content.innerHTML = '<div class="text-center py-20 animate-pulse text-rose-500">Chargement...</div>';
             
-            const { data, error } = await supabaseClient
+            const { data } = await supabaseClient
                 .from('bible_crampon')
                 .select('verset_num, texte')
                 .eq('livre', book)
@@ -165,20 +190,16 @@
                         <p class="leading-relaxed" style="font-size: ${currentFontSize}px">${v.texte}</p>
                     </div>
                 `).join('');
-                
                 window.scrollTo({ top: document.getElementById('selected-book-title').offsetTop - 80, behavior: 'smooth' });
             }
         }
 
         function changeFontSize(delta) {
             currentFontSize += delta;
-            if(currentFontSize < 12) currentFontSize = 12;
-            if(currentFontSize > 35) currentFontSize = 35;
             document.querySelectorAll('#bible-content p').forEach(p => p.style.fontSize = currentFontSize + 'px');
         }
 
-        // Lancement immédiat
-        renderInterface();
+        fetchBooks();
     </script>
 </body>
 </html>
