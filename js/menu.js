@@ -18,7 +18,8 @@ styleNav.innerHTML = `
     
     @media (prefers-color-scheme: dark) { 
         .badge-dot { border-color: #1e293b; } 
-        .ticker-container { background: rgba(30, 41, 59, 0.7) !important; color: white !important; border-color: rgba(255,255,255,0.1) !important; }
+        .ticker-container { background: rgba(30, 41, 59, 0.8) !important; color: white !important; border-color: rgba(255,255,255,0.1) !important; }
+        .ticker-close { background: rgba(30, 41, 59, 0.9) !important; color: white !important; }
     }
 
     /* Style du Menu */
@@ -30,20 +31,20 @@ styleNav.innerHTML = `
         top: 10px;
         left: 10px;
         right: 10px;
-        background: rgba(255, 255, 255, 0.7); /* Fond blanc très transparent */
-        backdrop-filter: blur(12px); /* L'effet de flou translucide */
+        background: rgba(255, 255, 255, 0.75);
+        backdrop-filter: blur(12px);
         -webkit-backdrop-filter: blur(12px);
         color: #1e293b;
         z-index: 2000;
-        height: 38px;
+        height: 40px;
         display: flex;
         align-items: center;
         overflow: hidden;
         font-size: 13px;
         font-weight: 600;
-        border-radius: 20px; /* Bords très arrondis pour le look moderne */
+        border-radius: 20px;
         border: 1px solid rgba(255, 255, 255, 0.4);
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
     }
     .ticker-text {
         white-space: nowrap;
@@ -55,19 +56,25 @@ styleNav.innerHTML = `
         0% { transform: translate3d(0, 0, 0); }
         100% { transform: translate3d(-100%, 0, 0); }
     }
+    
+    /* BOUTON FERMER FIXE À DROITE */
     .ticker-close {
-        padding: 0 15px;
-        background: transparent;
+        position: absolute;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        width: 40px;
+        background: rgba(255, 255, 255, 0.9);
         border: none;
-        color: #64748b;
-        font-size: 18px;
+        color: #ef4444;
+        font-size: 20px;
+        font-weight: bold;
         cursor: pointer;
-        z-index: 2001;
-        font-family: sans-serif;
-        line-height: 1;
+        z-index: 2005;
         display: flex;
         align-items: center;
         justify-content: center;
+        border-radius: 0 20px 20px 0;
     }
 `;
 document.head.appendChild(styleNav);
