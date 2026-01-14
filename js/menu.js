@@ -4,7 +4,7 @@ scriptLucide.src = 'https://unpkg.com/lucide@latest';
 scriptLucide.onload = () => { if (window.lucide) lucide.createIcons(); };
 document.head.appendChild(scriptLucide);
 
-// 2. STYLES COMPLETS (NAVIGATION + BANDEAU DÉFILANT + ANIMATIONS)
+// 2. STYLES COMPLETS (NAVIGATION + BANDEAU DÉFILANT HARMONISÉ + ANIMATIONS)
 const styleNav = document.createElement('style');
 styleNav.innerHTML = `
     /* Animation de l'icône active */
@@ -21,41 +21,54 @@ styleNav.innerHTML = `
     /* Style du Menu pour éviter le saut visuel */
     .bottom-nav { min-height: 80px; display: flex; align-items: center; justify-content: space-around; }
 
-    /* --- STYLES DU BANDEAU DÉFILANT (TICKER) --- */
+    /* --- STYLES DU BANDEAU DÉFILANT (TICKER) HARMONISÉ --- */
     .ticker-container {
         position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        background: #b91c1c;
-        color: white;
+        top: 12px;
+        left: 12px;
+        right: 12px;
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        color: #1e293b;
         z-index: 1000;
-        height: 30px;
+        height: 40px;
         display: flex;
         align-items: center;
         overflow: hidden;
-        font-size: 13px;
-        font-weight: 500;
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        border-radius: 12px;
+        border: 1px solid rgba(226, 232, 240, 0.8);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+    .ticker-container::before {
+        content: "📢";
+        padding-left: 12px;
+        padding-right: 8px;
+        z-index: 1002;
     }
     .ticker-text {
         white-space: nowrap;
         display: inline-block;
         padding-left: 100%;
-        animation: tickerMove 25s linear infinite;
+        animation: tickerMove 30s linear infinite;
     }
     @keyframes tickerMove {
         0% { transform: translate3d(0, 0, 0); }
         100% { transform: translate3d(-100%, 0, 0); }
     }
     .ticker-close {
-        position: absolute;
-        right: 10px;
+        padding: 0 12px;
         background: none;
         border: none;
-        color: white;
-        font-weight: bold;
+        color: #94a3b8;
+        font-size: 16px;
         cursor: pointer;
-        z-index: 1001;
+        z-index: 1002;
+        margin-left: auto;
     }
 `;
 document.head.appendChild(styleNav);
@@ -146,12 +159,14 @@ async function loadTicker() {
             ticker.id = 'ticker-bar';
             ticker.className = 'ticker-container';
             ticker.innerHTML = `
-                <div class="ticker-text">${tickerData.value} &nbsp;&nbsp; • &nbsp;&nbsp; ${tickerData.value}</div>
+                <div class="ticker-text">
+                    ${tickerData.value} &nbsp;&nbsp;&nbsp;&nbsp; • &nbsp;&nbsp;&nbsp;&nbsp; ${tickerData.value} &nbsp;&nbsp;&nbsp;&nbsp; • &nbsp;&nbsp;&nbsp;&nbsp; ${tickerData.value}
+                </div>
                 <button onclick="document.getElementById('ticker-bar').remove(); sessionStorage.setItem('ticker_hidden', 'true')" class="ticker-close">✕</button>
             `;
             document.body.appendChild(ticker);
         }
-    } catch (e) { }
+    } catch (e) { console.error("Erreur ticker:", e); }
 }
 
 function setupScrollTop() {
