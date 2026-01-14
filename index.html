@@ -25,7 +25,7 @@
             </div>
             
             <a href="admin.html" class="p-2 text-red-700">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3m-3-3l-2.5-2.5"></path></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3m-3-3l-2.5-2.5"></path></svg>
             </a>
         </div>
 
@@ -117,19 +117,12 @@
         async function fetchNoteMesse(dateCible) {
             const container = document.getElementById('container-note-messe');
             const display = document.getElementById('display-note-messe');
-
             const dateStr = dateCible.toISOString().split('T')[0];
-            const { data } = await sb.from('notes_messe')
-                                     .select('message')
-                                     .eq('date_concernee', dateStr)
-                                     .maybeSingle();
-
+            const { data } = await sb.from('notes_messe').select('message').eq('date_concernee', dateStr).maybeSingle();
             if (data && data.message) {
                 container.classList.remove('hidden');
                 display.innerText = data.message;
-            } else {
-                container.classList.add('hidden');
-            }
+            } else { container.classList.add('hidden'); }
         }
 
         function isOfficeValide(titre) {
@@ -189,14 +182,11 @@
                     const debut = new Date(e.start.dateTime);
                     const fin = new Date(e.end.dateTime);
                     if (now >= debut && now <= fin && dateCible.toDateString() === now.toDateString()) {
-                        activeEvent = e;
-                        status = "live";
-                    } 
-                    else if (now < debut && (debut - now) <= dixMinMs && dateCible.toDateString() === now.toDateString()) {
+                        activeEvent = e; status = "live";
+                    } else if (now < debut && (debut - now) <= dixMinMs && dateCible.toDateString() === now.toDateString()) {
                         const t = e.summary.toLowerCase();
                         if (t.includes("laudes") || t.includes("vêpres") || t.includes("vepres")) {
-                            activeEvent = e;
-                            status = "upcoming";
+                            activeEvent = e; status = "upcoming";
                         }
                     }
                 });
@@ -207,35 +197,34 @@
                     container.classList.remove('hidden');
                     const titre = activeEvent.summary;
                     const tLower = titre.toLowerCase();
+                    let suffixeCliquable = "";
 
-                    // Configuration du clic élégant uniquement pour Laudes et Vepres
                     if (tLower.includes("laudes") || tLower.includes("vêpres") || tLower.includes("vepres")) {
                         badgeBtn.onclick = () => window.location.href = 'office.html';
+                        badgeBtn.className = "flex items-center transition-all active:scale-95 hover:opacity-80";
                         badgeBtn.style.cursor = "pointer";
+                        suffixeCliquable = " →";
                     } else {
                         badgeBtn.onclick = null;
+                        badgeBtn.className = "flex items-center";
                         badgeBtn.style.cursor = "default";
                     }
 
                     if (status === "live") {
                         badgeTexte.className = "badge-live animate-soft-pulse";
-                        badgeTexte.innerText = `● EN DIRECT : ${titre}`;
+                        badgeTexte.innerText = `● EN DIRECT : ${titre}${suffixeCliquable}`;
                     } else {
                         badgeTexte.className = "badge-upcoming";
-                        badgeTexte.innerText = `● PROCHAINEMENT : ${titre}`;
+                        badgeTexte.innerText = `● PROCHAINEMENT : ${titre}${suffixeCliquable}`;
                     }
-                } else {
-                    container.classList.add('hidden');
-                }
+                } else { container.classList.add('hidden'); }
                 const filteredMesses = events.filter(e => e.summary && e.summary.toLowerCase().includes('messe') && !e.summary.toLowerCase().includes('paul vi'));
                 const blocMesse = document.getElementById('bloc-messe');
                 if (filteredMesses.length > 0) {
                     blocMesse.classList.remove('hidden');
                     const heures = filteredMesses.map(e => e.start.dateTime ? new Date(e.start.dateTime).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }).replace(':', 'h') : "");
                     document.getElementById('phrase-messe').innerText = filteredMesses.length > 1 ? `Messes à ${heures.join(', ')}` : `Messe à ${heures[0]}`;
-                } else {
-                    blocMesse.classList.add('hidden');
-                }
+                } else { blocMesse.classList.add('hidden'); }
             } catch (e) { console.error(e); }
         }
 
@@ -261,14 +250,8 @@
                 document.getElementById('bloc-annonce-importante').classList.remove('hidden');
                 document.getElementById('titre-important').innerText = data.titre;
                 document.getElementById('texte-important').innerText = data.contenu;
-
                 const lien = document.getElementById('lien-important');
-                if (data.lien_url) {
-                    lien.href = data.lien_url;
-                    lien.classList.remove('hidden');
-                } else {
-                    lien.classList.add('hidden');
-                }
+                if (data.lien_url) { lien.href = data.lien_url; lien.classList.remove('hidden'); } else { lien.classList.add('hidden'); }
             }
         }
 
