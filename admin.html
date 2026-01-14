@@ -198,9 +198,7 @@
             const pin = document.getElementById('pin-input').value;
 
             if (pin === "5717") {
-                // Appel de la fonction SQL pour définir le code dans la session
                 const { error } = await sb.rpc('set_session_pin', { pin_code: pin });
-
                 if (!error) {
                     document.getElementById('pin-overlay').style.display = 'none';
                     refreshData();
@@ -240,7 +238,6 @@
                 showModal("Erreur", "Impossible de modifier l'annonce (droits / réseau).", "❌");
                 return;
             }
-
             loadAdminAnnonces();
         }
 
@@ -390,7 +387,7 @@
             }
         }
 
-        // --- AUTRES FONCTIONS ---
+        // --- ENTRAIDE (MODIFIÉ POUR INCLURE LA DESCRIPTION) ---
         async function loadAdminEntraide() {
             const { data } = await sb.from('entraide').select('*').order('valide', { ascending: true }).order('created_at', { ascending: false });
             if (data) {
@@ -404,7 +401,12 @@
                                 <button onclick="confirmAction('Supprimer ?',()=>deleteRow('entraide','${e.id}',loadAdminEntraide))" class="text-red-400">Supprimer</button>
                             </div>
                         </div>
-                        <p class="text-sm font-800 text-slate-800 mb-3">${e.titre}</p>
+                        <p class="text-sm font-800 text-slate-800 mb-2">${e.titre}</p>
+                        
+                        <div class="bg-white/50 p-3 rounded-2xl mb-4 text-[11px] text-slate-600 italic preserve-lines border border-slate-100">
+                            ${e.description || 'Aucune description'}
+                        </div>
+
                         <div class="bg-white p-3 rounded-2xl border flex justify-between items-center text-[10px]">
                             <div><p class="font-800">${e.contact_nom || 'Anonyme'}</p><p class="text-slate-400">${e.contact_info || '-'}</p></div>
                             <div class="text-right"><p class="text-amber-500 font-800">CODE</p>
