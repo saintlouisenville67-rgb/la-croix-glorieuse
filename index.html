@@ -64,7 +64,7 @@
         </div>
 
         <div id="container-note-messe" class="mt-4 hidden bg-white/10 backdrop-blur-sm p-4 rounded-2xl border border-white/20">
-            <p class="text-[9px] font-black uppercase tracking-widest text-white/60 mb-1">Aujourd'hui à la Messe</p>
+            <p class="text-[9px] font-black uppercase tracking-widest text-white/60 mb-1">À la Messe ce jour</p>
             <p id="display-note-messe" class="text-[11px] font-bold text-white leading-snug"></p>
         </div>
 
@@ -115,35 +115,22 @@
         const CALENDAR_ID = 'saintlouisenville67@gmail.com';
 
         async function fetchNoteMesse(dateCible) {
-    const today = new Date();
-    const container = document.getElementById('container-note-messe');
-    const display = document.getElementById('display-note-messe');
+            const container = document.getElementById('container-note-messe');
+            const display = document.getElementById('display-note-messe');
 
-    // CONDITION : Comparaison de la date affichée avec la date réelle
-    const isRealToday = dateCible.getDate() === today.getDate() &&
-                        dateCible.getMonth() === today.getMonth() &&
-                        dateCible.getFullYear() === today.getFullYear();
+            const dateStr = dateCible.toISOString().split('T')[0];
+            const { data } = await sb.from('notes_messe')
+                                     .select('message')
+                                     .eq('date_concernee', dateStr)
+                                     .maybeSingle();
 
-    // Si ce n'est pas la date réelle, on cache tout et on arrête la fonction
-    if (!isRealToday) {
-        container.classList.add('hidden');
-        return; 
-    }
-
-    // Si c'est la date réelle, on va chercher l'info dans Supabase
-    const dateStr = dateCible.toISOString().split('T')[0];
-    const { data } = await sb.from('notes_messe')
-                             .select('message')
-                             .eq('date_concernee', dateStr)
-                             .maybeSingle();
-
-    if (data && data.message) {
-        container.classList.remove('hidden');
-        display.innerText = data.message;
-    } else {
-        container.classList.add('hidden');
-    }
-}
+            if (data && data.message) {
+                container.classList.remove('hidden');
+                display.innerText = data.message;
+            } else {
+                container.classList.add('hidden');
+            }
+        }
 
         function isOfficeValide(titre) {
             const t = titre.toLowerCase();
