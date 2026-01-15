@@ -146,6 +146,21 @@
                     </div>
                     <div id="admin-list-annonces" class="mt-10 space-y-4 border-t pt-10"></div>
                 </section>
+
+                <section class="card p-8 border-t-4 border-emerald-600">
+                    <h2 class="text-xs font-800 uppercase text-slate-400 mb-6">Gestion des Groupes</h2>
+                    <div class="space-y-4">
+                        <input type="hidden" id="group-id">
+                        <div class="grid grid-cols-4 gap-3">
+                            <input type="text" id="group-icone" placeholder="💬" class="bg-slate-50 p-4 rounded-xl text-center text-xl border-none">
+                            <input type="text" id="group-nom" placeholder="Nom du groupe" class="col-span-3 bg-slate-50 p-4 rounded-xl text-sm font-bold border-none">
+                        </div>
+                        <textarea id="group-description" placeholder="Description du groupe..." rows="3" class="w-full bg-slate-50 p-4 rounded-xl text-sm border-none"></textarea>
+                        <input type="url" id="group-lien" placeholder="Lien WhatsApp (https://chat.whatsapp.com/...)" class="w-full bg-slate-50 p-4 rounded-xl text-xs border-none font-mono">
+                        <button onclick="saveGroupe()" class="w-full bg-emerald-600 text-white py-5 rounded-3xl font-800 text-xs uppercase tracking-widest shadow-2xl">Enregistrer le groupe</button>
+                    </div>
+                    <div id="admin-list-groupes" class="mt-10 space-y-4 border-t pt-10"></div>
+                </section>
             </div>
 
             <div class="space-y-10">
@@ -217,7 +232,7 @@
             showModal("Copié !", `${label} ajouté au presse-papier.`, "✅");
         }
 
-        // --- GESTION DES ANNONCES (LOGIQUE MISE À JOUR) ---
+        // --- GESTION DES ANNONCES ---
         async function loadAdminAnnonces() {
             const { data } = await sb.from('annonces').select('*')
               .order('est_importante', { ascending: false })
@@ -245,12 +260,7 @@
         }
 
         async function setAnnoncePriority(id, isImportant) {
-            const { error } = await sb.from('annonces')
-                .update({ 
-                    est_importante: isImportant,
-                    priorite: isImportant ? 100 : 0 
-                })
-                .eq('id', id);
+            const { error } = await sb.from('annonces').update({ est_importante: isImportant, priorite: isImportant ? 100 : 0 }).eq('id', id);
             if (!error) loadAdminAnnonces();
         }
 
@@ -269,34 +279,66 @@
             const contenu = document.getElementById('ann-texte').value;
             const url = document.getElementById('ann-url').value;
             const important = document.getElementById('ann-important').checked;
-            
             if(!titre || !contenu) return showModal("Champs requis","Titre et contenu obligatoires","⚠️");
+            const payload = { titre, contenu, lien_url: url, est_importante: important, priorite: important ? 100 : 0 };
+            let error;
+            if (id) { const res = await sb.from('annonces').update(payload).eq('id', id); error = res.error; } 
+            else { const res = await sb.from('annonces').insert([payload]); error = res.error; }
+            if(!error) {
+                document.getElementById('ann-id').value = ""; document.getElementById('ann-titre').value = ""; document.getElementById('ann-texte').value = "";
+                document.getElementById('ann-url').value = ""; document.getElementById('ann-important').checked = false;
+                loadAdminAnnonces(); showModal("Succès", id ? "Annonce modifiée." : "Annonce publiée.", "🚀");
+            }
+        }
 
-            const payload = {
-                titre, 
-                contenu, 
-                lien_url: url, 
-                est_importante: important,
-                priorite: important ? 100 : 0
-            };
+        // --- GESTION DES GROUPES (LOGIQUE AJOUTÉE) ---
+        async function loadAdminGroupes() {
+            const { data } = await sb.from('groupes').select('*').order('nom', { ascending: true });
+            if (data) {
+                document.getElementById('admin-list-groupes').innerHTML = data.map(g => `
+                    <div class="bg-slate-50 p-5 rounded-2xl border border-slate-100">
+                        <div class="flex items-center gap-4 mb-4">
+                            <div class="text-2xl w-12 h-12 bg-white rounded-xl flex items-center justify-center border border-slate-100">${g.icone || '💬'}</div>
+                            <div class="flex-1 overflow-hidden">
+                                <p class="text-sm font-800 text-slate-800 truncate">${g.nom}</p>
+                                <p class="text-[9px] text-slate-400 font-bold truncate">${g.lien_wa || 'Pas de lien'}</p>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <button onclick="prepareEditGroupe('${g.id}', '${g.nom.replace(/'/g, "\\'")}', '${g.icone}', '${g.lien_wa}', '${(g.description || '').replace(/'/g, "\\'").replace(/\n/g, "\\n")}')" class="text-[9px] font-800 py-2 bg-white border border-blue-100 text-blue-600 rounded-xl hover:bg-blue-50">✏️ Modifier</button>
+                            <button onclick="confirmAction('Supprimer ce groupe ?', ()=>deleteRow('groupes','${g.id}',loadAdminGroupes))" class="text-[9px] font-800 py-2 bg-white border border-red-100 text-red-500 rounded-xl hover:bg-red-50">🗑️ Supprimer</button>
+                        </div>
+                    </div>`).join('');
+            }
+        }
+
+        function prepareEditGroupe(id, nom, icone, lien, desc) {
+            document.getElementById('group-id').value = id;
+            document.getElementById('group-nom').value = nom;
+            document.getElementById('group-icone').value = icone;
+            document.getElementById('group-lien').value = lien;
+            document.getElementById('group-description').value = desc;
+            window.scrollTo({ top: document.getElementById('group-id').parentElement.offsetTop - 20, behavior: 'smooth' });
+        }
+
+        async function saveGroupe() {
+            const id = document.getElementById('group-id').value;
+            const nom = document.getElementById('group-nom').value;
+            const icone = document.getElementById('group-icone').value;
+            const lien = document.getElementById('group-lien').value;
+            const desc = document.getElementById('group-description').value;
+
+            if(!nom) return showModal("Champs requis","Nom du groupe obligatoire","⚠️");
+            const payload = { nom, icone, lien_wa: lien, description: desc };
 
             let error;
-            if (id) {
-                const res = await sb.from('annonces').update(payload).eq('id', id);
-                error = res.error;
-            } else {
-                const res = await sb.from('annonces').insert([payload]);
-                error = res.error;
-            }
+            if (id) { const res = await sb.from('groupes').update(payload).eq('id', id); error = res.error; } 
+            else { const res = await sb.from('groupes').insert([payload]); error = res.error; }
 
             if(!error) {
-                document.getElementById('ann-id').value = "";
-                document.getElementById('ann-titre').value = ""; 
-                document.getElementById('ann-texte').value = "";
-                document.getElementById('ann-url').value = "";
-                document.getElementById('ann-important').checked = false;
-                loadAdminAnnonces(); 
-                showModal("Succès", id ? "Annonce modifiée." : "Annonce publiée.", "🚀");
+                document.getElementById('group-id').value = ""; document.getElementById('group-nom').value = ""; document.getElementById('group-icone').value = "";
+                document.getElementById('group-lien').value = ""; document.getElementById('group-description').value = "";
+                loadAdminGroupes(); showModal("Succès", id ? "Groupe modifié." : "Groupe ajouté.", "🚀");
             }
         }
 
@@ -313,8 +355,7 @@
                             <button onclick="prepareEditNote('${n.date_concernee}', '${n.message.replace(/'/g, "\\'")}')" class="text-blue-600 mr-2">Mod.</button>
                             <button onclick="confirmAction('Supprimer cette note ?', ()=>deleteRow('notes_messe','${n.id}',loadNotesMesse))" class="text-red-400">Suppr.</button>
                         </td>
-                    </tr>
-                `).join('');
+                    </tr>`).join('');
             }
         }
 
@@ -329,20 +370,13 @@
             const msg = document.getElementById('note-text').value;
             if(!date || !msg) return showModal("Champs requis", "Date et message obligatoires", "⚠️");
             const { error } = await sb.from('notes_messe').upsert({ date_concernee: date, message: msg }, { onConflict: 'date_concernee' });
-            if(!error) {
-                document.getElementById('note-text').value = "";
-                loadNotesMesse();
-                showModal("Enregistré", "La note a été mise à jour.", "✅");
-            }
+            if(!error) { document.getElementById('note-text').value = ""; loadNotesMesse(); showModal("Enregistré", "La note a été mise à jour.", "✅"); }
         }
 
         async function cleanOldNotesMesse() {
             const today = new Date().toISOString().split('T')[0];
             const { error } = await sb.from('notes_messe').delete().lt('date_concernee', today);
-            if(!error) {
-                loadNotesMesse();
-                showModal("Nettoyage réussi", "Les anciennes notes ont été supprimées.", "🧹");
-            }
+            if(!error) { loadNotesMesse(); showModal("Nettoyage réussi", "Les anciennes notes ont été supprimées.", "🧹"); }
         }
 
         // --- FONCTIONS CALENDRIER FIXE ---
@@ -351,15 +385,13 @@
             if(!dateInput) return;
             const [year, month, day] = dateInput.split('-');
             const jourMois = `${day}-${month}`;
-            const { data, error } = await sb.from('calendrier_traditionnel').select('*').eq('jour', jourMois).single();
+            const { data } = await sb.from('calendrier_traditionnel').select('*').eq('jour', jourMois).single();
             if (data) {
                 document.getElementById('cal-saint').value = data.saint_nom;
                 document.getElementById('cal-classe').value = data.classe;
                 document.getElementById('cal-couleur').value = data.couleur.toLowerCase();
                 document.getElementById('cal-edit-form').classList.remove('opacity-30', 'pointer-events-none');
-            } else {
-                showModal("Erreur", "Aucune donnée trouvée pour le " + jourMois, "❌");
-            }
+            } else { showModal("Erreur", "Aucune donnée trouvée pour le " + jourMois, "❌"); }
         }
 
         async function sauvegarderCalendrier() {
@@ -371,11 +403,8 @@
                 classe: parseInt(document.getElementById('cal-classe').value),
                 couleur: document.getElementById('cal-couleur').value
             }).eq('jour', jourMois);
-            if (!error) {
-                showModal("Succès", "Le calendrier a été mis à jour pour le " + jourMois, "✅");
-            } else {
-                showModal("Erreur", "Impossible de mettre à jour.", "❌");
-            }
+            if (!error) showModal("Succès", "Le calendrier a été mis à jour pour le " + jourMois, "✅");
+            else showModal("Erreur", "Impossible de mettre à jour.", "❌");
         }
 
         // --- MESSAGES ---
@@ -457,34 +486,33 @@
         }
 
         async function anonymiserToutesIntentions() { await sb.from('intentions').update({ prenom: 'Anonyme' }); loadAdminPrières(); showModal("Anonymisé","Toutes les intentions sont privées.","👥"); }
+        async function anonymiserIntention(id) { await sb.from('intentions').update({ prenom: 'Anonyme' }).eq('id', id); loadAdminPrières(); }
 
-        async function anonymiserIntention(id) {
-            const { error } = await sb.from('intentions').update({ prenom: 'Anonyme' }).eq('id', id);
-            if (!error) {
-                loadAdminPrières();
-                showModal("Anonymisé", "Cette intention est désormais anonyme.", "🕶️");
-            } else {
-                showModal("Erreur", "Impossible d'anonymiser cette intention.", "❌");
-            }
+        async function updateTicker() {
+            const txt = document.getElementById('ticker-input').value;
+            await sb.from('ticker').update({ message: txt }).eq('id', 1);
+            showModal("Direct à jour", "Le bandeau a été modifié.", "📺");
         }
 
-        async function loadAdminTicker() { const { data } = await sb.from('app_settings').select('value').eq('id', 'ticker_message').single(); if(data) document.getElementById('ticker-input').value = data.value; }
-        async function updateTicker() { await sb.from('app_settings').update({ value: document.getElementById('ticker-input').value }).eq('id', 'ticker_message'); showModal("Mis à jour","Bandeau actualisé.","📺"); }
-        async function deleteRow(table, id, cb) { await sb.from(table).delete().eq('id', id); cb(); }
-        async function updateField(table, id, obj, cb) { await sb.from(table).update(obj).eq('id', id); cb(); }
-
-        async function loadStats() {
-            const fiveMins = new Date(Date.now() - 300000).toISOString();
+        async function updateStats() {
             const today = new Date().toISOString().split('T')[0];
-            const { count: online } = await sb.from('user_presence').select('*', { count: 'exact', head: true }).gt('last_seen', fiveMins);
-            const { count: daily } = await sb.from('user_presence').select('*', { count: 'exact', head: true }).gte('created_at', today);
-            document.getElementById('stat-online').innerText = online || 0;
-            document.getElementById('stat-today').innerText = daily || 0;
+            const { count: countToday } = await sb.from('visites').select('*', { count: 'exact', head: true }).gte('created_at', today);
+            const { count: countOnline } = await sb.from('visites').select('*', { count: 'exact', head: true }).gte('updated_at', new Date(Date.now() - 5*60000).toISOString());
+            document.getElementById('stat-today').innerText = countToday || 0;
+            document.getElementById('stat-online').innerText = countOnline || 0;
         }
+
+        async function deleteRow(table, id, cb) { await sb.from(table).delete().eq('id', id); cb(); }
+        async function updateField(table, id, payload, cb) { await sb.from(table).update(payload).eq('id', id); cb(); }
 
         function refreshData() {
-            loadStats(); loadNotesMesse(); loadMessages(); 
-            loadAdminAnnonces(); loadAdminEntraide(); loadAdminPrières(); loadAdminTicker();
+            loadAdminAnnonces();
+            loadAdminGroupes();
+            loadNotesMesse();
+            loadMessages();
+            loadAdminEntraide();
+            loadAdminPrières();
+            updateStats();
         }
     </script>
 </body>
