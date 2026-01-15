@@ -62,7 +62,9 @@
                             <h3 class="text-sm font-800 text-slate-800">${g.nom}</h3>
                             <span class="text-[8px] font-black text-red-700 bg-red-50 px-2 py-1 rounded-full uppercase tracking-tighter">WhatsApp</span>
                         </div>
-                        <p class="text-[11px] text-slate-500 leading-relaxed">Rejoignez notre communauté pour échanger et rester informé des activités du groupe.</p>
+                        <p class="text-[11px] text-slate-500 leading-relaxed">
+                            ${g.description && g.description.trim() !== "" ? g.description : "Rejoignez notre communauté pour échanger et rester informé des activités du groupe."}
+                        </p>
                     </div>
                     
                     <a href="${g.lien_wa || '#'}" target="_blank" 
@@ -75,7 +77,10 @@
 
         function filterGroupes() {
             const query = document.getElementById('groupSearch').value.toLowerCase();
-            const filtered = allGroupes.filter(g => g.nom.toLowerCase().includes(query));
+            const filtered = allGroupes.filter(g => 
+                g.nom.toLowerCase().includes(query) || 
+                (g.description && g.description.toLowerCase().includes(query))
+            );
             displayGroupes(filtered);
         }
 
