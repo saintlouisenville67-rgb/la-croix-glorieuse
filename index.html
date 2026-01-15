@@ -18,10 +18,16 @@
                 <h1 class="text-2xl font-800 tracking-tight mb-1">La Croix Glorieuse</h1>
                 <p class="text-[10px] font-black uppercase tracking-widest opacity-80 mb-4">Paroisse Personnelle • Strasbourg</p>
                 
-                <a href="https://www.croix-glorieuse.org/" target="_blank" class="inline-flex items-center gap-2 bg-white/10 border border-white/40 px-3 py-1.5 rounded-full transition-all active:scale-95">
-                    <span class="text-[9px] font-black uppercase tracking-wider">Site web</span>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
-                </a>
+                <div class="flex items-center gap-3">
+                    <a href="https://www.croix-glorieuse.org/" target="_blank" class="inline-flex items-center gap-2 bg-white/10 border border-white/40 px-3 py-1.5 rounded-full transition-all active:scale-95">
+                        <span class="text-[9px] font-black uppercase tracking-wider">Site web</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+                    </a>
+                    
+                    <button onclick="afficherInfoLiturgie()" class="inline-flex items-center justify-center w-7 h-7 bg-white/10 border border-white/40 rounded-full transition-all active:scale-90 hover:bg-white/20 shadow-sm">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="opacity-80"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                    </button>
+                </div>
             </div>
             
             <a href="admin.html" class="p-2 text-red-700">
@@ -142,6 +148,11 @@
         const CALENDAR_API_KEY = 'AIzaSyAI5N6lamviexKaPR-WoOP4006m5IClDoQ';
         const CALENDAR_ID = 'saintlouisenville67@gmail.com';
 
+        // Fonction d'information mise à jour
+        function afficherInfoLiturgie() {
+            alert("Informations Liturgiques\n\nCette section vous accompagne en temps réel dans la vie de la paroisse :\n\n• Calendrier : Saint du jour, classe et couleur liturgique.\n• Direct : Un badge s'active automatiquement durant les Offices (Messe, Adoration, Laudes (avec les textes), Vêpres (avec les textes).\n• Horaires : Affichage des horaires des Messes célébrées aujourd'hui.\n• Alertes : Annonces prioritaires et messages importants.");
+        }
+
         async function fetchNoteMesse(dateCible) {
             const container = document.getElementById('container-note-messe');
             const display = document.getElementById('display-note-messe');
@@ -260,7 +271,6 @@
             const { data } = await sb.from('versets').select('*');
             if (data?.length) {
                 const v = data[Math.floor(Math.random() * data.length)];
-                // Utilisation de text-slate-200 pour lisibilité sur fond sombre
                 document.getElementById('verset-container').innerHTML = `<p class="text-sm italic font-semibold text-slate-200">"${v.texte}"</p><p class="text-[9px] font-black text-red-700 mt-2 uppercase text-right">— ${v.reference}</p>`;
             }
         }
