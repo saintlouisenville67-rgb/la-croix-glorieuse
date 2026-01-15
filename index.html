@@ -142,15 +142,63 @@
 
     <nav class="bottom-nav"></nav>
 
+    <div id="modal-info" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-sm">
+        <div class="bg-white rounded-[32px] w-full max-w-sm overflow-hidden shadow-2xl transform transition-all duration-300 scale-95 opacity-0">
+            <div class="p-8 text-left">
+                <h3 class="text-xl font-900 text-slate-900 mb-4 tracking-tight">Informations Liturgiques</h3>
+                <div class="space-y-4 text-slate-600">
+                    <p class="text-[13px] leading-relaxed">Cette section vous accompagne en temps réel dans la vie de la paroisse :</p>
+                    <ul class="space-y-3">
+                        <li class="flex gap-3 text-[12px]">
+                            <span class="text-red-700 font-black">•</span>
+                            <span><strong>Calendrier :</strong> Saint du jour, classe et couleur liturgique.</span>
+                        </li>
+                        <li class="flex gap-3 text-[12px]">
+                            <span class="text-red-700 font-black">•</span>
+                            <span><strong>Direct :</strong> Un badge s'active automatiquement durant les Offices (Messe, Adoration, Laudes (avec les textes), Vêpres (avec les textes)).</span>
+                        </li>
+                        <li class="flex gap-3 text-[12px]">
+                            <span class="text-red-700 font-black">•</span>
+                            <span><strong>Horaires :</strong> Affichage des horaires des Messes célébrées aujourd'hui.</span>
+                        </li>
+                        <li class="flex gap-3 text-[12px]">
+                            <span class="text-red-700 font-black">•</span>
+                            <span><strong>Alertes :</strong> Annonces prioritaires et messages importants.</span>
+                        </li>
+                    </ul>
+                </div>
+                <button onclick="fermerInfoLiturgie()" class="w-full mt-8 bg-slate-900 text-white text-[11px] font-black uppercase tracking-widest py-4 rounded-2xl active:scale-95 transition-all shadow-lg">
+                    Compris
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script src="js/config.js"></script>
     <script>
         let currentDateDisplay = new Date();
         const CALENDAR_API_KEY = 'AIzaSyAI5N6lamviexKaPR-WoOP4006m5IClDoQ';
         const CALENDAR_ID = 'saintlouisenville67@gmail.com';
 
-        // Fonction d'information mise à jour
+        // GESTION DE LA MODALE
         function afficherInfoLiturgie() {
-            alert("Informations Liturgiques\n\nCette section vous accompagne en temps réel dans la vie de la paroisse :\n\n• Calendrier : Saint du jour, classe et couleur liturgique.\n• Direct : Un badge s'active automatiquement durant les Offices (Messe, Adoration, Laudes (avec les textes), Vêpres (avec les textes).\n• Horaires : Affichage des horaires des Messes célébrées aujourd'hui.\n• Alertes : Annonces prioritaires et messages importants.");
+            const modal = document.getElementById('modal-info');
+            const content = modal.querySelector('div');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                content.classList.remove('scale-95', 'opacity-0');
+                content.classList.add('scale-100', 'opacity-100');
+            }, 10);
+        }
+
+        function fermerInfoLiturgie() {
+            const modal = document.getElementById('modal-info');
+            const content = modal.querySelector('div');
+            content.classList.remove('scale-100', 'opacity-100');
+            content.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
         }
 
         async function fetchNoteMesse(dateCible) {
