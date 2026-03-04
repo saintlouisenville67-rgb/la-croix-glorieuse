@@ -260,7 +260,7 @@ async function updateBadges() {
         const categories = [
             { id: 'annonces', table: 'annonces' },
             { id: 'entraide', table: 'entraide' },
-            { id: 'priere',   table: 'prieres' }
+            { id: 'priere',   table: 'intentions' }
         ];
         categories.forEach(async (cat) => {
             const lastViewed = localStorage.getItem(`last_visit_${cat.id}`) || new Date(0).toISOString();
@@ -309,17 +309,52 @@ function setupScrollTop() {
     if (document.getElementById('scrollTop')) return;
     const scrollBtn = document.createElement('button');
     scrollBtn.id = 'scrollTop';
-    scrollBtn.innerHTML = '⬆️';
-    scrollBtn.className = 'fixed bottom-28 right-6 shadow-2xl rounded-full w-12 h-12 flex items-center justify-center z-50 transition-all duration-300 opacity-0 invisible scale-50 border border-gray-100';
-    scrollBtn.style.backgroundColor = 'white';
+    scrollBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg>`;
+    scrollBtn.setAttribute('aria-label', 'Remonter en haut');
+    scrollBtn.style.cssText = `
+        position: fixed;
+        bottom: 100px;
+        right: 20px;
+        width: 44px;
+        height: 44px;
+        border-radius: 14px;
+        background: rgba(255,255,255,0.85);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(0,0,0,0.07);
+        box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #b91c1c;
+        cursor: pointer;
+        z-index: 90;
+        opacity: 0;
+        transform: translateY(10px) scale(0.9);
+        transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        pointer-events: none;
+    `;
     document.body.appendChild(scrollBtn);
+
+    // Style sombre auto
+    const darkStyle = document.createElement('style');
+    darkStyle.innerHTML = `
+        @media (prefers-color-scheme: dark) {
+            #scrollTop { background: rgba(30,41,59,0.85) !important; border-color: rgba(255,255,255,0.1) !important; }
+        }
+        #scrollTop:active { transform: scale(0.92) !important; }
+    `;
+    document.head.appendChild(darkStyle);
+
     window.addEventListener('scroll', () => {
-        if (window.scrollY > 400) {
-            scrollBtn.classList.remove('opacity-0', 'invisible', 'scale-50');
-            scrollBtn.classList.add('opacity-100', 'visible', 'scale-100');
+        if (window.scrollY > 300) {
+            scrollBtn.style.opacity = '1';
+            scrollBtn.style.transform = 'translateY(0) scale(1)';
+            scrollBtn.style.pointerEvents = 'auto';
         } else {
-            scrollBtn.classList.add('opacity-0', 'invisible', 'scale-50');
-            scrollBtn.classList.remove('opacity-100', 'visible', 'scale-100');
+            scrollBtn.style.opacity = '0';
+            scrollBtn.style.transform = 'translateY(10px) scale(0.9)';
+            scrollBtn.style.pointerEvents = 'none';
         }
     });
     scrollBtn.onclick = () => window.scrollTo({ top: 0, behavior: 'smooth' });
