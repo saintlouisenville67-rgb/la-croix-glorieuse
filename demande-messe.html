@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Formulaire Messe Intégré</title>
     <link rel="stylesheet" href="css/style.css">
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -53,6 +54,8 @@
                 <textarea id="commentaire" placeholder="Précisions pour le prêtre..." rows="2"
                     class="w-full p-4 rounded-2xl border-none shadow-sm text-sm bg-white focus:ring-2 focus:ring-red-700 outline-none"></textarea>
             </div>
+
+            <div id="error-box" class="hidden p-4 rounded-2xl bg-red-50 border border-red-200 text-[11px] font-bold text-red-700 text-center"></div>
 
             <button type="submit" id="submit-btn" class="w-full gradient-header text-white py-5 rounded-3xl font-black text-xs uppercase tracking-widest shadow-xl active:scale-95 transition-all">
                 Transmettre la demande
@@ -131,9 +134,13 @@
                 document.getElementById('success-modal').classList.remove('hidden');
 
             } catch (err) {
-                alert("Erreur de connexion : " + err.message);
+                // Modale d'erreur inline — pas d'alert() natif
                 btn.disabled = false;
                 btn.innerText = "RÉESSAYER";
+                const errBox = document.getElementById('error-box');
+                errBox.innerText = "Une erreur est survenue. Vérifiez votre connexion et réessayez.";
+                errBox.classList.remove('hidden');
+                setTimeout(() => errBox.classList.add('hidden'), 4000);
             }
         };
     </script>
