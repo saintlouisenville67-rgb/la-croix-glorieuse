@@ -4,9 +4,11 @@
 
 <head>
     <meta charset="UTF-8">
+        <meta name="description" content="Prières, intentions de la communauté et ressources spirituelles de la paroisse La Croix Glorieuse.">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Prières - La Croix Glorieuse</title>
     <link rel="stylesheet" href="css/style.css">
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -244,9 +246,17 @@
             const texteInput = document.getElementById('intention');
             const btn = document.getElementById('btn-priere');
             const prenom = prenomInput.value;
-            const texte = texteInput.value;
+            const texte = texteInput.value.trim();
             if (!texte) {
                 afficherFeedback("Veuillez écrire votre intention.", "error");
+                return;
+            }
+            // Anti-spam : cooldown 30 secondes entre deux envois
+            const lastSent = parseInt(localStorage.getItem('last_intention_sent') || '0');
+            const now = Date.now();
+            if (now - lastSent < 30000) {
+                const restant = Math.ceil((30000 - (now - lastSent)) / 1000);
+                afficherFeedback(`Merci de patienter ${restant}s avant d'envoyer une nouvelle intention.`, "error");
                 return;
             }
             btn.disabled = true;
@@ -259,6 +269,7 @@
             btn.innerText = "ENVOYER MON INTENTION";
             btn.style.opacity = "1";
             if (!error) {
+                localStorage.setItem('last_intention_sent', Date.now().toString());
                 prenomInput.value = '';
                 texteInput.value = '';
                 afficherFeedback("Union de prière ! Votre intention est transmise aux abbés.", "success");
