@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Console Maître - La Croix Glorieuse</title>
     <link rel="stylesheet" href="css/style.css">
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
@@ -496,8 +497,14 @@
 
         async function updateTicker() {
             const txt = document.getElementById('ticker-input').value;
-            await sb.from('ticker').update({ message: txt }).eq('id', 1);
-            showModal("Direct à jour", "Le bandeau a été modifié.", "📺");
+            // Unification : on écrit dans app_settings (lu par menu.js)
+            await sb.from('app_settings').upsert({ id: 'ticker_message', value: txt });
+            showModal("Popup à jour", "Le message popup a été modifié.", "📺");
+        }
+
+        async function loadTicker() {
+            const { data } = await sb.from('app_settings').select('value').eq('id', 'ticker_message').single();
+            if (data) document.getElementById('ticker-input').value = data.value;
         }
 
         async function updateStats() {
@@ -519,6 +526,7 @@
             loadAdminEntraide();
             loadAdminPrières();
             updateStats();
+            loadTicker();
         }
     </script>
 </body>
