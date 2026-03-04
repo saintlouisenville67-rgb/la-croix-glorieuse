@@ -32,9 +32,7 @@
 
             const { data, error } = await sb.from('annonces')
                 .select('*')
-                .order('est_importante', { ascending: false })
-                .order('priorite',       { ascending: false })
-                .order('created_at',     { ascending: false });
+                .order('created_at', { ascending: false });
 
             if (data && data.length > 0) {
                 feed.innerHTML = data.map(a => `
