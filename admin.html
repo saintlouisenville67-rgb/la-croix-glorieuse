@@ -4,11 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Console Maître - La Croix Glorieuse</title>
+    <link rel="stylesheet" href="css/style.css">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #f8fafc; color: #0f172a; }
+        /* Police chargée via css/style.css */
+        body { font-family: 'Plus Jakarta Sans', -apple-system, sans-serif; background: #f8fafc; color: #0f172a; }
         .card { background: white; border: 1px solid #e2e8f0; border-radius: 24px; transition: all 0.3s ease; }
         .gradient-dark { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); }
         .preserve-lines { white-space: pre-wrap; }
@@ -209,19 +210,24 @@
 
         function confirmAction(text, action) { showModal("Confirmation", text, "⚠️", "confirm", action); }
 
-        // --- AUTH (SOLUTION ANONYME) ---
+        // --- AUTH — Validation déléguée entièrement à Supabase RPC ---
+        // Le PIN n'est jamais comparé côté client ; c'est la fonction SQL qui accepte ou rejette.
         async function checkPin() {
-            const pin = document.getElementById('pin-input').value;
-            if (pin === "5717") {
-                const { error } = await sb.rpc('set_session_pin', { pin_code: pin });
-                if (!error) {
-                    document.getElementById('pin-overlay').style.display = 'none';
-                    refreshData();
-                } else {
-                    showModal("Erreur", "Problème de session SQL. Vérifiez votre fonction RPC dans Supabase.", "❌");
-                }
+            const pin = document.getElementById('pin-input').value.trim();
+            if (!pin) return;
+
+            const btn = document.querySelector('#pin-overlay button[onclick="checkPin()"]');
+            if (btn) { btn.disabled = true; btn.innerText = "Vérification…"; }
+
+            const { error } = await sb.rpc('set_session_pin', { pin_code: pin });
+
+            if (btn) { btn.disabled = false; btn.innerText = "Déverrouiller"; }
+
+            if (!error) {
+                document.getElementById('pin-overlay').style.display = 'none';
+                refreshData();
             } else {
-                showModal("Erreur", "Code PIN invalide.", "❌");
+                showModal("Accès refusé", "Code PIN invalide.", "❌");
                 document.getElementById('pin-input').value = "";
             }
         }
