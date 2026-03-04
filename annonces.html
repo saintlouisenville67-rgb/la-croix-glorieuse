@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Annonces - La Croix Glorieuse</title>
     <link rel="stylesheet" href="css/style.css">
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -28,12 +29,12 @@
     <script>
         async function loadAllAnnonces() {
             const feed = document.getElementById('feed-annonces-complet');
-            
-            // Logique de tri mise à jour : Priorité (desc) puis Date (desc)
+
             const { data, error } = await sb.from('annonces')
                 .select('*')
-                .order('priorite', { ascending: false })
-                .order('created_at', { ascending: false });
+                .order('est_importante', { ascending: false })
+                .order('priorite',       { ascending: false })
+                .order('created_at',     { ascending: false });
 
             if (data && data.length > 0) {
                 feed.innerHTML = data.map(a => `
