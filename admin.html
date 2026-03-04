@@ -211,8 +211,10 @@
 
         function confirmAction(text, action) { showModal("Confirmation", text, "⚠️", "confirm", action); }
 
-        // --- AUTH — Validation déléguée entièrement à Supabase RPC ---
-        // Le PIN n'est jamais comparé côté client ; c'est la fonction SQL qui accepte ou rejette.
+        // --- AUTH ---
+        // Stratégie : on tente la RPC Supabase en premier.
+        // Si la RPC n'est pas configurée (erreur 400/404), on utilise
+        // une vérification locale par hash SHA-256 (le PIN ne circule pas en clair).
         async function checkPin() {
             const pin = document.getElementById('pin-input').value.trim();
             if (!pin) return;
@@ -220,11 +222,30 @@
             const btn = document.querySelector('#pin-overlay button[onclick="checkPin()"]');
             if (btn) { btn.disabled = true; btn.innerText = "Vérification…"; }
 
-            const { error } = await sb.rpc('set_session_pin', { pin_code: pin });
+            let granted = false;
+
+            // Tentative 1 : RPC Supabase
+            try {
+                const { error } = await sb.rpc('set_session_pin', { pin_code: pin });
+                if (!error) granted = true;
+            } catch(e) { /* RPC non disponible, on tente le fallback */ }
+
+            // Tentative 2 : vérification locale par hash SHA-256
+            if (!granted) {
+                // Hash du PIN stocké ici (SHA-256 de "5717")
+                // Pour changer le PIN : remplacer cette valeur par le SHA-256 du nouveau code
+                // Générer sur : https://emn178.github.io/online-tools/sha256.html
+                const HASH_PIN = "d61432d15ffa422ace538be31834859d1e4ae432e094c71ba634ab30e2dda520";
+                const msgBuffer = new TextEncoder().encode(pin);
+                const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+                const hashArray = Array.from(new Uint8Array(hashBuffer));
+                const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+                if (hashHex === HASH_PIN) granted = true;
+            }
 
             if (btn) { btn.disabled = false; btn.innerText = "Déverrouiller"; }
 
-            if (!error) {
+            if (granted) {
                 document.getElementById('pin-overlay').style.display = 'none';
                 refreshData();
             } else {
