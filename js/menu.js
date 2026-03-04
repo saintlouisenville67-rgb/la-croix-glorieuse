@@ -200,8 +200,10 @@ async function loadMenu() {
 
     if (window.lucide) lucide.createIcons();
 
-    updateBadges();
-    loadTicker();
+    waitForSb(() => {
+        updateBadges();
+        loadTicker();
+    });
     setupScrollTop();
 }
 
@@ -225,6 +227,17 @@ function closeMoreDrawer() {
     if (!overlay) return;
     drawer.classList.remove('open');
     setTimeout(() => overlay.classList.remove('open'), 300);
+}
+
+// Attend que `sb` (Supabase) soit disponible avant d'exécuter les fonctions qui en dépendent
+function waitForSb(callback, attempts = 0) {
+    if (typeof sb !== 'undefined') {
+        callback();
+    } else if (attempts < 20) {
+        setTimeout(() => waitForSb(callback, attempts + 1), 100);
+    } else {
+        console.warn('menu.js: sb (Supabase) non disponible après 2s — badges et ticker désactivés.');
+    }
 }
 
 if (document.readyState === 'interactive' || document.readyState === 'complete') {
