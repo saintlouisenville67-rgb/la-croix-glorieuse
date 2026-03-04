@@ -1,21 +1,56 @@
+/* --- POLICE GLOBALE --- */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800;900&display=swap');
+
 /* --- VARIABLES & BASE --- */
 :root {
     --primary-gradient: linear-gradient(135deg, #b91c1c 0%, #7f1d1d 100%);
     --bg-light: #f8fafc;
     --card-light: #ffffff;
+    --text-primary: #0f172a;
+    --text-secondary: #64748b;
+    --border-color: rgba(0,0,0,0.06);
 }
 
 /* Mode sombre automatique basé sur les réglages du téléphone */
 @media (prefers-color-scheme: dark) {
     :root {
-        --bg-light: #0f172a; 
+        --bg-light: #0f172a;
         --card-light: #1e293b;
+        --text-primary: #f1f5f9;
+        --text-secondary: #94a3b8;
+        --border-color: rgba(255,255,255,0.08);
     }
-    body { color: #f1f5f9; }
-    input, textarea { background-color: #334155 !important; color: white !important; }
-    .text-slate-800 { color: #f1f5f9 !important; }
-    .text-slate-500 { color: #94a3b8 !important; }
-    .bg-slate-50 { background-color: #334155 !important; }
+    body { color: var(--text-primary); background-color: var(--bg-light); }
+
+    /* Inputs & textareas */
+    input, textarea, select { background-color: #1e293b !important; color: #f1f5f9 !important; border-color: #334155 !important; }
+    input::placeholder, textarea::placeholder { color: #64748b !important; }
+
+    /* Surcharge des classes Tailwind utilisées dans les pages */
+    .bg-white   { background-color: #1e293b !important; }
+    .bg-slate-50, .bg-slate-100 { background-color: #0f172a !important; }
+    .bg-slate-900 { background-color: #020617 !important; }
+    .text-slate-800, .text-slate-900 { color: #f1f5f9 !important; }
+    .text-slate-700 { color: #cbd5e1 !important; }
+    .text-slate-600 { color: #94a3b8 !important; }
+    .text-slate-500 { color: #64748b !important; }
+    .border-slate-100, .border-slate-200 { border-color: #334155 !important; }
+
+    /* Cards */
+    .card { background-color: var(--card-light); border-color: var(--border-color); }
+
+    /* Skeleton en mode sombre */
+    .skeleton { background: linear-gradient(110deg, #1e293b 8%, #334155 18%, #1e293b 33%); background-size: 200% 100%; }
+
+    /* Fond rouge clair → rouge foncé */
+    .bg-red-50 { background-color: #3b0d0d !important; }
+    .bg-amber-50 { background-color: #27200a !important; }
+    .bg-green-50 { background-color: #052e16 !important; }
+    .text-red-900 { color: #fca5a5 !important; }
+    .text-red-800 { color: #fca5a5 !important; }
+
+    /* Annonce importante */
+    .border-red-200 { border-color: #7f1d1d !important; }
 }
 
 * {
@@ -24,7 +59,7 @@
 }
 
 body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     background-color: var(--bg-light);
     margin: 0;
     overflow-x: hidden;
