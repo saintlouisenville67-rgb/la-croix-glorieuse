@@ -14,7 +14,8 @@
         .month-pill.active { background: #b91c1c !important; color: white !important; }
         .loader { border: 3px solid rgba(0,0,0,0.1); border-top: 3px solid #b91c1c; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; display: inline-block; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        #scrollTop { position: fixed; bottom: 100px; right: 20px; background: #b91c1c; color: white; width: 45px; height: 45px; border-radius: 50%; display: none; justify-content: center; align-items: center; z-index: 99; border: none; }
+        /* scrollTop géré par menu.js — style local pour agenda uniquement via id agendaScrollTop */
+        #agendaScrollTop { position: fixed; bottom: 100px; right: 20px; background: #b91c1c; color: white; width: 45px; height: 45px; border-radius: 50%; display: none; justify-content: center; align-items: center; z-index: 99; border: none; cursor: pointer; }
     </style>
 </head>
 <body class="bg-slate-50">
@@ -41,7 +42,7 @@
         </div>
     </main>
 
-    <button id="scrollTop" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">↑</button>
+    <button id="agendaScrollTop" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">↑</button>
     <nav class="bottom-nav"></nav>
 
     <script>
@@ -156,7 +157,7 @@
             window.open(`https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(t)}&dates=${d}/${d}`, '_blank');
         }
 
-        window.onscroll = () => { document.getElementById('scrollTop').style.display = (window.scrollY > 400 ? "flex" : "none"); };
+        window.onscroll = () => { document.getElementById('agendaScrollTop').style.display = (window.scrollY > 400 ? "flex" : "none"); };
         
         setupMonthFilters();
         fetchCalendar();
