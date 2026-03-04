@@ -2,10 +2,12 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
+        <meta name="description" content="Contacter le secrétariat de la paroisse La Croix Glorieuse à Strasbourg.">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Contact - La Croix Glorieuse</title>
     
     <link rel="stylesheet" href="css/style.css">
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -71,17 +73,28 @@
 
     <script src="js/config.js"></script>
     <script>
+        function showToast(message, isError = false) {
+            const existing = document.getElementById('contact-toast');
+            if (existing) existing.remove();
+            const toast = document.createElement('div');
+            toast.id = 'contact-toast';
+            toast.className = `fixed top-6 left-4 right-4 z-50 p-4 rounded-2xl text-center text-[11px] font-black uppercase tracking-widest shadow-2xl transition-all duration-300 ${isError ? 'bg-red-600 text-white' : 'bg-green-600 text-white'}`;
+            toast.innerText = message;
+            document.body.appendChild(toast);
+            setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 300); }, 3500);
+        }
+
         async function envoyerMessage() {
-            const nom = document.getElementById('nom').value;
-            const prenom = document.getElementById('prenom').value;
-            const email = document.getElementById('email').value;
-            const telephone = document.getElementById('telephone').value;
-            const message = document.getElementById('message').value;
+            const nom = document.getElementById('nom').value.trim();
+            const prenom = document.getElementById('prenom').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const telephone = document.getElementById('telephone').value.trim();
+            const message = document.getElementById('message').value.trim();
             const btn = document.getElementById('btn-submit');
 
-            if(!nom || !prenom || !email || !message) {
-                hapticFeedback(100); // Vibration d'erreur
-                alert("Veuillez remplir tous les champs obligatoires.");
+            if (!nom || !prenom || !email || !message) {
+                if (window.navigator?.vibrate) window.navigator.vibrate(100);
+                showToast("Veuillez remplir tous les champs obligatoires.", true);
                 return;
             }
 
@@ -95,12 +108,12 @@
 
                 if (error) throw error;
 
-                hapticFeedback(50); // Vibration de succès
+                if (window.navigator?.vibrate) window.navigator.vibrate(50);
                 document.getElementById('contact-form').classList.add('hidden');
                 document.getElementById('success-msg').classList.remove('hidden');
 
             } catch (error) {
-                alert("Erreur lors de l'envoi : " + error.message);
+                showToast("Erreur lors de l'envoi. Veuillez réessayer.", true);
                 btn.disabled = false;
                 btn.innerText = "RÉESSAYER";
             }
