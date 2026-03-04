@@ -69,7 +69,7 @@
             <p class="text-[11px] text-slate-500 mb-6 italic leading-relaxed">
                 Votre intention a bien été transmise. Le prêtre vous répondra par email après validation.
             </p>
-            <button onclick="parent.toggleMesse()" class="w-full py-4 bg-slate-900 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg active:scale-95 transition-all">
+            <button onclick="fermerDemandeMesse()" class="w-full py-4 bg-slate-900 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg active:scale-95 transition-all">
                 Fermer et retourner aux prières
             </button>
         </div>
@@ -77,6 +77,15 @@
 
     <script src="js/config.js"></script>
     <script>
+        // Fonctionne que la page soit dans un iframe (priere.html) ou ouverte directement
+        function fermerDemandeMesse() {
+            if (window.parent && window.parent !== window && typeof window.parent.toggleMesse === 'function') {
+                window.parent.toggleMesse();
+            } else {
+                window.location.href = 'priere.html';
+            }
+        }
+
         let selectedType = 'Vivant';
 
         function setType(type) {
