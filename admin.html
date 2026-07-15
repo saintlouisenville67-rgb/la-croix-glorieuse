@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Console Maître - La Croix Glorieuse</title>
     <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/tailwind.min.css">
     <link rel="icon" href="favicon.ico" type="image/x-icon">
-    <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         /* Police chargée via css/style.css */
@@ -37,8 +37,7 @@
 
     <div id="pin-overlay" class="fixed inset-0 z-[200] bg-slate-950 flex items-center justify-center p-6">
         <div class="w-full max-w-sm text-center">
-            <img src="logo.png" alt="La Croix Glorieuse"
-                 class="w-24 h-24 rounded-full border-2 border-white/20 shadow-2xl object-cover mx-auto mb-6">
+            <img src="logo.png" alt="La Croix Glorieuse" class="w-24 h-24 rounded-full border-2 border-white/20 shadow-2xl object-cover mx-auto mb-6">
             <h2 class="mb-8 text-indigo-400 font-800 tracking-widest uppercase text-xs">Accès Console Maître</h2>
             <input type="password" id="pin-input" maxlength="4" placeholder="••••" class="w-full bg-white/5 border border-white/10 p-6 rounded-3xl text-center text-5xl font-black text-white tracking-[0.3em] mb-6 outline-none focus:border-indigo-500 transition-all">
             <button onclick="checkPin()" class="w-full bg-indigo-600 text-white py-5 rounded-3xl font-800 uppercase tracking-widest hover:bg-indigo-500 transition-all">Déverrouiller</button>
@@ -192,6 +191,8 @@
         </div>
     </main>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/app.js"></script>
     <script src="js/config.js"></script>
     <script>
         // --- SYSTÈME DE MODALE ---
@@ -220,20 +221,34 @@
         // Stratégie : on tente la RPC Supabase en premier.
         // Si la RPC n'est pas configurée (erreur 400/404), on utilise
         // une vérification locale par hash SHA-256 (le PIN ne circule pas en clair).
-        async function checkPin() {
+                async function checkPin() {
             const pin = document.getElementById('pin-input').value.trim();
             if (!pin) return;
-
             const btn = document.querySelector('#pin-overlay button[onclick="checkPin()"]');
             if (btn) { btn.disabled = true; btn.innerText = "Vérification…"; }
 
             let granted = false;
-
-            // Tentative 1 : RPC Supabase
             try {
-                const { error } = await sb.rpc('set_session_pin', { pin_code: pin });
+                const { error } = await sbFetch(() => sb.rpc('set_session_pin', { pin_code: pin }));
                 if (!error) granted = true;
-            } catch(e) { /* RPC non disponible, on tente le fallback */ }
+            } catch(e) {}
+
+            if (!granted) {
+                const HASH_PIN = "d61432d15ffa422ace538be31834859d1e4ae432e094c71ba634ab30e2dda520";
+                const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pin));
+                const hash = Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+                if (hash === HASH_PIN) granted = true;
+            }
+
+            if (btn) { btn.disabled = false; btn.innerText = "Déverrouiller"; }
+            if (granted) {
+                document.getElementById('pin-overlay').style.display = 'none';
+                refreshData();
+            } else {
+                showModal("Accès refusé", "Code PIN invalide.", "❌");
+                document.getElementById('pin-input').value = "";
+            }
+        } catch(e) { /* RPC non disponible, on tente le fallback */ }
 
             // Tentative 2 : vérification locale par hash SHA-256
             if (!granted) {
