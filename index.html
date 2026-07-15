@@ -17,8 +17,15 @@
     <header class="gradient-header p-8 rounded-b-[40px] shadow-lg text-white">
         <div class="flex justify-between items-start mb-6">
             <div>
-                <h1 class="text-2xl font-800 tracking-tight mb-1">La Croix Glorieuse</h1>
-                <p class="text-[10px] font-black uppercase tracking-widest opacity-80 mb-4">Paroisse Personnelle • Strasbourg</p>
+                <div class="flex items-center gap-3 mb-2">
+                    <img src="logo.png" alt="Logo La Croix Glorieuse"
+                         class="w-12 h-12 rounded-full border-2 border-white/30 shadow-lg object-cover"
+                         loading="eager">
+                    <div>
+                        <h1 class="text-2xl font-800 tracking-tight leading-tight">La Croix Glorieuse</h1>
+                        <p class="text-[10px] font-black uppercase tracking-widest opacity-80">Paroisse Personnelle • Strasbourg</p>
+                    </div>
+                </div>
                 
                 <div class="flex items-center gap-3">
                     <a href="https://www.croix-glorieuse.org/" target="_blank" class="inline-flex items-center gap-2 bg-white/10 border border-white/40 px-3 py-1.5 rounded-full transition-all active:scale-95">
@@ -312,18 +319,28 @@
         }
 
         async function loadVerset() {
+            // Essai réseau, fallback cache local
             const { data } = await sb.from('versets').select('*');
             if (data?.length) {
-                const v = data[Math.floor(Math.random() * data.length)];
+                localStorage.setItem('cache_versets', JSON.stringify(data));
+            }
+            const versets = data || JSON.parse(localStorage.getItem('cache_versets') || '[]');
+            if (versets.length) {
+                const v = versets[Math.floor(Math.random() * versets.length)];
                 document.getElementById('verset-container').innerHTML = `<p class="text-sm italic font-semibold text-slate-200">"${v.texte}"</p><p class="text-[9px] font-black text-red-700 mt-2 uppercase text-right">— ${v.reference}</p>`;
             }
         }
 
         async function loadIntention() {
+            // Essai réseau, fallback cache local
             const { data } = await sb.from('prieres_du_jour').select('*');
             if (data?.length) {
+                localStorage.setItem('cache_prieres_du_jour', JSON.stringify(data));
+            }
+            const prieres = data || JSON.parse(localStorage.getItem('cache_prieres_du_jour') || '[]');
+            if (prieres.length) {
                 const dayOfYear = Math.floor((currentDateDisplay - new Date(currentDateDisplay.getFullYear(), 0, 0)) / 86400000);
-                document.getElementById('intention-du-jour').innerText = data[dayOfYear % data.length].texte;
+                document.getElementById('intention-du-jour').innerText = prieres[dayOfYear % prieres.length].texte;
             }
         }
 
@@ -346,7 +363,10 @@
 
         // Enregistrement du Service Worker (PWA offline)
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('/service-worker.js')
+            // Chemin relatif → fonctionne que le site soit à la racine ou dans un sous-dossier GitHub Pages
+            const swPath = new URL('service-worker.js', window.location.href).pathname;
+            const scope  = new URL('./', window.location.href).pathname;
+            navigator.serviceWorker.register(swPath, { scope })
                 .catch(err => console.warn('SW non enregistré :', err));
         }
     </script>
