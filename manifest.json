@@ -1,11 +1,12 @@
 {
   "name": "La Croix Glorieuse",
-  "short_name": "Paroisse",
-  "description": "Application de la Paroisse La Croix Glorieuse",
-  "start_url": "index.html",
+  "short_name": "La Croix",
+  "description": "Application de la Paroisse Personnelle La Croix Glorieuse — Strasbourg",
+  "start_url": "./index.html",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#f8fafc",
-  "theme_color": "#b91c1c",
+  "theme_color": "#7c2424",
   "orientation": "portrait",
   "icons": [
     {
@@ -17,6 +18,12 @@
     {
       "src": "icon-512.png",
       "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "logo.png",
+      "sizes": "500x500",
       "type": "image/png"
     }
   ]
