@@ -7,7 +7,7 @@
     <title>La Croix Glorieuse</title>
     
     <link rel="stylesheet" href="css/style.css">
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="css/tailwind.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="manifest" href="manifest.json">
     <link rel="icon" href="favicon.ico" type="image/x-icon">
@@ -17,10 +17,8 @@
     <header class="gradient-header p-8 rounded-b-[40px] shadow-lg text-white">
         <div class="flex justify-between items-start mb-6">
             <div>
-                <div class="flex items-center gap-3 mb-2">
-                    <img src="logo.png" alt="Logo La Croix Glorieuse"
-                         class="w-12 h-12 rounded-full border-2 border-white/30 shadow-lg object-cover"
-                         loading="eager">
+                <div class="flex items-center gap-3 mb-3">
+                    <img src="logo.png" alt="La Croix Glorieuse" class="w-12 h-12 rounded-full border-2 border-white/30 shadow-lg object-cover" loading="eager">
                     <div>
                         <h1 class="text-2xl font-800 tracking-tight leading-tight">La Croix Glorieuse</h1>
                         <p class="text-[10px] font-black uppercase tracking-widest opacity-80">Paroisse Personnelle • Strasbourg</p>
@@ -175,6 +173,8 @@
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/app.js"></script>
     <script src="js/config.js"></script>
     <script>
         let currentDateDisplay = new Date();
@@ -260,7 +260,7 @@
             const end = new Date(dateCible.getFullYear(), dateCible.getMonth(), dateCible.getDate(), 23, 59, 59).toISOString();
             const url = `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(CALENDAR_ID)}/events?key=${CALENDAR_API_KEY}&timeMin=${start}&timeMax=${end}&singleEvents=true&orderBy=startTime`;
             try {
-                const response = await fetch(url);
+                const response = await Promise.race([fetch(url), new Promise((_,r)=>setTimeout(()=>r(new Error('timeout')),6000))]);
                 const data = await response.json();
                 const events = data.items || [];
                 const now = new Date();
@@ -319,37 +319,27 @@
         }
 
         async function loadVerset() {
-            // Essai réseau, fallback cache local
-            const { data } = await sb.from('versets').select('*');
+            const { data } = await sbFetch(() => sb.from('versets').select('id,texte,reference'), { cacheKey: 'versets' });
             if (data?.length) {
-                localStorage.setItem('cache_versets', JSON.stringify(data));
-            }
-            const versets = data || JSON.parse(localStorage.getItem('cache_versets') || '[]');
-            if (versets.length) {
-                const v = versets[Math.floor(Math.random() * versets.length)];
-                document.getElementById('verset-container').innerHTML = `<p class="text-sm italic font-semibold text-slate-200">"${v.texte}"</p><p class="text-[9px] font-black text-red-700 mt-2 uppercase text-right">— ${v.reference}</p>`;
+                const v = data[Math.floor(Math.random() * data.length)];
+                document.getElementById('verset-container').innerHTML = `<p class="text-sm italic font-semibold text-slate-200">"${esc(v.texte)}"</p><p class="text-[9px] font-black text-red-700 mt-2 uppercase text-right">— ${esc(v.reference)}</p>`;
             }
         }
 
         async function loadIntention() {
-            // Essai réseau, fallback cache local
-            const { data } = await sb.from('prieres_du_jour').select('*');
+            const { data } = await sbFetch(() => sb.from('prieres_du_jour').select('texte'), { cacheKey: 'prieres_du_jour' });
             if (data?.length) {
-                localStorage.setItem('cache_prieres_du_jour', JSON.stringify(data));
-            }
-            const prieres = data || JSON.parse(localStorage.getItem('cache_prieres_du_jour') || '[]');
-            if (prieres.length) {
                 const dayOfYear = Math.floor((currentDateDisplay - new Date(currentDateDisplay.getFullYear(), 0, 0)) / 86400000);
-                document.getElementById('intention-du-jour').innerText = prieres[dayOfYear % prieres.length].texte;
+                document.getElementById('intention-du-jour').innerText = data[dayOfYear % data.length].texte;
             }
         }
 
         async function loadAnnonceImportante() {
-            const { data } = await sb.from('annonces').select('*').eq('est_importante', true).order('created_at', { ascending: false }).limit(1).maybeSingle();
+            const { data } = await sbFetch(() => sb.from('annonces').select('titre,contenu,lien_url').eq('est_importante', true).order('created_at', { ascending: false }).limit(1).maybeSingle(), { cacheKey: 'annonce_importante' });
             if (data) {
                 document.getElementById('bloc-annonce-importante').classList.remove('hidden');
-                document.getElementById('titre-important').innerText = data.titre;
-                document.getElementById('texte-important').innerText = data.contenu;
+                document.getElementById('titre-important').textContent = data.titre;
+                document.getElementById('texte-important').textContent = data.contenu;
                 const lien = document.getElementById('lien-important');
                 if (data.lien_url) { lien.href = data.lien_url; lien.classList.remove('hidden'); } else { lien.classList.add('hidden'); }
             }
@@ -363,10 +353,7 @@
 
         // Enregistrement du Service Worker (PWA offline)
         if ('serviceWorker' in navigator) {
-            // Chemin relatif → fonctionne que le site soit à la racine ou dans un sous-dossier GitHub Pages
-            const swPath = new URL('service-worker.js', window.location.href).pathname;
-            const scope  = new URL('./', window.location.href).pathname;
-            navigator.serviceWorker.register(swPath, { scope })
+            navigator.serviceWorker.register(new URL('./service-worker.js', window.location.href).href, { scope: new URL('./', window.location.href).href })
                 .catch(err => console.warn('SW non enregistré :', err));
         }
     </script>
