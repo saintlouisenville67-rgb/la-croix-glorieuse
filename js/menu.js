@@ -361,4 +361,3 @@ function setupScrollTop() {
 }
 
 function hapticFeedback() { if (window.navigator?.vibrate) window.navigator.vibrate(15); }
-
