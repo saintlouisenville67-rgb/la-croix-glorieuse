@@ -1,103 +1,138 @@
 // ============================================================
 // SERVICE WORKER — La Croix Glorieuse
-// Stratégie : Cache First pour les assets statiques,
-//             Network First pour les données dynamiques
+// Chemins relatifs → compatible GitHub Pages (sous-dossier)
+// Stratégies :
+//   - Cache First  : assets locaux (HTML, CSS, JS, images)
+//   - Cache First  : CDN externes (Tailwind, Lucide, Supabase lib)
+//   - Network Only : API Supabase et Google Calendar (données live)
 // ============================================================
 
-const CACHE_NAME = 'lcg-cache-v1';
+const CACHE_VERSION = 'lcg-v2';
+const CACHE_STATIC  = `${CACHE_VERSION}-static`;
+const CACHE_CDN     = `${CACHE_VERSION}-cdn`;
 
-// Assets à mettre en cache immédiatement à l'installation
 const STATIC_ASSETS = [
-    '/',
-    '/index.html',
-    '/annonces.html',
-    '/agenda.html',
-    '/priere.html',
-    '/groupes.html',
-    '/entraide.html',
-    '/contact.html',
-    '/don.html',
-    '/bible.html',
-    '/missel.html',
-    '/office.html',
-    '/messes.html',
-    '/lecturedujour.html',
-    '/mesprieres.html',
-    '/priere-matin.html',
-    '/priere-soir.html',
-    '/priere-usuelles.html',
-    '/priere-chapelet.html',
-    '/priere-misericorde.html',
-    '/demande-messe.html',
-    '/css/style.css',
-    '/js/config.js',
-    '/js/menu.js',
-    '/manifest.json',
-    '/icon-192.png',
-    '/icon-512.png',
+    './',
+    './index.html',
+    './annonces.html',
+    './agenda.html',
+    './priere.html',
+    './groupes.html',
+    './entraide.html',
+    './contact.html',
+    './don.html',
+    './bible.html',
+    './missel.html',
+    './office.html',
+    './messes.html',
+    './lecturedujour.html',
+    './mesprieres.html',
+    './demande-messe.html',
+    './priere-matin.html',
+    './priere-soir.html',
+    './priere-usuelles.html',
+    './priere-chapelet.html',
+    './priere-misericorde.html',
+    './css/style.css',
+    './js/config.js',
+    './js/menu.js',
+    './manifest.json',
+    './icon-192.png',
+    './icon-512.png',
+    './favicon.ico',
 ];
 
-// Installation : mise en cache des assets statiques
+const CDN_ASSETS = [
+    'https://cdn.tailwindcss.com',
+    'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2',
+];
+
+// INSTALLATION
 self.addEventListener('install', event => {
     event.waitUntil(
-        caches.open(CACHE_NAME).then(cache => {
-            return cache.addAll(STATIC_ASSETS);
-        }).then(() => self.skipWaiting())
+        Promise.all([
+            caches.open(CACHE_STATIC).then(cache =>
+                cache.addAll(STATIC_ASSETS).catch(err =>
+                    console.warn('[SW] Assets locaux partiellement non mis en cache :', err)
+                )
+            ),
+            caches.open(CACHE_CDN).then(cache =>
+                Promise.allSettled(
+                    CDN_ASSETS.map(url =>
+                        fetch(url, { mode: 'no-cors' })
+                            .then(r => cache.put(url, r))
+                            .catch(() => {})
+                    )
+                )
+            )
+        ]).then(() => self.skipWaiting())
     );
 });
 
-// Activation : suppression des anciens caches
+// ACTIVATION — supprime les anciens caches
 self.addEventListener('activate', event => {
     event.waitUntil(
         caches.keys().then(keys =>
             Promise.all(
-                keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k))
+                keys
+                    .filter(k => !k.startsWith(CACHE_VERSION))
+                    .map(k => caches.delete(k))
             )
         ).then(() => self.clients.claim())
     );
 });
 
-// Fetch : stratégie adaptée selon la requête
+// FETCH
 self.addEventListener('fetch', event => {
-    const url = new URL(event.request.url);
+    const req = event.request;
+    const url = new URL(req.url);
 
-    // Requêtes Supabase & Google API → toujours réseau (données en direct)
-    if (url.hostname.includes('supabase.co') || url.hostname.includes('googleapis.com')) {
+    // 1. API données (Supabase REST, Google, HelloAsso) → Network Only
+    if (
+        url.hostname.includes('supabase.co') ||
+        url.hostname.includes('googleapis.com') ||
+        url.hostname.includes('helloasso.com')
+    ) {
         event.respondWith(
-            fetch(event.request).catch(() => new Response(JSON.stringify({ error: 'offline' }), {
-                headers: { 'Content-Type': 'application/json' }
-            }))
+            fetch(req).catch(() =>
+                new Response(JSON.stringify({ data: null, error: { message: 'offline' } }), {
+                    status: 503,
+                    headers: { 'Content-Type': 'application/json' }
+                })
+            )
         );
         return;
     }
 
-    // CDN externe (Tailwind, Lucide…) → Cache First
+    // 2. CDN externes (Tailwind, Supabase JS lib) → Cache First + mise à jour fond
     if (url.hostname !== self.location.hostname) {
         event.respondWith(
-            caches.match(event.request).then(cached => cached || fetch(event.request).then(response => {
-                const clone = response.clone();
-                caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
-                return response;
-            }))
+            caches.open(CACHE_CDN).then(cache =>
+                cache.match(req).then(cached => {
+                    const networkFetch = fetch(req, { mode: 'no-cors' })
+                        .then(response => { cache.put(req, response.clone()); return response; })
+                        .catch(() => cached);
+                    return cached || networkFetch;
+                })
+            )
         );
         return;
     }
 
-    // Assets locaux → Cache First avec fallback réseau
+    // 3. Assets locaux → Stale-While-Revalidate
     event.respondWith(
-        caches.match(event.request).then(cached => {
-            if (cached) return cached;
-            return fetch(event.request).then(response => {
-                if (!response || response.status !== 200 || response.type === 'opaque') return response;
-                const clone = response.clone();
-                caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
-                return response;
-            }).catch(() => {
-                // Fallback page hors-ligne si disponible
-                if (event.request.destination === 'document') {
-                    return caches.match('/index.html');
-                }
-            });
-        })
+        caches.open(CACHE_STATIC).then(cache =>
+            cache.match(req).then(cached => {
+                const networkFetch = fetch(req)
+                    .then(response => {
+                        if (response && response.status === 200) cache.put(req, response.clone());
+                        return response;
+                    })
+                    .catch(() => {
+                        if (req.destination === 'document') return cache.match('./index.html');
+                    });
+                return cached || networkFetch;
+            })
+        )
     );
 });
