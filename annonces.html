@@ -35,6 +35,14 @@
                 .select('*')
                 .order('created_at', { ascending: false });
 
+            if (error) {
+                feed.innerHTML = `<div class="text-center py-10 space-y-2">
+                    <p class="text-2xl">📡</p>
+                    <p class="text-sm font-800 text-slate-500">Connexion indisponible</p>
+                    <p class="text-xs text-slate-400">Les annonces seront visibles dès le retour du réseau.</p>
+                </div>`;
+                return;
+            }
             if (data && data.length > 0) {
                 feed.innerHTML = data.map(a => `
                     <div class="card animate-fade-in shadow-sm border-l-4 ${a.est_importante ? 'border-red-700' : 'border-slate-200'}">
