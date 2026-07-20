@@ -1,126 +1,109 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-        <meta name="description" content="Contacter le secrétariat de la paroisse La Croix Glorieuse à Strasbourg.">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Contact - La Croix Glorieuse</title>
-    
-    <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="css/tailwind.min.css">
-    <link rel="icon" href="favicon.ico" type="image/x-icon">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#9B1C1C">
+  <title>Contact - La Croix Glorieuse</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/tailwind.min.css">
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/app.js"></script>
+  <script src="js/config.js"></script>
+  
 </head>
-<body class="bg-slate-50">
+<body>
+<header class="gradient-header" style="padding:20px 20px 32px">
+  <div style="max-width:440px;margin:0 auto;display:flex;align-items:center;gap:12px">
+    <img src="logo.png" alt="" style="width:32px;height:32px;border-radius:50%;object-fit:cover;border:1.5px solid rgba(255,255,255,0.3);flex-shrink:0">
+    <div style="flex:1">
+      <h1 style="font-size:20px;font-weight:900;color:#fff;margin:0;line-height:1.1">Contact</h1>
+      <p style="font-size:9px;font-weight:800;color:rgba(255,255,255,0.6);text-transform:uppercase;letter-spacing:0.12em;margin:2px 0 0">Secrétariat de la paroisse</p>
+    </div>
+    
+  </div>
+</header>
+<main style="max-width:440px;margin:0 auto;padding:16px 16px 96px">
 
-    <header class="gradient-header text-white p-8 rounded-b-[40px] shadow-lg">
-        <h1 class="text-2xl font-800 tracking-tight mb-1">Contact</h1>
-        <p class="text-[10px] font-black uppercase tracking-widest opacity-80">Secrétariat de la Paroisse</p>
-    </header>
+  <div class="card" id="contact-form">
+    <h2 style="font-size:13px;font-weight:900;color:var(--text-1);text-transform:uppercase;letter-spacing:0.08em;margin:0 0 18px;padding-bottom:14px;border-bottom:1px solid var(--border)">Envoyer un message</h2>
 
-    <main class="p-6 space-y-8 mb-24">
-        <section class="card shadow-xl -mt-12 relative z-10">
-            <h2 class="text-sm font-800 mb-6 text-slate-800 dark:text-white border-b dark:border-slate-700 pb-4">Envoyer un message</h2>
-            
-            <div id="contact-form" class="space-y-4">
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="text-[9px] font-black text-slate-400 uppercase ml-2">Nom *</label>
-                        <input type="text" id="nom" required 
-                            class="w-full bg-slate-50 p-4 rounded-xl border-none text-sm font-semibold outline-none focus:ring-2 focus:ring-red-100 transition-all">
-                    </div>
-                    <div>
-                        <label class="text-[9px] font-black text-slate-400 uppercase ml-2">Prénom *</label>
-                        <input type="text" id="prenom" required 
-                            class="w-full bg-slate-50 p-4 rounded-xl border-none text-sm font-semibold outline-none focus:ring-2 focus:ring-red-100 transition-all">
-                    </div>
-                </div>
-                
-                <div>
-                    <label class="text-[9px] font-black text-slate-400 uppercase ml-2">Votre Email *</label>
-                    <input type="email" id="email" required 
-                        class="w-full bg-slate-50 p-4 rounded-xl border-none text-sm font-semibold outline-none focus:ring-2 focus:ring-red-100 transition-all">
-                </div>
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div>
+          <label style="font-size:9px;font-weight:800;color:var(--text-3);text-transform:uppercase;letter-spacing:0.1em;display:block;margin-bottom:5px">Nom *</label>
+          <input type="text" id="nom" required placeholder="Dupont"
+                 style="width:100%;background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:11px 13px;font-size:13px;font-weight:600;font-family:inherit;color:var(--text-1);outline:none">
+        </div>
+        <div>
+          <label style="font-size:9px;font-weight:800;color:var(--text-3);text-transform:uppercase;letter-spacing:0.1em;display:block;margin-bottom:5px">Prénom *</label>
+          <input type="text" id="prenom" required placeholder="Jean"
+                 style="width:100%;background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:11px 13px;font-size:13px;font-weight:600;font-family:inherit;color:var(--text-1);outline:none">
+        </div>
+      </div>
 
-                <div>
-                    <label class="text-[9px] font-black text-slate-400 uppercase ml-2">Téléphone (Optionnel)</label>
-                    <input type="tel" id="telephone" 
-                        class="w-full bg-slate-50 p-4 rounded-xl border-none text-sm font-semibold outline-none focus:ring-2 focus:ring-red-100 transition-all">
-                </div>
+      <div>
+        <label style="font-size:9px;font-weight:800;color:var(--text-3);text-transform:uppercase;letter-spacing:0.1em;display:block;margin-bottom:5px">Email *</label>
+        <input type="email" id="email" required placeholder="jean@exemple.fr"
+               style="width:100%;background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:11px 13px;font-size:13px;font-weight:600;font-family:inherit;color:var(--text-1);outline:none">
+      </div>
 
-                <div>
-                    <label class="text-[9px] font-black text-slate-400 uppercase ml-2">Message *</label>
-                    <textarea id="message" required 
-                        class="w-full bg-slate-50 p-4 rounded-xl border-none text-sm min-h-[150px] outline-none focus:ring-2 focus:ring-red-100 transition-all"></textarea>
-                </div>
+      <div>
+        <label style="font-size:9px;font-weight:800;color:var(--text-3);text-transform:uppercase;letter-spacing:0.1em;display:block;margin-bottom:5px">Téléphone <span style="font-weight:500;opacity:0.6">(optionnel)</span></label>
+        <input type="tel" id="telephone" placeholder="+33 6 …"
+               style="width:100%;background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:11px 13px;font-size:13px;font-weight:600;font-family:inherit;color:var(--text-1);outline:none">
+      </div>
 
-                <button onclick="envoyerMessage()" id="btn-submit"
-                    class="w-full gradient-header text-white py-4 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] shadow-lg active:scale-95 transition-all">
-                    Envoyer au secrétariat
-                </button>
-            </div>
+      <div>
+        <label style="font-size:9px;font-weight:800;color:var(--text-3);text-transform:uppercase;letter-spacing:0.1em;display:block;margin-bottom:5px">Message *</label>
+        <textarea id="message" required placeholder="Votre message…"
+                  style="width:100%;background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:11px 13px;font-size:13px;font-weight:600;font-family:inherit;color:var(--text-1);outline:none;min-height:130px;resize:vertical"></textarea>
+      </div>
 
-            <div id="success-msg" class="hidden text-center py-8 space-y-3 animate-fade-in">
-                <span class="text-4xl">✅</span>
-                <p class="text-sm font-800 text-slate-800 dark:text-white">Message envoyé !</p>
-                <p class="text-[11px] text-slate-500">Le secrétariat a bien reçu votre demande et vous répondra bientôt.</p>
-                <button onclick="window.location.reload()" class="text-[10px] font-black text-red-600 uppercase pt-4 tracking-widest">Nouveau message</button>
-            </div>
-        </section>
-    </main>
+      <button onclick="envoyerMessage()" id="btn-submit"
+              style="width:100%;background:var(--gradient);color:#fff;border:none;border-radius:14px;padding:15px;font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:0.1em;cursor:pointer;font-family:inherit">
+        Envoyer au secrétariat
+      </button>
+    </div>
+  </div>
 
-    <nav class="bottom-nav"></nav>
+  <div id="success-msg" class="hidden" style="text-align:center;padding:48px 20px">
+    <div style="font-size:48px;margin-bottom:16px">✅</div>
+    <h3 style="font-size:16px;font-weight:900;color:var(--text-1);margin:0 0 8px">Message envoyé !</h3>
+    <p style="font-size:13px;color:var(--text-2);line-height:1.5">Le secrétariat a bien reçu votre demande et vous répondra bientôt.</p>
+    <button onclick="window.location.reload()" style="margin-top:20px;font-size:10px;font-weight:800;color:var(--crimson);text-transform:uppercase;letter-spacing:0.1em;background:none;border:none;cursor:pointer">Nouveau message</button>
+  </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="js/app.js"></script>
-    <script src="js/config.js"></script>
-    <script>
-        function showToast(message, isError = false) {
-            const existing = document.getElementById('contact-toast');
-            if (existing) existing.remove();
-            const toast = document.createElement('div');
-            toast.id = 'contact-toast';
-            toast.className = `fixed top-6 left-4 right-4 z-50 p-4 rounded-2xl text-center text-[11px] font-black uppercase tracking-widest shadow-2xl transition-all duration-300 ${isError ? 'bg-red-600 text-white' : 'bg-green-600 text-white'}`;
-            toast.innerText = message;
-            document.body.appendChild(toast);
-            setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 300); }, 3500);
-        }
-
-        async function envoyerMessage() {
-            const nom = document.getElementById('nom').value.trim();
-            const prenom = document.getElementById('prenom').value.trim();
-            const email = document.getElementById('email').value.trim();
-            const telephone = document.getElementById('telephone').value.trim();
-            const message = document.getElementById('message').value.trim();
-            const btn = document.getElementById('btn-submit');
-
-            if (!nom || !prenom || !email || !message) {
-                if (window.navigator?.vibrate) window.navigator.vibrate(100);
-                showToast("Veuillez remplir tous les champs obligatoires.", true);
-                return;
-            }
-
-            btn.disabled = true;
-            btn.innerText = "ENVOI EN COURS...";
-
-            try {
-                const { error } = await sb
-                    .from('contact_messages')
-                    .insert([{ nom, prenom, email, telephone, message }]);
-
-                if (error) throw error;
-
-                if (window.navigator?.vibrate) window.navigator.vibrate(50);
-                document.getElementById('contact-form').classList.add('hidden');
-                document.getElementById('success-msg').classList.remove('hidden');
-
-            } catch (error) {
-                showToast("Erreur lors de l'envoi. Veuillez réessayer.", true);
-                btn.disabled = false;
-                btn.innerText = "RÉESSAYER";
-            }
-        }
-    </script>
-    <script src="js/menu.js"></script>
+</main>
+<nav class="bottom-nav"></nav>
+<script>
+async function envoyerMessage() {
+  const nom      = document.getElementById('nom').value.trim();
+  const prenom   = document.getElementById('prenom').value.trim();
+  const email    = document.getElementById('email').value.trim();
+  const telephone= document.getElementById('telephone').value.trim();
+  const message  = document.getElementById('message').value.trim();
+  const btn      = document.getElementById('btn-submit');
+  if (!nom||!prenom||!email||!message) {
+    if (navigator.vibrate) navigator.vibrate(80);
+    showToast('Veuillez remplir tous les champs obligatoires.','error'); return;
+  }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    showToast('Adresse email invalide.','error'); return;
+  }
+  btn.disabled=true; btn.innerText='Envoi en cours…';
+  const { error } = await sbFetch(() => sb.from('contact_messages').insert([{nom,prenom,email,telephone,message}]));
+  if (!error) {
+    if (navigator.vibrate) navigator.vibrate(40);
+    document.getElementById('contact-form').classList.add('hidden');
+    document.getElementById('success-msg').classList.remove('hidden');
+  } else {
+    showToast("Erreur lors de l'envoi. Réessayez.",'error');
+    btn.disabled=false; btn.innerText='Envoyer au secrétariat';
+  }
+}
+</script>
+<script src="js/menu.js"></script>
 </body>
 </html>
