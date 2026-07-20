@@ -1,267 +1,230 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-        <meta name="description" content="Entraide entre paroissiens de La Croix Glorieuse. Offres et demandes de services au sein de la communauté.">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Entraide - La Croix Glorieuse</title>
-    <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="css/tailwind.min.css">
-    <link rel="icon" href="favicon.ico" type="image/x-icon">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#9B1C1C">
+  <title>Entraide - La Croix Glorieuse</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/tailwind.min.css">
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/app.js"></script>
+  <script src="js/config.js"></script>
+  
 </head>
-<body class="bg-slate-50">
-
-    <header class="gradient-header text-white p-8 rounded-b-[40px] shadow-lg relative">
-        <button onclick="toggleAide(true)" class="absolute top-8 right-6 w-10 h-10 rounded-full bg-white text-slate-900 shadow-2xl z-[55] flex items-center justify-center active:scale-90 transition-all border-2 border-slate-200">
-            <span class="text-xl font-bold">?</span>
-        </button>
-        
-        <h1 class="text-2xl font-800 tracking-tight mb-1">Entraide</h1>
-        <p class="text-[10px] font-black uppercase tracking-widest opacity-90">La charité en action</p>
-    </header>
-
-    <main class="p-6 mb-24">
-        <div class="flex gap-2 mb-6 -mt-12 relative z-10">
-            <button onclick="loadEntraide('tous')" class="flex-1 py-3 rounded-xl bg-white shadow-md text-[10px] font-black uppercase text-slate-400 focus:text-red-700 transition-all border border-slate-100">Tous</button>
-            <button onclick="loadEntraide('demande')" class="flex-1 py-3 rounded-xl bg-white shadow-md text-[10px] font-black uppercase text-slate-400 focus:text-red-700 transition-all border border-slate-100">Demandes</button>
-            <button onclick="loadEntraide('offre')" class="flex-1 py-3 rounded-xl bg-white shadow-md text-[10px] font-black uppercase text-slate-400 focus:text-red-700 transition-all border border-slate-100">Offres</button>
-        </div>
-
-        <div id="feed-entraide" class="space-y-4">
-            <div class="skeleton h-32 w-full"></div>
-        </div>
-    </main>
-
-    <div id="modal-aide" class="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-[80] hidden flex items-center justify-center p-6">
-        <div class="bg-white w-full max-w-sm rounded-[40px] p-8 shadow-2xl animate-fade-in relative border border-slate-200">
-            
-            <div class="text-center mb-8">
-                <h3 class="text-lg font-900 text-slate-950 uppercase tracking-tighter">Guide d'utilisation</h3>
-                <div class="h-1 w-12 bg-red-600 mx-auto mt-2 rounded-full"></div>
-            </div>
-
-            <div class="space-y-8">
-                <div class="flex items-start gap-4">
-                    <div class="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center text-blue-700 font-bold">1</div>
-                    <div>
-                        <h4 class="text-xs font-900 text-slate-950 uppercase mb-1 tracking-wide">Écrire une annonce</h4>
-                        <p class="text-[12px] text-slate-700 leading-snug">Remplissez le formulaire. Un <b>abbé validera</b> votre message avant qu'il ne soit visible par tous.</p>
-                    </div>
-                </div>
-
-                <div class="flex items-start gap-4">
-                    <div class="flex-shrink-0 w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center text-amber-700 font-bold">2</div>
-                    <div>
-                        <h4 class="text-xs font-900 text-slate-950 uppercase mb-1 tracking-wide">Obtenir le contact</h4>
-                        <p class="text-[12px] text-slate-700 leading-snug">Pour voir un numéro de téléphone, saisissez le <b>code secret</b> que vous donne un abbé (il faut lui demander à la fin de la Messe).</p>
-                    </div>
-                </div>
-
-                <div class="flex items-start gap-4">
-                    <div class="flex-shrink-0 w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center text-green-700 font-bold">3</div>
-                    <div>
-                        <h4 class="text-xs font-900 text-slate-950 uppercase mb-1 tracking-wide">Fin de l'entraide</h4>
-                        <p class="text-[12px] text-slate-700 leading-snug">Dès que le contact est établi, l'annonce est <b>supprimée</b> pour laisser la place aux autres.</p>
-                    </div>
-                </div>
-            </div>
-
-            <button onclick="toggleAide(false)" class="w-full mt-10 py-5 bg-slate-950 text-white rounded-2xl text-[11px] font-black uppercase tracking-[2px] shadow-xl active:scale-95 transition-transform">
-                J'ai compris
-            </button>
-        </div>
+<body>
+<header class="gradient-header" style="padding:20px 20px 32px">
+  <div style="max-width:440px;margin:0 auto;display:flex;align-items:center;gap:12px">
+    <img src="logo.png" alt="" style="width:32px;height:32px;border-radius:50%;object-fit:cover;border:1.5px solid rgba(255,255,255,0.3);flex-shrink:0">
+    <div style="flex:1">
+      <h1 style="font-size:20px;font-weight:900;color:#fff;margin:0;line-height:1.1">Entraide</h1>
+      <p style="font-size:9px;font-weight:800;color:rgba(255,255,255,0.6);text-transform:uppercase;letter-spacing:0.12em;margin:2px 0 0">La charité en action</p>
     </div>
+    <button onclick="toggleAide(true)" style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.3);color:#fff;font-weight:900;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0">?</button>
+  </div>
+</header>
+<main style="max-width:440px;margin:0 auto;padding:16px 16px 96px">
 
-    <button onclick="toggleModal(true)" class="fixed bottom-28 right-6 w-14 h-14 gradient-header rounded-full shadow-2xl text-white text-3xl z-40 flex items-center justify-center active:scale-90 transition-transform">+</button>
+  <!-- Filtres -->
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px" id="filter-tabs">
+    <button onclick="setFilter('tous',this)" data-active="true"
+            style="padding:10px;border-radius:12px;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;border:none;cursor:pointer;background:var(--text-1);color:#fff;font-family:inherit">Tous</button>
+    <button onclick="setFilter('demande',this)"
+            style="padding:10px;border-radius:12px;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;border:1px solid var(--border);cursor:pointer;background:var(--surface);color:var(--text-2);font-family:inherit">Demandes</button>
+    <button onclick="setFilter('offre',this)"
+            style="padding:10px;border-radius:12px;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;border:1px solid var(--border);cursor:pointer;background:var(--surface);color:var(--text-2);font-family:inherit">Offres</button>
+  </div>
 
-    <div id="modal-code" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[60] hidden flex items-center justify-center p-6">
-        <div class="bg-white w-full max-w-xs rounded-[30px] p-6 shadow-2xl animate-fade-in border border-slate-200">
-            <h3 class="text-sm font-800 text-slate-950 uppercase mb-2 text-center">Code requis</h3>
-            <p class="text-[11px] text-slate-600 text-center mb-4 font-medium">Saisissez le code donné par l'abbé.</p>
-            <input type="text" id="input-code-abbe" class="w-full bg-slate-100 p-3 rounded-xl border-2 border-slate-200 text-center font-bold text-lg mb-4 outline-none focus:border-red-500 uppercase text-slate-950">
-            <div class="flex gap-2">
-                <button onclick="closeCodeModal()" class="flex-1 py-3 text-[10px] font-black uppercase text-slate-500">Annuler</button>
-                <button id="btn-valider-code" class="flex-2 py-3 px-6 gradient-header text-white rounded-xl text-[10px] font-black uppercase">Valider</button>
-            </div>
-        </div>
+  <!-- Feed -->
+  <div id="feed-entraide" style="display:flex;flex-direction:column;gap:12px">
+    <div class="skeleton" style="height:110px"></div>
+    <div class="skeleton" style="height:110px"></div>
+  </div>
+</main>
+
+<!-- FAB -->
+<button onclick="toggleModal(true)"
+        style="position:fixed;bottom:84px;right:20px;width:52px;height:52px;border-radius:50%;background:var(--gradient);border:none;color:#fff;font-size:24px;cursor:pointer;box-shadow:0 6px 24px rgba(155,28,28,0.45);z-index:40;display:flex;align-items:center;justify-content:center;line-height:1">+</button>
+
+<nav class="bottom-nav"></nav>
+
+<!-- MODAL AIDE -->
+<div id="modal-aide" class="hidden" style="position:fixed;inset:0;background:rgba(0,0,0,0.6);backdrop-filter:blur(6px);z-index:80;display:flex;align-items:center;justify-content:center;padding:20px">
+  <div style="background:var(--surface);border-radius:28px;width:100%;max-width:360px;padding:28px;box-shadow:0 24px 48px rgba(0,0,0,0.2)">
+    <h3 style="font-size:16px;font-weight:900;color:var(--text-1);margin:0 0 20px;text-align:center">Guide d'utilisation</h3>
+    <div style="display:flex;flex-direction:column;gap:16px">
+      <div style="display:flex;gap:12px;align-items:flex-start">
+        <div style="width:30px;height:30px;border-radius:10px;background:#DBEAFE;color:#1D4ED8;font-weight:900;font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0">1</div>
+        <div><p style="font-size:12px;font-weight:700;color:var(--text-1);margin:0 0 2px">Déposer une annonce</p><p style="font-size:11px;color:var(--text-2);margin:0;line-height:1.5">Remplissez le formulaire. Un abbé validera votre message avant publication.</p></div>
+      </div>
+      <div style="display:flex;gap:12px;align-items:flex-start">
+        <div style="width:30px;height:30px;border-radius:10px;background:#FEF3C7;color:#92400E;font-weight:900;font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0">2</div>
+        <div><p style="font-size:12px;font-weight:700;color:var(--text-1);margin:0 0 2px">Obtenir le contact</p><p style="font-size:11px;color:var(--text-2);margin:0;line-height:1.5">Saisissez le code secret donné par un abbé après la Messe.</p></div>
+      </div>
+      <div style="display:flex;gap:12px;align-items:flex-start">
+        <div style="width:30px;height:30px;border-radius:10px;background:#DCFCE7;color:#15803D;font-weight:900;font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0">3</div>
+        <div><p style="font-size:12px;font-weight:700;color:var(--text-1);margin:0 0 2px">Fin de l'entraide</p><p style="font-size:11px;color:var(--text-2);margin:0;line-height:1.5">Dès le contact établi, l'annonce disparaît pour libérer de la place.</p></div>
+      </div>
     </div>
+    <button onclick="toggleAide(false)" style="width:100%;margin-top:22px;background:var(--text-1);color:#fff;border:none;border-radius:14px;padding:14px;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.1em;cursor:pointer;font-family:inherit">J'ai compris</button>
+  </div>
+</div>
 
-    <div id="modal-resultat" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[70] hidden flex items-center justify-center p-6">
-        <div class="bg-white w-full max-w-xs rounded-[30px] p-8 shadow-2xl animate-fade-in text-center border border-slate-200">
-            <div class="text-4xl mb-4 text-green-500">✅</div>
-            <h3 class="text-sm font-800 text-slate-950 uppercase mb-4">Contact débloqué</h3>
-            
-            <div class="bg-slate-100 p-4 rounded-2xl mb-4 border border-slate-200 text-slate-950">
-                <p id="res-nom" class="text-xs font-900 uppercase mb-1"></p>
-                <p id="res-tel" class="text-lg font-black text-red-700"></p>
-                <div class="flex justify-center gap-4 mt-2">
-                    <button onclick="copierTel()" class="text-[10px] font-black uppercase text-blue-700 tracking-widest underline">Copier</button>
-                    <button onclick="partagerWhatsApp()" class="text-[10px] font-black uppercase text-green-700 tracking-widest underline">WhatsApp</button>
-                </div>
-            </div>
-
-            <p class="text-[10px] text-red-600 font-bold uppercase mb-6 leading-tight">
-                ⚠️ Notez bien les coordonnées.<br>L'annonce disparaîtra après fermeture.
-            </p>
-
-            <button onclick="terminerAnnonce()" class="w-full py-4 gradient-header text-white rounded-2xl text-[10px] font-black uppercase shadow-lg">
-                Fermer et terminer
-            </button>
-        </div>
+<!-- MODAL FORMULAIRE -->
+<div id="modal-form" class="hidden" style="position:fixed;inset:0;background:rgba(0,0,0,0.5);backdrop-filter:blur(4px);z-index:50;display:flex;align-items:flex-end">
+  <div style="background:var(--surface);border-radius:28px 28px 0 0;width:100%;max-height:92vh;overflow-y:auto;padding:24px;animation:slideUp 0.35s cubic-bezier(0.16,1,0.3,1)">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+      <h2 style="font-size:16px;font-weight:900;color:var(--text-1);margin:0">Déposer une annonce</h2>
+      <button onclick="toggleModal(false)" style="width:32px;height:32px;border-radius:50%;background:var(--surface-2);border:none;font-size:18px;cursor:pointer;color:var(--text-2);display:flex;align-items:center;justify-content:center">×</button>
     </div>
-
-    <div id="notif-system" class="fixed top-6 left-6 right-6 z-[100] pointer-events-none space-y-2"></div>
-
-    <div id="modal-form" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-end">
-        <div class="bg-white w-full rounded-t-[40px] p-8 animate-slide-up max-h-[95vh] overflow-y-auto border-t border-slate-200">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-lg font-900 text-slate-950 uppercase italic">Déposer une annonce</h2>
-                <button onclick="toggleModal(false)" class="text-slate-400 text-3xl">&times;</button>
-            </div>
-            <div class="space-y-4 pb-12">
-                <select id="type" class="w-full bg-slate-100 p-4 rounded-xl text-sm font-bold text-slate-950 border border-slate-200 outline-none">
-                    <option value="demande">Je demande de l'aide</option>
-                    <option value="offre">Je propose mon aide</option>
-                </select>
-                <input type="text" id="titre" placeholder="Titre de l'annonce" class="w-full bg-slate-100 p-4 rounded-xl text-sm font-bold text-slate-950 border border-slate-200 outline-none">
-                <textarea id="description" placeholder="Description détaillée..." class="w-full bg-slate-100 p-4 rounded-xl text-sm font-medium text-slate-950 border border-slate-200 min-h-[100px] outline-none"></textarea>
-                <div class="grid grid-cols-2 gap-4">
-                    <input type="text" id="contact_nom" placeholder="Votre Nom" class="w-full bg-slate-100 p-4 rounded-xl text-sm font-bold text-slate-950 border border-slate-200 outline-none">
-                    <input type="tel" id="contact_info" placeholder="Téléphone" class="w-full bg-slate-100 p-4 rounded-xl text-sm font-bold text-slate-950 border border-slate-200 outline-none">
-                </div>
-                <div class="p-4 bg-red-50 rounded-2xl border border-red-100">
-                    <p class="text-[9px] text-red-700 font-black uppercase">⚠️ L'annonce sera vérifiée par un abbé avant publication.</p>
-                </div>
-                <button onclick="publierEntraide()" id="btn-publier" class="w-full gradient-header text-white py-5 rounded-2xl font-black text-[11px] uppercase shadow-xl tracking-wider">Envoyer pour validation</button>
-            </div>
-        </div>
+    <div style="display:flex;flex-direction:column;gap:13px;padding-bottom:24px">
+      <select id="type" style="width:100%;background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:12px 14px;font-size:13px;font-weight:600;font-family:inherit;color:var(--text-1);outline:none">
+        <option value="demande">Je demande de l'aide</option>
+        <option value="offre">Je propose mon aide</option>
+      </select>
+      <input type="text" id="titre" placeholder="Titre de l'annonce"
+             style="width:100%;background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:12px 14px;font-size:13px;font-weight:600;font-family:inherit;color:var(--text-1);outline:none">
+      <textarea id="description" placeholder="Description détaillée…"
+                style="width:100%;background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:12px 14px;font-size:13px;font-family:inherit;color:var(--text-1);outline:none;min-height:100px;resize:vertical"></textarea>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <input type="text" id="contact_nom" placeholder="Votre nom"
+               style="background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:12px 14px;font-size:13px;font-weight:600;font-family:inherit;color:var(--text-1);outline:none">
+        <input type="tel" id="contact_info" placeholder="Téléphone"
+               style="background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:12px 14px;font-size:13px;font-weight:600;font-family:inherit;color:var(--text-1);outline:none">
+      </div>
+      <div style="background:var(--crimson-light);border:1px solid #FECACA;border-radius:12px;padding:10px 13px">
+        <p style="font-size:10px;font-weight:800;color:#991B1B;margin:0;text-transform:uppercase;letter-spacing:0.06em">⚠️ Soumise à validation par un abbé avant publication</p>
+      </div>
+      <button onclick="publierEntraide()" id="btn-publier"
+              style="width:100%;background:var(--gradient);color:#fff;border:none;border-radius:14px;padding:15px;font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:0.1em;cursor:pointer;font-family:inherit">Envoyer pour validation</button>
     </div>
+  </div>
+</div>
 
-    <nav class="bottom-nav"></nav>
+<!-- MODAL CODE -->
+<div id="modal-code" class="hidden" style="position:fixed;inset:0;background:rgba(0,0,0,0.5);backdrop-filter:blur(4px);z-index:60;display:flex;align-items:center;justify-content:center;padding:20px">
+  <div style="background:var(--surface);border-radius:24px;width:100%;max-width:320px;padding:24px">
+    <h3 style="font-size:14px;font-weight:900;color:var(--text-1);text-align:center;margin:0 0 6px">Code requis</h3>
+    <p style="font-size:11px;color:var(--text-2);text-align:center;margin:0 0 16px">Code donné par l'abbé après la Messe</p>
+    <input type="text" id="input-code-abbe" placeholder="— — — —"
+           style="width:100%;background:var(--surface-2);border:2px solid var(--border);border-radius:12px;padding:14px;font-size:18px;font-weight:900;text-align:center;text-transform:uppercase;font-family:inherit;color:var(--text-1);outline:none;letter-spacing:0.2em;margin-bottom:14px">
+    <div style="display:flex;gap:8px">
+      <button onclick="closeCodeModal()" style="flex:1;padding:12px;border-radius:12px;background:var(--surface-2);border:1px solid var(--border);font-size:11px;font-weight:800;color:var(--text-2);cursor:pointer;font-family:inherit">Annuler</button>
+      <button id="btn-valider-code" style="flex:2;padding:12px;border-radius:12px;background:var(--gradient);color:#fff;border:none;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit">Valider</button>
+    </div>
+  </div>
+</div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="js/app.js"></script>
-    <script src="js/config.js"></script>
-    <script>
-        let currentAnnonceId = null;
+<!-- MODAL RÉSULTAT -->
+<div id="modal-resultat" class="hidden" style="position:fixed;inset:0;background:rgba(0,0,0,0.5);backdrop-filter:blur(4px);z-index:70;display:flex;align-items:center;justify-content:center;padding:20px">
+  <div style="background:var(--surface);border-radius:24px;width:100%;max-width:320px;padding:28px;text-align:center">
+    <div style="font-size:40px;margin-bottom:12px">✅</div>
+    <h3 style="font-size:14px;font-weight:900;color:var(--text-1);margin:0 0 16px">Contact débloqué</h3>
+    <div style="background:var(--surface-2);border-radius:14px;padding:16px;margin-bottom:14px">
+      <p id="res-nom" style="font-size:11px;font-weight:800;text-transform:uppercase;color:var(--text-2);margin:0 0 4px"></p>
+      <p id="res-tel" style="font-size:22px;font-weight:900;color:var(--crimson);margin:0 0 12px"></p>
+      <div style="display:flex;justify-content:center;gap:16px">
+        <button onclick="copierTel()" style="font-size:11px;font-weight:800;color:#1D4ED8;text-transform:uppercase;background:none;border:none;cursor:pointer;letter-spacing:0.06em">Copier</button>
+        <button onclick="partagerWhatsApp()" style="font-size:11px;font-weight:800;color:#15803D;text-transform:uppercase;background:none;border:none;cursor:pointer;letter-spacing:0.06em">WhatsApp</button>
+      </div>
+    </div>
+    <p style="font-size:10px;color:#DC2626;font-weight:700;text-transform:uppercase;margin:0 0 16px;line-height:1.5">⚠️ Notez le numéro — l'annonce disparaîtra à la fermeture</p>
+    <button onclick="terminerAnnonce()" style="width:100%;background:var(--gradient);color:#fff;border:none;border-radius:14px;padding:14px;font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:0.1em;cursor:pointer;font-family:inherit">Fermer et terminer</button>
+  </div>
+</div>
 
-        function toggleAide(show) {
-            document.getElementById('modal-aide').classList.toggle('hidden', !show);
-        }
+<div id="notif-system" style="position:fixed;top:20px;left:16px;right:16px;z-index:200;pointer-events:none;display:flex;flex-direction:column;gap:8px"></div>
 
-        function showNotif(msg, isError = false) {
-            const container = document.getElementById('notif-system');
-            const div = document.createElement('div');
-            div.className = `p-4 rounded-2xl shadow-xl text-white text-[10px] font-black uppercase tracking-widest animate-fade-in pointer-events-auto ${isError ? 'bg-red-700' : 'bg-slate-900'}`;
-            div.innerText = msg;
-            container.appendChild(div);
-            setTimeout(() => { div.style.opacity = '0'; setTimeout(() => div.remove(), 500); }, 3000);
-        }
+<script>
+let currentAnnonceId=null, currentFilter='tous';
 
-        function closeCodeModal() {
-            document.getElementById('modal-code').classList.add('hidden');
-            document.getElementById('input-code-abbe').value = '';
-        }
+function toggleAide(show) { document.getElementById('modal-aide').classList.toggle('hidden',!show); }
+function toggleModal(show) {
+  document.getElementById('modal-form').classList.toggle('hidden',!show);
+  if (!show) { ['titre','description','contact_nom','contact_info'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; }); }
+}
+function closeCodeModal() { document.getElementById('modal-code').classList.add('hidden'); document.getElementById('input-code-abbe').value=''; }
 
-        function toggleModal(show) {
-            document.getElementById('modal-form').classList.toggle('hidden', !show);
-        }
+function setFilter(filter, btn) {
+  currentFilter = filter;
+  document.querySelectorAll('#filter-tabs button').forEach(b=>{
+    b.style.background = 'var(--surface)'; b.style.color = 'var(--text-2)'; b.style.border = '1px solid var(--border)';
+  });
+  btn.style.background = 'var(--text-1)'; btn.style.color = '#fff'; btn.style.border = 'none';
+  loadEntraide(filter);
+}
 
-        async function loadEntraide(filter = 'tous') {
-            const feed = document.getElementById('feed-entraide');
-            let query = sb.from('entraide').select('*').eq('valide', true).eq('est_terminee', false).order('created_at', { ascending: false });
-            if (filter !== 'tous') query = query.eq('type', filter);
-            const { data } = await query;
+function showNotif(msg, isError=false) {
+  const c=document.getElementById('notif-system');
+  const d=document.createElement('div');
+  d.style.cssText=`padding:12px 16px;border-radius:14px;color:#fff;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;box-shadow:0 4px 16px rgba(0,0,0,0.2);pointer-events:auto;background:${isError?'#DC2626':'#0F172A'}`;
+  d.innerText=msg; c.appendChild(d);
+  setTimeout(()=>{ d.style.opacity='0'; d.style.transition='opacity 0.3s'; setTimeout(()=>d.remove(),300); },3000);
+}
 
-            if (data && data.length > 0) {
-                feed.innerHTML = data.map(a => `
-                    <div class="card animate-fade-in relative border-l-4 ${a.type === 'offre' ? 'border-green-600' : 'border-red-600'} bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
-                        <div class="flex justify-between items-start mb-2">
-                            <span class="text-[9px] font-black px-2 py-1 rounded-md ${a.type === 'offre' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'} uppercase">${a.type}</span>
-                            <span class="text-[9px] font-bold text-slate-400">${new Date(a.created_at).toLocaleDateString()}</span>
-                        </div>
-                        <h3 class="font-900 text-sm mb-1 text-slate-950 uppercase italic tracking-tight">${a.titre}</h3>
-                        <p class="text-[11px] text-slate-600 mb-4 font-medium leading-normal">${a.description}</p>
-                        
-                        <div class="pt-3 border-t border-slate-50 text-right">
-                            <button onclick="demanderCode('${a.id}')" class="text-[10px] font-black text-blue-700 uppercase tracking-widest flex items-center justify-end gap-1 active:opacity-50">🤝 Répondre à l'annonce ➔</button>
-                        </div>
-                    </div>
-                `).join('');
-            } else {
-                feed.innerHTML = "<p class='text-center text-xs text-slate-500 font-bold italic py-10 uppercase tracking-widest opacity-50'>Aucune annonce disponible.</p>";
-            }
-        }
+async function loadEntraide(filter='tous') {
+  const feed=document.getElementById('feed-entraide');
+  feed.innerHTML='<div class="skeleton" style="height:110px"></div><div class="skeleton" style="height:110px"></div>';
+  const { data, error } = await sbFetch(
+    () => { let q=sb.from('entraide').select('*').eq('valide',true).eq('est_terminee',false).order('created_at',{ascending:false}); if(filter!=='tous') q=q.eq('type',filter); return q; },
+    { cacheKey: 'entraide_'+filter }
+  );
+  if (!data?.length) { feed.innerHTML='<p style="text-align:center;padding:40px 20px;color:var(--text-3);font-style:italic;font-size:13px">Aucune annonce disponible.</p>'; return; }
+  feed.innerHTML = data.map(a=>`
+    <div class="card animate-fade-in" style="border-left:3px solid ${a.type==='offre'?'#15803D':'#DC2626'}">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+        <span style="font-size:9px;font-weight:900;padding:3px 9px;border-radius:6px;text-transform:uppercase;background:${a.type==='offre'?'#DCFCE7':'#FEE2E2'};color:${a.type==='offre'?'#15803D':'#DC2626'}">${a.type}</span>
+        <span style="font-size:10px;color:var(--text-3)">${new Date(a.created_at).toLocaleDateString('fr-FR',{day:'numeric',month:'short'})}</span>
+      </div>
+      <h3 style="font-size:14px;font-weight:800;color:var(--text-1);margin:0 0 6px;line-height:1.3">${esc(a.titre)}</h3>
+      <p style="font-size:12px;color:var(--text-2);line-height:1.55;margin:0 0 14px">${esc(a.description)}</p>
+      <button onclick="demanderCode('${a.id}')" style="font-size:11px;font-weight:800;color:#1D4ED8;text-transform:uppercase;letter-spacing:0.06em;background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:4px;padding:0">🤝 Répondre →</button>
+    </div>`).join('');
+}
 
-        function demanderCode(id) {
-            currentAnnonceId = id;
-            document.getElementById('modal-code').classList.remove('hidden');
-            document.getElementById('input-code-abbe').focus();
+function demanderCode(id) {
+  currentAnnonceId=id;
+  document.getElementById('modal-code').classList.remove('hidden');
+  document.getElementById('input-code-abbe').focus();
+  document.getElementById('btn-valider-code').onclick = async () => {
+    const code=document.getElementById('input-code-abbe').value;
+    const { data } = await sb.from('entraide').select('code_validation,contact_info,contact_nom').eq('id',id).single();
+    if (data?.code_validation===code) {
+      closeCodeModal();
+      document.getElementById('res-nom').innerText=data.contact_nom||'';
+      document.getElementById('res-tel').innerText=data.contact_info||'';
+      document.getElementById('modal-resultat').classList.remove('hidden');
+    } else { showNotif('Code incorrect',true); }
+  };
+}
 
-            document.getElementById('btn-valider-code').onclick = async () => {
-                const codeSaisi = document.getElementById('input-code-abbe').value;
-                const { data } = await sb.from('entraide').select('code_validation, contact_info, contact_nom').eq('id', id).single();
+function copierTel() { navigator.clipboard.writeText(document.getElementById('res-tel').innerText); showNotif('Copié !'); }
+function partagerWhatsApp() {
+  const t=document.getElementById('res-tel').innerText.replace(/\s/g,'');
+  window.open(`https://wa.me/${t}?text=${encodeURIComponent("Bonjour, je vous contacte via l'app de la Croix Glorieuse.")}`, '_blank');
+}
+async function terminerAnnonce() {
+  await sb.from('entraide').update({est_terminee:true}).eq('id',currentAnnonceId);
+  document.getElementById('modal-resultat').classList.add('hidden');
+  loadEntraide(currentFilter);
+}
 
-                if (data && data.code_validation === codeSaisi) {
-                    closeCodeModal();
-                    document.getElementById('res-nom').innerText = data.contact_nom;
-                    document.getElementById('res-tel').innerText = data.contact_info;
-                    document.getElementById('modal-resultat').classList.remove('hidden');
-                } else {
-                    showNotif("Code incorrect", true);
-                }
-            };
-        }
+async function publierEntraide() {
+  const btn=document.getElementById('btn-publier');
+  const lastSubmit=parseInt(localStorage.getItem('last_entraide_submit')||'0');
+  if (Date.now()-lastSubmit<60000) { showNotif(`Patientez avant de re-soumettre.`,true); return; }
+  const fields={ type:document.getElementById('type').value, titre:document.getElementById('titre').value, description:document.getElementById('description').value, contact_nom:document.getElementById('contact_nom').value, contact_info:document.getElementById('contact_info').value, valide:false, est_terminee:false };
+  if (!fields.titre||!fields.description) { showNotif('Remplissez les champs requis.',true); return; }
+  btn.disabled=true; btn.innerText='Envoi…';
+  const { error } = await sbFetch(()=>sb.from('entraide').insert([fields]));
+  btn.disabled=false; btn.innerText='Envoyer pour validation';
+  if (!error) { localStorage.setItem('last_entraide_submit',Date.now().toString()); showNotif('Annonce soumise pour validation !'); toggleModal(false); }
+  else { showNotif("Erreur lors de l'envoi.",true); }
+}
 
-        function copierTel() {
-            const tel = document.getElementById('res-tel').innerText;
-            navigator.clipboard.writeText(tel);
-            showNotif("Copié dans le presse-papier !");
-        }
-
-        function partagerWhatsApp() {
-            const nom = document.getElementById('res-nom').innerText;
-            const tel = document.getElementById('res-tel').innerText;
-            const msg = encodeURIComponent(`Bonjour ${nom}, je vous contacte via l'application Entraide de la Croix Glorieuse...`);
-            window.open(`https://wa.me/${tel.replace(/\s/g, '')}?text=${msg}`, '_blank');
-        }
-
-        async function terminerAnnonce() {
-            await sb.from('entraide').update({ est_terminee: true }).eq('id', currentAnnonceId);
-            document.getElementById('modal-resultat').classList.add('hidden');
-            loadEntraide();
-        }
-
-        async function publierEntraide() {
-            const btn = document.getElementById('btn-publier');
-            const fields = {
-                type: document.getElementById('type').value,
-                titre: document.getElementById('titre').value,
-                description: document.getElementById('description').value,
-                contact_nom: document.getElementById('contact_nom').value,
-                contact_info: document.getElementById('contact_info').value,
-                valide: false,
-                est_terminee: false
-            };
-            if (!fields.titre || !fields.description) return showNotif("Veuillez remplir les champs.", true);
-            btn.disabled = true;
-            const { error } = await sb.from('entraide').insert([fields]);
-            if (!error) { 
-                showNotif("Annonce envoyée pour validation !"); 
-                toggleModal(false); 
-                // Reset form
-                document.getElementById('titre').value = '';
-                document.getElementById('description').value = '';
-                document.getElementById('contact_nom').value = '';
-                document.getElementById('contact_info').value = '';
-                btn.disabled = false;
-            }
-            else { btn.disabled = false; showNotif("Erreur lors de l'envoi", true); }
-        }
-
-        loadEntraide();
-    </script>
-    <script src="js/menu.js"></script>
+loadEntraide();
+</script>
+<script src="js/menu.js"></script>
 </body>
 </html>
