@@ -1,172 +1,135 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-        <meta name="description" content="Agenda et horaires des offices de la paroisse La Croix Glorieuse à Strasbourg. Messes, adoration, vêpres et laudes.">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Agenda - La Croix Glorieuse</title>
-    
-    <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="css/tailwind.min.css">
-    <link rel="icon" href="favicon.ico" type="image/x-icon">
-    <style>
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        .month-pill { background: var(--card-light, #fff); border: 1px solid rgba(0,0,0,0.05); color: #94a3b8; transition: all 0.2s; }
-        .month-pill.active { background: #b91c1c !important; color: white !important; }
-        .loader { border: 3px solid rgba(0,0,0,0.1); border-top: 3px solid #b91c1c; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; display: inline-block; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        /* scrollTop géré par menu.js — style local pour agenda uniquement via id agendaScrollTop */
-        #agendaScrollTop { position: fixed; bottom: 100px; right: 20px; background: #b91c1c; color: white; width: 45px; height: 45px; border-radius: 50%; display: none; justify-content: center; align-items: center; z-index: 99; border: none; cursor: pointer; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#9B1C1C">
+  <title>Agenda - La Croix Glorieuse</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/tailwind.min.css">
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <script src="js/app.js"></script>
+  <style>
+    .month-pill{padding:7px 14px;border-radius:20px;font-size:10px;font-weight:800;text-transform:uppercase;border:1px solid var(--border);background:var(--surface);color:var(--text-3);cursor:pointer;white-space:nowrap;font-family:inherit;transition:all 0.15s ease}
+    .month-pill.active{background:var(--crimson);color:#fff;border-color:transparent}
+    .loader{width:18px;height:18px;border:2.5px solid var(--border);border-top-color:var(--crimson);border-radius:50%;animation:spin 0.8s linear infinite;display:inline-block}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    ::-webkit-scrollbar{display:none}
+  </style>
 </head>
-<body class="bg-slate-50">
+<body>
 
-    <header class="gradient-header text-white p-8 rounded-b-[40px] shadow-lg">
-        <h1 class="text-2xl font-bold tracking-tight mb-1">Agenda</h1>
-        <p class="text-[10px] font-black uppercase tracking-widest opacity-80">Paroisse La Croix Glorieuse</p>
-    </header>
+<header class="gradient-header" style="padding:20px 20px 32px">
+  <div style="max-width:440px;margin:0 auto;display:flex;align-items:center;gap:12px">
+    <img src="logo.png" alt="" style="width:32px;height:32px;border-radius:50%;object-fit:cover;border:1.5px solid rgba(255,255,255,0.3);flex-shrink:0">
+    <div>
+      <h1 style="font-size:20px;font-weight:900;color:#fff;margin:0;line-height:1.1">Agenda</h1>
+      <p style="font-size:9px;font-weight:800;color:rgba(255,255,255,0.6);text-transform:uppercase;letter-spacing:0.12em;margin:2px 0 0">Paroisse La Croix Glorieuse</p>
+    </div>
+  </div>
+</header>
 
-    <main class="p-6">
-        <section class="card shadow-xl -mt-12 relative z-10 mb-8">
-            <h2 class="text-sm font-bold mb-4">Rechercher un office</h2>
-            <div class="space-y-4">
-                <input type="text" id="searchInput" onkeyup="filterEvents()" placeholder="Messe, Adoration, Confession..." class="w-full bg-slate-50 p-4 rounded-xl border-none text-sm font-semibold outline-none focus:ring-2 focus:ring-red-100 transition-all">
-                <div id="month-filters" class="flex gap-2 overflow-x-auto pb-2 no-scrollbar"></div>
+<main style="max-width:440px;margin:0 auto;padding:16px 16px 96px">
+
+  <!-- Recherche -->
+  <div class="card" style="margin-bottom:16px">
+    <input type="text" id="searchInput" onkeyup="filterEvents()" placeholder="Messe, Adoration, Confession…"
+           style="width:100%;background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:12px 14px;font-size:13px;font-weight:600;font-family:inherit;color:var(--text-1);outline:none;margin-bottom:12px">
+    <div id="month-filters" style="display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;-ms-overflow-style:none;scrollbar-width:none"></div>
+  </div>
+
+  <div id="agenda-container" style="display:flex;flex-direction:column;gap:20px">
+    <div style="text-align:center;padding:32px"><div class="loader"></div></div>
+  </div>
+</main>
+
+<nav class="bottom-nav"></nav>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/config.js"></script>
+<script>
+const API_KEY='AIzaSyAI5N6lamviexKaPR-WoOP4006m5IClDoQ', CALENDAR_ID='saintlouisenville67@gmail.com';
+let allEvents=[], selectedMonth=null;
+
+function setupMonthFilters() {
+  const c=document.getElementById('month-filters');
+  const months=['Jan','Fév','Mar','Avr','Mai','Juin','Juil','Août','Sep','Oct','Nov','Déc'];
+  const cur=new Date().getMonth();
+  let html=`<button onclick="filterByMonth(null)" id="btn-all" class="month-pill active">Tous</button>`;
+  for (let i=0;i<12;i++) {
+    const idx=(cur+i)%12;
+    html+=`<button onclick="filterByMonth(${idx})" id="btn-${idx}" class="month-pill">${months[idx]}</button>`;
+  }
+  c.innerHTML=html;
+}
+
+async function fetchCalendar() {
+  const cached=localStorage.getItem('paroiss_agenda_cache');
+  if (cached) { allEvents=JSON.parse(cached); displayAgenda(allEvents); }
+  const now=new Date(), max=new Date(); max.setDate(now.getDate()+365);
+  const url=`https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(CALENDAR_ID)}/events?key=${API_KEY}&timeMin=${now.toISOString()}&timeMax=${max.toISOString()}&singleEvents=true&orderBy=startTime&maxResults=1000`;
+  try {
+    const r=await fetch(url), d=await r.json();
+    if (d.items) { allEvents=d.items; localStorage.setItem('paroiss_agenda_cache',JSON.stringify(allEvents)); displayAgenda(allEvents); }
+  } catch(e) { if (!cached) document.getElementById('agenda-container').innerHTML='<p style="text-align:center;padding:40px;color:var(--text-3);font-size:13px">📡 Connexion indisponible</p>'; }
+}
+
+function displayAgenda(events) {
+  const c=document.getElementById('agenda-container');
+  const q=(document.getElementById('searchInput')?.value||'').toLowerCase();
+  const now=new Date();
+  const filtered=events.filter(e=>{
+    const d=new Date(e.start.dateTime||e.start.date);
+    return (selectedMonth===null||d.getMonth()===selectedMonth)&&(e.summary||'').toLowerCase().includes(q);
+  });
+  const items=selectedMonth===null&&q===''?filtered.slice(0,50):filtered;
+  if (!items.length) { c.innerHTML='<p style="text-align:center;padding:40px;color:var(--text-3);font-size:13px;font-style:italic">Aucun événement.</p>'; return; }
+  const groups=items.reduce((acc,e)=>{
+    const d=new Date(e.start.dateTime||e.start.date).toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});
+    if (!acc[d]) acc[d]=[];
+    acc[d].push(e);
+    return acc;
+  },{});
+  c.innerHTML = Object.entries(groups).map(([date,evs])=>`
+    <div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+        <div style="height:1px;flex:1;background:var(--border)"></div>
+        <span style="font-size:9px;font-weight:800;color:var(--text-3);text-transform:uppercase;letter-spacing:0.1em;white-space:nowrap">${date}</span>
+        <div style="height:1px;flex:1;background:var(--border)"></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        ${evs.map(e=>{
+          const start=new Date(e.start.dateTime||e.start.date);
+          const isLive=e.start.dateTime&&start<=now&&new Date(e.end.dateTime)>=now;
+          const time=e.start.dateTime?start.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}):'Journée';
+          return `<div class="card animate-fade-in" style="padding:14px 16px${isLive?';border:1px solid #BBF7D0;background:#F0FDF4':''}" >
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+              <span style="font-size:9px;font-weight:900;color:${isLive?'#15803D':'var(--crimson)'};text-transform:uppercase;letter-spacing:0.08em${isLive?';animation:softPulse 2s infinite':''}">${isLive?'● En direct':time}</span>
+              <button onclick="addToCalendar('${(e.summary||'').replace(/'/g,"\'")}','${e.start.dateTime||e.start.date}')" style="font-size:9px;font-weight:800;color:var(--text-3);background:var(--surface-2);border:1px solid var(--border);border-radius:6px;padding:3px 8px;cursor:pointer;font-family:inherit">+ Ajouter</button>
             </div>
-        </section>
+            <p style="font-size:13px;font-weight:700;color:${isLive?'#15803D':'var(--text-1)'};margin:0;line-height:1.3">${esc(e.summary||'Sans titre')}</p>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`).join('');
+}
 
-        <div id="agenda-container" class="space-y-8 mb-24">
-            <div id="loading-state" class="text-center py-10">
-                <div class="loader mb-2"></div>
-                <p class="text-slate-400 text-[10px] font-bold uppercase tracking-widest">Mise à jour...</p>
-            </div>
-        </div>
-    </main>
+function filterByMonth(m) {
+  selectedMonth=m;
+  document.querySelectorAll('.month-pill').forEach(b=>b.classList.remove('active'));
+  (m===null?document.getElementById('btn-all'):document.getElementById(`btn-${m}`)).classList.add('active');
+  displayAgenda(allEvents);
+  window.scrollTo({top:0,behavior:'smooth'});
+}
 
-    <button id="agendaScrollTop" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">↑</button>
-    <nav class="bottom-nav"></nav>
+function filterEvents() { displayAgenda(allEvents); }
+function addToCalendar(t,s) {
+  const d=new Date(s).toISOString().replace(/[-:.]\d+/g,'');
+  window.open(`https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(t)}&dates=${d}/${d}`,'_blank');
+}
 
-    <script>
-        const API_KEY = 'AIzaSyAI5N6lamviexKaPR-WoOP4006m5IClDoQ';
-        const CALENDAR_ID = 'saintlouisenville67@gmail.com';
-        let allEvents = [];
-        let selectedMonth = null;
-
-        // 1. SETUP IMMEDIAT
-        function setupMonthFilters() {
-            const container = document.getElementById('month-filters');
-            const months = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'];
-            const currentMonth = new Date().getMonth();
-            let html = `<button onclick="filterByMonth(null)" id="btn-all" class="month-pill active px-4 py-2 rounded-lg text-[9px] font-black uppercase">Tous</button>`;
-            for (let i = 0; i < 12; i++) {
-                const monthIdx = (currentMonth + i) % 12;
-                html += `<button onclick="filterByMonth(${monthIdx})" id="btn-${monthIdx}" class="month-pill px-4 py-2 rounded-lg text-[9px] font-black uppercase whitespace-nowrap">${months[monthIdx]}</button>`;
-            }
-            container.innerHTML = html;
-        }
-
-        // 2. CHARGEMENT INTELLIGENT
-        async function fetchCalendar() {
-            // Étape A : On affiche le cache TOUT DE SUITE
-            const cached = localStorage.getItem('paroiss_agenda_cache');
-            if (cached) {
-                allEvents = JSON.parse(cached);
-                displayAgenda(allEvents);
-            }
-
-            // Étape B : On télécharge les nouvelles données en arrière-plan
-            const now = new Date();
-            const timeMax = new Date();
-            timeMax.setDate(now.getDate() + 365);
-            const url = `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(CALENDAR_ID)}/events?key=${API_KEY}&timeMin=${now.toISOString()}&timeMax=${timeMax.toISOString()}&singleEvents=true&orderBy=startTime&maxResults=1000`;
-
-            try {
-                const response = await fetch(url);
-                const data = await response.json();
-                if (data.items) {
-                    allEvents = data.items;
-                    localStorage.setItem('paroiss_agenda_cache', JSON.stringify(allEvents));
-                    displayAgenda(allEvents); // On rafraîchit avec les données neuves
-                }
-            } catch (e) { console.error("Mode hors-ligne"); }
-            
-            const loader = document.getElementById('loading-state');
-            if(loader) loader.style.display = 'none';
-        }
-
-        // 3. AFFICHAGE OPTIMISÉ (Grouping)
-        function displayAgenda(events) {
-            const container = document.getElementById('agenda-container');
-            const query = (document.getElementById('searchInput')?.value || "").toLowerCase();
-            const now = new Date();
-
-            // Filtrage rapide
-            const filtered = events.filter(e => {
-                const d = new Date(e.start.dateTime || e.start.date);
-                return (selectedMonth === null || d.getMonth() === selectedMonth) &&
-                       (e.summary || "").toLowerCase().includes(query);
-            });
-
-            // On ne garde que les 50 premiers si on est sur "Tous" pour la performance au scroll
-            const itemsToShow = (selectedMonth === null && query === "") ? filtered.slice(0, 40) : filtered;
-
-            let html = "";
-            const groups = itemsToShow.reduce((acc, e) => {
-                const d = new Date(e.start.dateTime || e.start.date).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
-                if (!acc[d]) acc[d] = [];
-                acc[d].push(e);
-                return acc;
-            }, {});
-
-            for (const date in groups) {
-                html += `<div class="animate-fade-in"><div class="flex items-center gap-2 mb-4"><div class="h-[1px] flex-1 bg-slate-300 opacity-20"></div><span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">${date}</span><div class="h-[1px] flex-1 bg-slate-300 opacity-20"></div></div><div class="space-y-3">`;
-                groups[date].forEach(e => {
-                    const start = new Date(e.start.dateTime);
-                    const isLive = e.start.dateTime && start <= now && new Date(e.end.dateTime) >= now;
-                    const time = e.start.dateTime ? start.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : "Journée";
-                    html += `
-                        <div class="card ${isLive ? 'ring-2 ring-green-500/20' : ''}">
-                            <div class="flex justify-between items-start">
-                                <span class="text-[10px] font-black ${isLive ? 'text-green-600 animate-pulse' : 'text-red-700'} uppercase">${isLive ? '● En direct' : time}</span>
-                                <button onclick="addToCalendar('${(e.summary||"").replace(/'/g, "\\'")}', '${e.start.dateTime || e.start.date}')" class="text-[8px] font-bold uppercase bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded text-slate-500">+ Ajouter</button>
-                            </div>
-                            <p class="text-sm font-bold mt-1 text-slate-800 dark:text-white">${e.summary || "Sans titre"}</p>
-                        </div>`;
-                });
-                html += `</div></div>`;
-            }
-            
-            if (filtered.length > 40 && selectedMonth === null && query === "") {
-                html += `<p class="text-center text-[10px] text-slate-400 py-4 italic">Utilisez les mois en haut pour voir la suite...</p>`;
-            }
-            
-            container.innerHTML = html || "<p class='text-center py-10 text-slate-400'>Aucun événement.</p>";
-        }
-
-        function filterByMonth(m) {
-            selectedMonth = m;
-            document.querySelectorAll('.month-pill').forEach(b => b.classList.remove('active'));
-            (m === null ? document.getElementById('btn-all') : document.getElementById(`btn-${m}`)).classList.add('active');
-            displayAgenda(allEvents);
-            window.scrollTo({top: 0, behavior: 'smooth'});
-        }
-
-        function filterEvents() { displayAgenda(allEvents); }
-
-        function addToCalendar(t, s) {
-            const d = new Date(s).toISOString().replace(/-|:|\.\d+/g, "");
-            window.open(`https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(t)}&dates=${d}/${d}`, '_blank');
-        }
-
-        window.onscroll = () => { document.getElementById('agendaScrollTop').style.display = (window.scrollY > 400 ? "flex" : "none"); };
-        
-        setupMonthFilters();
-        fetchCalendar();
-    </script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="js/app.js"></script>
-    <script src="js/config.js"></script>
-    <script src="js/menu.js"></script>
+setupMonthFilters();
+fetchCalendar();
+</script>
+<script src="js/menu.js"></script>
 </body>
 </html>
