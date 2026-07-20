@@ -246,30 +246,38 @@ body {
 .font-800 { font-weight: 800; }
 .font-900 { font-weight: 900; }
 
-/* Limiter la largeur sur desktop */
+/* ── DESKTOP CENTERING ────────────────────────────────────── */
+/* L'app est mobile-first. Sur desktop, on centre dans 480px   */
 @media (min-width: 640px) {
-  body > header,
-  body > main,
-  body > .gradient-header,
-  .bottom-nav > * {
-    max-width: 480px;
-    margin-left: auto;
-    margin-right: auto;
+  body {
+    background: #E8E4DC;
+    display: flex;
+    justify-content: center;
   }
-  .bottom-nav {
-    max-width: 480px;
-    left: 50%;
-    right: auto;
-    transform: translateX(-50%);
-    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+
+  /* Enveloppe toute la page dans un cadre centré */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: #E8E4DC;
+    z-index: -1;
+  }
+
+  header.gradient-header,
+  main,
+  nav.bottom-nav {
+    max-width: 480px !important;
+    width: 100%;
+  }
+
+  nav.bottom-nav {
+    left: 50% !important;
+    right: auto !important;
+    transform: translateX(-50%) !important;
     border-left: 1px solid var(--border);
     border-right: 1px solid var(--border);
+    border-radius: 0;
   }
-}
-
-/* Page wrapper pour desktop */
-.page-shell {
-  max-width: 480px;
-  margin: 0 auto;
 }
 
