@@ -147,7 +147,7 @@
 <nav class="bottom-nav"></nav>
 
 <!-- Modale info liturgique -->
-<div id="modal-info" class="hidden" style="position:fixed;inset:0;z-index:200;background:rgba(0,0,0,0.5);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:20px">
+<div id="modal-info" style="display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,0.5);backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:20px">
   <div style="background:var(--surface);border-radius:28px;width:100%;max-width:360px;padding:28px;box-shadow:var(--shadow-lg)">
     <h3 style="font-size:16px;font-weight:900;color:var(--text-1);margin:0 0 16px">Informations liturgiques</h3>
     <div style="display:flex;flex-direction:column;gap:12px;color:var(--text-2);font-size:12px;line-height:1.6">
@@ -165,8 +165,8 @@
   const CALENDAR_API_KEY = 'AIzaSyAI5N6lamviexKaPR-WoOP4006m5IClDoQ';
   const CALENDAR_ID = 'saintlouisenville67@gmail.com';
 
-  function afficherInfoLiturgie() { document.getElementById('modal-info').classList.remove('hidden'); }
-  function fermerInfoLiturgie()   { document.getElementById('modal-info').classList.add('hidden'); }
+  function afficherInfoLiturgie() { const m=document.getElementById('modal-info'); m.style.display='flex'; }
+  function fermerInfoLiturgie()   { document.getElementById('modal-info').style.display='none'; }
 
   function isOfficeValide(titre) {
     const t = titre.toLowerCase();
